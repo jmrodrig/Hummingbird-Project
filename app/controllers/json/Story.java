@@ -6,6 +6,7 @@ public class Story {
 	public Long id;
 	public String title;
 	public String summary;
+	public String content;
 	public Long[] postIds;
 	public boolean published;
 	public Location location;
@@ -16,7 +17,7 @@ public class Story {
 	public String articleDescription;
 	public String articleImage;
 	public String articleLink;
-	
+
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
 //			return null;
@@ -24,7 +25,7 @@ public class Story {
 //		result.storyId = story.getId();
 //		result.title = story.getTitle();
 //		result.summary = story.getSummary();
-//		
+//
 //		Long[] postIds = new Long[story.getPosts().size()];
 //		int count = 0;
 //		for (Post post : story.getPosts()) {
@@ -34,7 +35,7 @@ public class Story {
 //		result.postIds = postIds;
 //		return result;
 //	}
-	
+
 	public static Story getStory(models.Story story, boolean forceReadDomainStory){
 		if (story == null)
 			return null;
@@ -42,6 +43,7 @@ public class Story {
 		result.id = story.getId();
 		result.title = story.getTitle();
 		result.summary = story.getSummary();
+		result.content = story.getContent();
 		result.published = story.isPublished();
 		result.location = Location.getLocation(story.getLocation());
 		result.thumbnail = story.getThumbnail();
@@ -50,8 +52,8 @@ public class Story {
 		result.articleDescription = story.getArticleDescription();
 		result.articleImage = story.getArticleImage();
 		result.articleLink = story.getArticleLink();
-	
-		
+
+
 		if (forceReadDomainStory || story.isDomainStoryLoaded()){
 			com.lir.library.domain.Story domainStory = story.getDomainStory();
 			Long[] postIds = new Long[domainStory.getPosts().size()];
@@ -64,5 +66,5 @@ public class Story {
 		}
 		return result;
 	}
-	
+
 }

@@ -6,6 +6,8 @@ var itemsArray;
 var itemHTML;
 
 var map;
+var story;
+var domainStory = new Object();
 
 var optionsMap = {
   count: 20,
@@ -229,6 +231,12 @@ function stud_fetchFeedsItemHTML(url,success, error){
 		error: error
 	});
 }
+
+function saveStory() {
+
+}
+
+
 
 function initiateMap() {
 	var mapOptions = {

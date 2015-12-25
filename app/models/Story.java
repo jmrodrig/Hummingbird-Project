@@ -64,6 +64,9 @@ public class Story extends Model {
 	@Column(name = "summary")
 	private String summary;
 
+	@Column(name = "content")
+	private String content;
+
 	@Column(name = "cost")
 	private double cost;
 
@@ -141,6 +144,14 @@ public class Story extends Model {
 		com.lir.library.domain.Story story = getDomainStory();
 		if (story != null)
 			story.setSummary(summary);
+	}
+
+	public String getContent() {
+		return content;
+	}
+
+	public void setContent(String content) {
+		this.content = content;
 	}
 
 	public double getCost() {
@@ -314,7 +325,7 @@ public class Story extends Model {
 		return json;
 	}
 
-	public static Story create(User user, String title, String summary, double cost, String filePath,
+	public static Story create(User user, String title, String summary, String content, double cost, String filePath,
 								String locationName,
 								String articleTitle, String articleDescription, String articleImage, String articleLink,
 								controllers.json.Location location)
@@ -322,7 +333,7 @@ public class Story extends Model {
 
 		Story story = Story.findByUserAndTitle(user, title); //search for a story with the same title. If found, updates that story
 		if (story != null) {
-			return Story.update(story.getId(), title, summary, cost, filePath, locationName,
+			return Story.update(story.getId(), title, summary, content, cost, filePath, locationName,
 																				articleTitle,
 																				articleDescription,
 																				articleImage,
@@ -333,6 +344,7 @@ public class Story extends Model {
 		setStory(story,
 				title,
 				summary,
+				content,
 				cost,
 				filePath,
 				locationName,
@@ -346,12 +358,12 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, Double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, controllers.json.Location location) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String content, Double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, controllers.json.Location location) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
-		setStory(story, title, summary, cost, filePath, locationName, articleTitle,
+		setStory(story, title, summary, content, cost, filePath, locationName, articleTitle,
 				articleDescription,
 				articleImage,
 				articleLink,
@@ -359,9 +371,10 @@ public class Story extends Model {
 		return story;
 	}
 
-	private static void setStory(Story story, String title, String summary, double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, controllers.json.Location location) throws IOException {
+	private static void setStory(Story story, String title, String summary, String content, double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, controllers.json.Location location) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
+		story.setContent(content);
 		story.setCost(cost);
 		story.setPath(filePath);
 		story.setLocationName(locationName);

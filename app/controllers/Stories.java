@@ -91,6 +91,7 @@ public class Stories extends Controller {
 		models.Story story = models.Story.create(user,
 											domainStory.getTitle(),
 											domainStory.getSummary(),
+											jsonStory.content,
 											0.0,
 											path,
 											jsonStory.locationName,
@@ -184,6 +185,7 @@ public class Stories extends Controller {
 
 				story.setTitle(jsonStory.title);
 				story.setSummary(jsonStory.summary);
+				story.setContent(jsonStory.content);
 				story.setThumbnail(jsonStory.thumbnail);
 				story.setLocationName(jsonStory.locationName);
 
@@ -251,7 +253,7 @@ public class Stories extends Controller {
 				story = models.Story.create(user,
 											domainStory.getTitle(),
 											domainStory.getSummary(),
-											0.0, "", "",
+											"", 0.0, "", "",
 											"","","","",
 											null);
 			}
