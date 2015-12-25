@@ -1,0 +1,327 @@
+@()
+
+@main("LIR | StoryMAKER") {
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+
+<!-- stylesheets -->
+<link rel="stylesheet" media="screen" href="/assets/stylesheets/maps.css">
+<!-- javascripts -->
+<script src="/assets/javascripts/controls/maps-view-handlers.js" type="text/javascript"></script>
+
+} {
+<section>
+
+	<!------------->
+	<!-- NAV BAR -->
+	<!------------->
+	
+	 <!-- <div >
+		<div id="navbar" class="navbar navbar-inverse navbar-static-top">
+			<div class="navbar-left-container">
+				<div id="navbar-story-thumbnail" class='inline-block' data-toggle="modal" data-target="#storyDetailsModal"></div>
+				<div id="navbar-brand" class="inline-block"><img id="logo-lir" src="/assets/images/lir-logo.png" alt="logo-lir"></div>
+				<div id="navbar-storytitle" class="inline-block"><input id="storyTitleInput" class="form-control input-lg" type="text" placeholder="" /></div>
+			</div>
+			<div class="navbar-center-container">
+				<img id="logo-maker" src="/assets/images/storymaker-logo.png" alt="logo-maker"></img>
+			</div>
+			<div class="navbar-right-container">
+				<p id="navbar-status" class="navbar-text story-controls" >story saved</p>
+				<button id="publish-story-button" class="btn btn-primary btn-success navbar-btn story-controls ga-event-maker-publish" type="button" onclick="togglePublished()">Publish Story</button> -->
+				<!-- <a id="navbar-user-button" class="btn btn-primary navbar-btn" data-toggle="modal" data-target="#userStoriesModal">User</a>
+				<div id="navbar-user" class="btn-group">
+					<button id="navbar-user-button" type="button" class="btn btn-primary navbar-btn dropdown-toggle" data-toggle="dropdown">USER <span class="caret"></span></button>
+					<ul id="navbar-user-dropdown" class="dropdown-menu pull-right" role="menu">
+						<li><a href="#" data-toggle="modal" data-target="#userStoriesModal">My Stories</a></li>
+						<!--<li><a href="#" onclick="createStory()">Create New Story</a></li>-->
+						<!-- <li id="story-dropdown-options-divider" class="divider"></li>
+						<li><a id="help-toogle-button" href="#" onclick="toogleHelp()">Help is on. Turn off?</a></li>
+						<li><a href="#" onclick="openVideoWindow()" >StoryMaker Tutorial</a></li>
+						<li><a href="/">Leave StoryMaker</a></li>
+						<li><a href="/logout">Log out</a></li>
+					</ul>
+				</div> -->
+				<!-- <a id="navbar-make-button" class="btn btn-danger navbar-btn" href="#"  onclick="createStory()">Make Story</a> -->
+			<!-- </div>
+		</div>
+		<div id="navbar-grad"></div>
+	</div>  -->
+	
+	<!------------------>
+	<!-- CONTENT AREA -->
+	<!------------------>
+	
+	<div id="content-area" >
+		
+		<div id="status" >story saved</div>
+		<!--MAP CANVAS -->
+		<div id="map-canvas"></div>		
+		<!--POST NAVIGATION LIST -->
+		<div id="navPostList"  class="list-group"></div>
+		
+		<div id="controls-bar" class="btn-group story-controls">
+			<!-- <input class="btn btn-primary" type="button" value="Initial Post" onclick="editInitialPost()" /> -->
+			<input class="btn btn-primary ga-event-map-addpost" type="button" value="Add Location" onclick="toggleCreatePost()" />
+			<input class="btn btn-primary ga-event-map-addconnection" type="button" value="Connect Locations" onclick="toggleCreateTransition()" />
+			<input class="btn btn-primary" type="button" value="Zoom Fit" onclick="fitStoryOnView(story.getMarkers())" />
+			<!-- <input class="btn btn-primary" type="button" value="Download story" onclick="downloadStoryRequest()" /> -->
+			<!-- <span class="btn btn-primary btn-danger fileinput-button"> -->
+				<!-- <span>Upload Story</span> -->
+				<!-- <input id="story-fileupload" type="file" name="storyFile"> <!-- type="file" name="files[]" multiple > -->
+			<!-- </span> -->
+		</div>
+		<div id="hintsPanel" hidden="true" >
+			<button type="button" class="close" aria-hidden="true" onclick="hideHintsPanel()">&times;</button>
+			<br>
+			<span id="hintIcon" class="glyphicon glyphicon-eye-open"></span>
+			<div id="hintMessage"></div>
+			<br>
+		</div>
+		
+		<div id="delete-dialogue" class="content-dialogue">
+			<button type="button" class="close" onclick="$('#delete-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<p>This story will be deleted forever.<br>It can't be undone.</p>
+			<p>Would you like to proceed?</p>
+			<a id="dismiss-dialogue" class="btn btn-info" onclick="$('#delete-dialogue').fadeOut(200);">No</a>
+			<a id="accept-dialogue" class="btn btn-warning" onclick="deleteCurrentStory()">Yes</a>
+		</div>
+
+		<div id="publish-dialogue" class="content-dialogue">
+			<button type="button" class="close" onclick="$('#publish-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<p>You are about to make this story public.<br>Congratulations! =)</p>
+			<p>To publish, you need to make sure that you own the rights of the content of the story or you are allowed to use it and publish it.</p>
+			<p>Would you like to proceed?</p> 
+			<a id="dismiss-dialogue" class="btn btn-info" onclick="$('#publish-dialogue').fadeOut(200);">Cancel</a>
+			<a id="accept-dialogue" class="btn btn-warning ga-event-map-publish" onclick="publishStory()">Publish</a>
+		</div>
+		
+		<div id="share-dialogue" class="content-dialogue">
+			<button type="button" class="close" onclick="$('#share-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+			<p>Your story is now published.<br>Congratulations! =)</p>
+			<p>You may want to share it with your friends.</p>
+			<div class="social-wrapper">
+				<a class="social facebook" href="#" target="_blank"></a>
+				<a class="social twitter" href="#" target="_blank"></a>
+				<a class="social mail" href="#" target="_blank"></a>
+			</div>
+			<p>If you wish to unpublish the story, click bellow.</p> 
+			<!-- <a id="dismiss-dialogue" class="btn btn-info" onclick="$('#share-dialogue').fadeOut(200);">Cancel</a> -->
+			<a id="accept-dialogue" class="btn btn-warning ga-event-map-publish" onclick="unpublishStory()">Unpublish</a>
+		</div>
+	</div>
+	
+	<!------------>
+	<!-- SOCIAL -->
+	<!------------> 
+	
+	<div class="social-wrapper">
+		<a class="social mail" href="mailto:feedback@@lostinreality.net?Subject=Feedback StoryMaker" target="_blank"></a>
+		<a class="social facebook" href="https://www.facebook.com/pages/Lost-in-Reality-LiR/387253791289181" target="_blank"></a>
+		<a class="social twitter" href="https://twitter.com/LstnReality" class="social" target="_blank"></a>
+	</div>
+	
+	<!----------->
+	<!-- POSTS -->
+	<!----------->
+
+	<div id="postInfoWindowDOM" hidden="true">
+		<div id="postContainer"  class="postContainer">
+			<div id="postBodyContainer" class="postBodyContainer nano">
+				<div id="postBody" class="postBody content">
+					<div id="postImageContainer" class="postImageContainer"></div>
+					<div id="postTitle" class="postTitle georgiaFont">
+						<input id="postTitleInput" class="postTitleInput form-control" type="text" placeholder="Post title" />
+					</div>
+					<div id="postText" class="postText">
+						<textarea id="postTextArea " class="postTextArea form-control georgiaFont" type="text" placeholder="Post text" ></textarea>
+					</div>
+				</div>
+				<!--<div id="audioContainer"></div>-->
+			</div>
+			<div class="toolBar">
+				<a id="postCheckButton" class=" btn toolBarButton" ><span class="glyphicon glyphicon-ok" style="font-size:25px"></span></a>
+				<a id="postUploadImageImageButton" class="btn toolBarButton" ><span class="glyphicon glyphicon-picture" style="font-size:25px"></span></a>
+				<a id="postUploadSoundImageButton" class="btn toolBarButton" ><span class="glyphicon glyphicon-music" style="font-size:25px"></span></a>
+				<a id="postTrashButton" class=" btn toolBarButton" ><span class="glyphicon glyphicon-trash" style="font-size:25px"></span></a>
+			</div>
+		</div>
+	</div>
+	
+	<!------------------>
+	<!-- INITIAL POST -->
+	<!------------------>
+	
+	<div id="initPostDiv" hidden="true" class="animation-standout">
+		<div id="initPostContainer" class="postContainer">
+			<div id="initPostBodyContainer" class="postBodyContainer nano">
+				<div id="initPostBody" class="postBody content">
+					<div id="postImageContainer" class="postImageContainer" ></div>
+					<div id="initPostTitle" class="postTitle georgiaFont">
+						<input id="initPostTitleInput" class="postTitleInput form-control" type="text" placeholder="Post title" />
+					</div>
+					<div id="initPostText" class="postText">
+						<textarea id="initPostTextArea" class="postTextArea form-control georgiaFont" type="text" placeholder="Post text" ></textarea>
+					</div>
+				</div>
+			</div>
+			<div class="toolBar">
+				<a id="postCheckButton" class=" btn toolBarButton" ><span class="glyphicon glyphicon-ok" style="font-size:25px"></span></a>
+				<a id="postUploadImageImageButton" class="btn toolBarButton" ><span class="glyphicon glyphicon-picture" style="font-size:25px"></span></a>
+				<a id="postUploadSoundImageButton" class="btn toolBarButton" ><span class="glyphicon glyphicon-music" style="font-size:25px"></span></a>
+				<!-- <a id="postTrashButton" class=" btn toolBarButton" ><span class="glyphicon glyphicon-trash" style="font-size:25px"></span></a> -->
+			</div>
+		</div>
+	</div>
+	
+	<!----------------------------->
+	<!-- UPLOAD POST IMAGE MODAL -->
+	<!----------------------------->
+	
+	<div class="modal fade" id="uploadPostImageModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+		  <div class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			  <h4 class="modal-title" id="myModalLabel">Upload Post Image</h4>
+			</div>
+			<div id="uploadImage-modal-body" class="modal-body">
+				<a id="uploadImage-selectButton" class="btn btn-success fileinput-button" >
+					<i class="glyphicon glyphicon-picture"></i>
+					<span> Select Picture...</span>
+					<!-- The file input field used as target for the file upload widget -->
+					<input id="uploadImage-fileupload" type="file" name="files[]" multiple="">
+				</a>
+				<div id="uploadImage-preview" style="float:left"></div>
+				<div id="uploadImage-progress" class="progress" style="clear: both">
+					<div class="progress-bar progress-bar-success"></div>
+				</div>
+			</div>
+			<!-- <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Save changes</button>
+			</div> -->
+		  </div>
+		</div>
+	</div>
+	
+	<!------------------------------->
+	<!-- POST IMAGE HTML CONTAINER -->
+	<!------------------------------->
+	
+	<div id="postImageContainerDOM" hidden="true">
+		<img id="postImage" class="postImage">
+		<div id="imageControlsContainer" class="image-controls vertical-align-wrapper">
+			<div class="align-middle image-controls">
+				<span id="postImage-scale-icon" class="postImage-scale-icon glyphicon glyphicon-fullscreen" ></span>
+				<span id="postImage-scale-slider" class="postImage-scale-slider" ></span>
+				<span id="postImage-delete-icon" class="postImage-delete-icon glyphicon glyphicon-trash"></span>
+			</div>
+		</div>
+	</div>
+	
+	<!----------------------------->
+	<!-- USER STORIES LIST MODAL -->
+	<!----------------------------->
+	
+	<div class="modal fade" id="userStoriesModal" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+		  <div id="userStoriesModal-container" class="modal-content">
+			<div class="modal-header">
+			  <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+			  <h4 class="modal-title" id="userStoriesListModalTitle">STORIES LIST</h4>
+			</div>
+			<div class="modal-body">
+				<ul id="userStoryList" class="list-group"></ul>
+				<input class="btn btn-success ga-event-map-createstory" type="button" value="Create New story" data-dismiss="modal" onclick="createStory()" />
+				<input class="btn btn-info" type="button" value="StoryMaker Tutorial" onclick="openVideoWindow()" />
+				<input class="btn btn-default pull-right" type="button" value="Leave Story Maker" data-dismiss="modal" onclick=location.href="/" />							
+			</div>
+			<div id="navbar-grad"></div>
+			<div id="footer-userStoryList">
+				<img id="logo-maker-userStoryList" src="/assets/images/storymaker-logo.png" alt="logo-maker"></img>
+			</div>
+			<!-- <div class="modal-footer">
+				<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+				<button type="button" class="btn btn-primary">Save changes</button>
+			</div> -->
+		  </div>
+		</div>
+	</div>
+	
+	<!----------------->
+	<!-- MESSAGE MODAL -->
+	<!----------------->
+	
+	<div id="messageModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="messageModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<!--<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>-->
+					<span id="message-icon" class="glyph-icon flaticon-warning12"></span>
+					<p id="message"></p>
+				</div>
+				<div id="message-buttons-container">
+					<button id="cancel-button" type="button" class="btn btn-default" data-dismiss="modal">Cancel</button>
+					<button id="accept-button" type="button" data-dismiss="modal" class="btn btn-danger"></button>
+				</div>
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	
+	<!------------------------->
+	<!-- STORY DETAILS MODAL -->
+	<!------------------------->
+	
+	<div class="modal fade" id="storyDetailsModal" tabindex="-1" role="dialog" aria-labelledby="storyDetailsModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+				<h4 class="modal-title" id="storyDetailsModal-title">Story title </h4>
+				</div>	
+				<div class="modal-body">
+					<div id="story-summary-wrapper">
+						<p>Story summary</p>
+						<textarea id="storyDetailsModal-summary" class="form-control georgiaFont" type="text" placeholder="Story summary" maxlength="255"></textarea>
+						<p id='remain-summary' class="text-muted pull-right"></p>
+					</div>
+					<div id="story-thumbnail-wrapper">
+						<p>Story Thumbnail</p>
+						<div id="thumbnail-image">
+							<div id="thumbnail-overlay"><span class="glyph-icon flaticon-picture11"></span></div>
+						</div>
+						<div id="image-crop">
+							<div class="cropit-image-preview-container">
+								<div class="cropit-image-preview"></div>
+							</div>
+							<div class="cropit-controls">
+								<div class="slider-wraper">
+									<div class="glyph-icon small-icon flaticon-picture11"></div>
+									<input type="range" class="cropit-image-zoom-input" />
+									<div class="glyph-icon flaticon-picture11"></div>
+								</div>
+								<a id='save-thumbnail-btn' ><span class="glyph save-icon small-icon flaticon-verify5"></span></a>
+								<a id='cancel-thumbnail-btn'><span class="glyph cancel-icon small-icon flaticon-cross84"></span></a>
+							</div>
+							<input type="file" class="cropit-image-input" />
+							<!--<a class="select-image-btn btn btn-success"><span class="glyph flaticon-picture11"></span> Select new image</a>-->
+						</div>
+					</div>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" data-dismiss="modal">That's good!</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	
+	<div id="video-container" hidden="true">
+		<div id="player"></div>
+	</div>
+	
+</section>
+
+}
+

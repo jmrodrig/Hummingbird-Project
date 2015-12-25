@@ -1,0 +1,463 @@
+@()
+
+<meta name="viewport" content="initial-scale=1.0, user-scalable=no">
+<meta charset="utf-8">
+<style>
+html,body,#map-canvas {
+	margin: 0;
+	padding: 0;
+	height: 100%;
+}
+
+#postBodyContent{
+	position: relative;
+	width: 288px;
+	height: 480px;
+}
+
+#postBottomButtons{
+	position: absolute;
+	bottom: 0px;
+	width: 100%;
+}
+
+#postInnerButtons{
+	margin: 0 auto;
+}
+
+#postTextArea{
+	width: 288px;
+	height: 380px;
+}
+
+.postLabel {
+	float: left;
+}
+
+.postContent {
+	position: absolute;
+	left: 0px;
+}
+
+#map-canvas img{max-width: inherit;}
+
+</style>
+<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false"></script>
+<link rel="stylesheet" media="screen" href="/assets/flexigrid/css/flexigrid.pack.css">
+<link rel="stylesheet" media="screen" href="/assets/stylesheets/main.css">
+<link rel="stylesheet" media="screen" href="/assets/bootstrap/css/bootstrap.min.css">
+<link rel="stylesheet" media="screen" href="/assets/bootstrap/css/bootstrap-responsive.min.css">
+<link rel="shortcut icon" type="image/png" href="/assets/images/favicon.png">
+
+<script src="/assets/javascripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+<script src="/assets/javascripts/jshashtable-3.0.js" type="text/javascript"></script>
+<script src="/assets/javascripts/jquery.json-2.4.min.js" type="text/javascript"></script>
+<script src="/assets/flexigrid/js/flexigrid.pack.js" type="text/javascript"></script>
+<script src="/assets/bootstrap/js/bootstrap.min.js" type="text/javascript"></script>
+<script src="/assets/lightboxme/js/jquery.lightbox_me.js" type="text/javascript"></script>
+<script src="/assets/formplugin/js/jquery.form.js" type="text/javascript"></script>
+<script src="/assets/javascripts/studs/serverconnector.js" type="text/javascript"></script>
+<script src="/assets/javascripts/controls/post.js" type="text/javascript"></script>
+<div id="controls">
+	<input type="button" value="Create Story" onclick="createStory()" />
+	<input type="button" value="Create Post" onclick="createPost()" />
+	<input type="button" value="Toogle Create Transition" onclick="toggleEnableCreateTransition()" />
+</div>
+
+<div id="result">will have result</div>
+<div id="map-canvas"></div>
+
+<div id="postContent" hidden="true">
+	<div id="siteNotice">
+	</div>
+	<div class="postContent">
+		<div id="postTitleLabel" class="postLabel">Insert title</div>
+		<input id="postTitleInput" type="text" class="postLabel" placeholder="Post text" />
+	</div>
+	<br />
+	<div id="postBodyContent">
+			<div class="postContent">
+				<div id="postTextLabel" class="postLabel">Post text</div>
+				<textarea id="postTextArea" placeholder="Post text" required></textarea>
+			</div>
+			<div id="postBottomButtons">
+				<div id="postInnerButtons">
+					<input type="image" src="/assets/images/controls/upload_image.png" name="image" width="60" height="60">
+					<input type="image" src="/assets/images/controls/upload_sound.png" name="image" width="60" height="60">
+				</div>
+			</div>
+	</div>
+</div>
+
+<script>
+	var map;
+	var markerPostMap = new Hashtable();
+	var count = 0;
+	var story;
+	var updatePost;
+	var enablePostCreation = false;
+	var enableTransitionCreation = false;
+	
+	var rightClickedPost;
+	var leftClickedPost;
+	
+	var infoWindow;
+
+	var markersArray = [];
+	var arrowsArray = [];
+
+	// MAP INITIALIZATION
+	function centerOnUserLocation() {
+		if (navigator.geolocation) {
+			navigator.geolocation.getCurrentPosition(function(position) {
+				var user_location = new google.maps.LatLng(
+						position.coords.latitude, position.coords.longitude);
+
+				var mapOptions = {
+					zoom : 8,
+					center : user_location,
+					mapTypeId : google.maps.MapTypeId.ROADMAP
+				};
+				initiateMap(mapOptions);
+			});
+		} else {
+			var options = {
+				map : map,
+				position : new google.maps.LatLng(60, 105)
+			};
+			initiateMap(mapOptions);
+		}
+	}
+
+	function initiateMap(options) {
+		map = new google.maps.Map(document.getElementById('map-canvas'),
+				options);
+		initMapClickHandlers();
+		initMapClearMarkers();
+		initInfoWindow();
+		initPostControls();
+	}
+	// MAP INITIALIZATION
+
+	// EVENT HANDLERS
+
+	function initMapClickHandlers() {
+		var listener = google.maps.event
+				.addListener(map, 'tilesloaded',
+						function() {
+							google.maps.event.addListener(map, 'click',
+									mapLeftClicked);
+							google.maps.event.removeListener(listener);
+						});
+	}
+	function initMapClearMarkers() {
+		google.maps.Map.prototype.clearOverlays = function() {
+			for ( var i = 0; i < markersArray.length; i++) {
+				markersArray[i].setMap(null);
+			}
+			for ( var i = 0; i < arrowsArray.length; i++) {
+				arrowsArray[i].setMap(null);
+			}
+		}
+	}
+	function initInfoWindow() {
+		infoWindow = new google.maps.InfoWindow({
+			content : "will have content"
+		});
+	}
+	
+	
+
+	function mapLeftClicked(mouseEvent) {
+		
+		if (!enablePostCreation)
+			return;
+		
+		enablePostCreation = false;
+		
+		var postData = new Object();
+		postData.title = INSERT_TITLE;
+		postData.location = new Object();
+		postData.location.latitude = mouseEvent.latLng.lat();
+		postData.location.longitude = mouseEvent.latLng.lng();
+		postData.location.radius = 5.0;
+	
+		stud_createPost(story.storyId, postData, 
+				function(post) {
+					$("#result").text(JSON.stringify(post));
+					leftClickedPost = post;
+					refreshPost(post);
+				}, processError);
+	}
+
+	function onMarkerLeftClick(marker) {
+		//alert("marker left clicked");
+		
+		if (leftClickedPost && (leftClickedPost.postId === markerPostMap.get(marker).postId)){
+			//If clicked on same window close infoWindow
+			infoWindow.close();
+			leftClickedPost = null;
+		}else{
+			lastLeftClickedPost = leftClickedPost;
+			leftClickedPost = markerPostMap.get(marker);
+			
+			if (!enableTransitionCreation || !lastLeftClickedPost) {
+				refreshPost(leftClickedPost);
+			} else {
+				createTransition(lastLeftClickedPost, leftClickedPost);
+			}
+		}
+	}
+
+	function onMarkerRightClick(marker) {
+
+		rightClickedPost = markerPostMap.get(marker);
+	}
+	
+	function onMarkerDragEnd(marker){
+		var postData = markerPostMap.get(marker);
+		var oldLocation = postData.location;
+		
+		postData.location.latitude = marker.position.lat();
+		postData.location.longitude = marker.position.lng();
+		stud_updatePost(story.storyId, updatePost,
+			function(){
+				alert("Post updated sucessfuly");
+			}, 
+			function(){
+				alert("Error updating post");
+				updatePost.location = oldLocation;
+			});
+	}
+
+	// EVENT HANDLERS
+
+	function createStory() {
+		$("#result").text("Create story");
+		var storyData = new Object();
+		storyData.title = "Created Story Title";
+		storyData.summary = "Created Story Summary";
+
+		stud_createStory(storyData, function(data) {
+			story = data;
+			$("#result").text(JSON.stringify(data));
+		}, processError);
+	}
+	
+	function toggleEnableCreateTransition(){
+		leftClickedPost = null;
+		enableTransitionCreation = !enableTransitionCreation;
+	}
+	
+	
+	function refreshStory(story) {
+
+		for ( var i = 0; i < markersArray.length; i++) {
+
+		}
+	}
+
+	
+
+	function createTransition(startPost, endPost) {
+		var transitionData = new Object();
+		transitionData.fromPostId = startPost.postId;
+		transitionData.toPostId = endPost.postId;
+
+		stud_createTransition(story.storyId, startPost.postId, transitionData,
+				function(transition) {
+					$("#result").text(JSON.stringify(transition));
+					refreshTransition(transition);
+				}, processError);
+	}
+
+	function refreshTransition(transition) {
+
+		stud_readPost(story.storyId, transition.fromPostId, function(fromPost) {
+			stud_readPost(story.storyId, transition.toPostId, function(toPost) {
+				addArrow(fromPost.location, toPost.location);
+			}, function(error) {
+				$("#result").text(error);
+			});
+		}, processError);
+	}
+
+	function addArrow(fromPosition, toPosition) {
+		var flightPlanCoordinates = [
+				new google.maps.LatLng(fromPosition.latitude,
+						fromPosition.longitude),
+				new google.maps.LatLng(toPosition.latitude,
+						toPosition.longitude) ];
+
+		var lineSymbol = {
+			path : google.maps.SymbolPath.FORWARD_CLOSED_ARROW
+		};
+		var arrow = new google.maps.Polyline({
+			path : flightPlanCoordinates,
+			strokeColor : '#FF0000',
+			strokeOpacity : 1.0,
+			strokeWeight : 2,
+			icons : [ {
+				icon : lineSymbol,
+				offset : '100%'
+			} ],
+		});
+
+		arrow.setMap(map);
+	}
+	
+	var INSERT_TITLE = "Insert title";
+	var INSERT_TEXT = "Insert text";
+
+
+	function initPostControls(){
+		$("#postTitleInput").hide();
+		$("#postTitleLabel").show();
+		
+		$("#postTitleInput").live('blur', function(){
+			var title = $("#postTitleInput").val();
+			var oldTitle = $("#postTitleLabel").text();
+			if (!title || title.length == 0){
+				title = INSERT_TITLE;
+			}
+			$("#postTitleLabel").text(title);
+			$("#postTitleInput").hide();
+			$("#postTitleLabel").show();
+			
+			updatePost.title = title;
+			stud_updatePost(story.storyId, updatePost,
+				function(){
+					alert("Post updated sucessfuly");
+				}, 
+				function(){
+					alert("Error updating post");
+					updatePost.title = oldTitle;
+				});
+			
+		});
+		
+		$("#postTitleLabel").live('click', function(){
+			var title = $("#postTitleLabel").text();
+			if (title || title.length > 0 || title == INSERT_TITLE){
+				$("#postTitleInput").attr("placeholder", INSERT_TITLE);
+			}else{
+				$("#postTitleInput").val(title);	
+			}
+			$("#postTitleInput").show();
+			$("#postTitleInput").focus();
+			$("#postTitleLabel").hide();
+		});
+		
+		
+		
+		$("#postTextArea").hide();
+		$("#postTextLabel").show();
+		
+		$("#postTextArea").live('blur', function(){
+			var text = $("#postTextArea").val().replace(/\n/g, "<br />");
+			var strText = $("#postTextArea").val();
+			var oldText = $("#postTextLabel").text();
+			if (!text || text.length == 0){
+				text = INSERT_TEXT;
+			}
+			$("#postTextLabel").html(text);
+			$("#postTextArea").hide();
+			$("#postTextLabel").show();
+			
+			updatePost.text = strText;
+			stud_updatePost(story.storyId, updatePost,
+					function(){
+						alert("Post updated sucessfuly");
+					}, 
+					function(){
+						alert("Error updating post");
+						updatePost.text = oldText;
+					});
+			
+		});
+		$("#postTextLabel").live('click', function(){
+			var text = $("#postTextLabel").text();
+			if (text && text.length > 0 && text == INSERT_TEXT){
+				$("#postTextArea").attr("placeholder", text);
+			}else{
+				$("#postTextArea").val($("#postTextLabel").html().replace(/<br\s*[\/]?>/gi, "\n"));	
+			}
+			$("#postTextArea").show();
+			$("#postTextArea").focus();
+			$("#postTextLabel").hide();
+		});
+		
+		//val(post.title);
+		//$("#postTitleLabel").text(post.title);
+		
+	}
+
+	function refreshPost(post) {
+
+		stud_readPost(story.storyId, post.postId, function(post) {
+			var marker = new google.maps.Marker({
+				position : new google.maps.LatLng(post.location.latitude,
+						post.location.longitude, true),
+				map : map,
+				title : 'Post',
+				draggable: true
+			});
+			markerPostMap.put(marker, post);
+			google.maps.event.addListener(marker, 'click', function() {
+				onMarkerLeftClick(marker);
+			});
+
+			google.maps.event.addListener(marker, 'rightclick', function() {
+				onMarkerRightClick(marker);
+			});
+			
+			google.maps.event.addListener(marker, 'dragend', function() {
+				onMarkerDragEnd(marker);
+			});
+			
+			popupPost(post, marker);
+		}, processError);
+	}
+
+
+	function updatePopupPost(post){
+		$("#postTitleLabel").text(post.title);
+		if (post.text && post.text.length > 0){
+			$("#postTextLabel").html(post.text.replace(/\n/g, "<br />"));
+		}else{
+			$("#postTextLabel").html(INSERT_TEXT);
+		}
+	}
+
+	function popupPost(post, marker){
+		
+		//$("#postTitleInput").val(post.title);
+		//$("#postTitleLabel").text(post.title);
+		//$("#postTextArea").val(post.text);
+		infoWindow.content = $("#postContent").show().html();
+		infoWindow.open(map, marker);
+		updatePost = post;
+		
+		google.maps.event.addListener(infoWindow, 'domready', function() {
+			updatePopupPost(post);
+		});
+		
+		$("#postTextArea").keyup(function() {
+			this.style.height = 0; // this is necessary to make it shrink when deleting
+			this.style.height = this.scrollHeight + 'px';
+		});
+	}
+
+	function createPost(){
+		enablePostCreation = true;
+	}
+	
+	function processError(error){
+		alert(error)
+	}
+
+	function initialize() {
+		centerOnUserLocation();
+	}
+	google.maps.event.addDomListener(window, 'load', initialize);
+</script>

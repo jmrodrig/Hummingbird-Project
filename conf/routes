@@ -1,0 +1,100 @@
+# Routes
+# This file defines all application routes (Higher priority routes first)
+# ~~~~
+
+# pages
+GET     	/                       			controllers.Application.index()
+GET			/dashboards							controllers.Application.dashboards()
+GET			/library							controllers.Application.library()
+GET			/read/:storyId						controllers.Application.read(storyId: Long)
+GET			/create/:storyId					controllers.Application.create(storyId: Long)
+GET 		/profile							controllers.Application.profile()
+GET     /scraper              controllers.Application.scraper()
+
+#GET		Read
+#POST 		Create
+#PUT  		Update
+#DELETE		Delete
+
+#Users
+
+GET 		/user						controllers.Users.getLoggedInUser()
+GET		/tosca/:email/:name/:age				controllers.Users.toscaUser(email: String, name: String, age: Integer)
+
+#Utils
+POST 		/fetchhtml									controllers.Application.fetchHtml()
+GET 		/fetch/category								controllers.utils.FeedsFetcher.fetchCategories()
+GET 		/fetch/category/:id/:options								controllers.utils.FeedsFetcher.fetchItemsFromCategories(id: String, options: String)
+GET 		/fetch/item/:id								controllers.utils.FeedsFetcher.fetchItemDetails(id: String)
+GET     /fetch/html/:url              controllers.utils.FeedsFetcher.fetchItemHTML(url: String)
+GET			/validateInvite/:invitationCode				controllers.Application.validInvite(invitationCode: String)
+GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
+
+
+#Stories
+
+GET		/publishedstories											controllers.Stories.listPublishedStories()
+GET		/story														controllers.Stories.listStories()
+GET		/story/:storyId												controllers.Stories.readStory(storyId: Long)
+DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
+POST	/story														controllers.Stories.createStory()
+PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)
+GET		/story/:storyId/download									controllers.Stories.downloadStory(storyId: Long)
+POST	/story/:storyId/save										controllers.Stories.saveStory(storyId: Long)
+POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(storyId: Long)
+POST	/story/:storyId/uploadimage									controllers.Stories.uploadImage(storyId: Long)
+POST	/story/:storyId/publish/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
+POST	/story/upload												controllers.Stories.uploadStory()
+
+
+#Posts
+
+GET		/story/:storyId/post										controllers.Posts.listPosts(storyId: Long)
+GET		/story/:storyId/post/:postId								controllers.Posts.readPost(storyId: Long, postId: Long)
+POST	/story/:storyId/post										controllers.Posts.createPost(storyId: Long)
+PUT		/story/:storyId/post/:postId								controllers.Posts.updatePost(storyId: Long, postId: Long)
+DELETE	/story/:storyId/post/:postId								controllers.Posts.deletePost(storyId: Long, postId: Long)
+POST	/story/:storyId/post/:postId/uploadimage					controllers.Posts.uploadImage(storyId: Long, postId: Long)
+
+#Transitions
+
+GET		/story/:storyId/post/:postId/transition						controllers.Transitions.listTransitions(storyId: Long, postId: Long)
+GET		/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.readTransition(storyId: Long, postId: Long, transitionId: Long)
+POST	/story/:storyId/post/:postId/transition						controllers.Transitions.createTransition(storyId: Long, postId: Long)
+PUT		/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.updateTransition(storyId: Long, postId: Long, transitionId: Long)
+DELETE	/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.deleteTransition(storyId: Long, postId: Long, transitionId: Long)
+
+#Map
+GET		/map														controllers.Maps.index()
+
+#Files
+PUT		/files/public												controllers.Files.uploadPublic()
+
+#Test
+GET 	/testajax													controllers.Application.testAjax()
+
+# Map static resources from the /public folder to the /assets URL path
+GET     /assets/*file               controllers.Assets.at(path="/public", file)
+GET     /uploads/*file              controllers.UploadedAssets.at(path="/private/upload", file)
+
+# Login page
+GET     /login                      securesocial.controllers.LoginPage.login
+GET     /logout                     securesocial.controllers.LoginPage.logout
+
+# User Registration and password handling (only needed if you are using UsernamePasswordProvider)
+GET     /signup                     securesocial.controllers.Registration.startSignUp
+POST    /signup                     securesocial.controllers.Registration.handleStartSignUp
+GET     /signup/:token              securesocial.controllers.Registration.signUp(token)
+POST    /signup/:token              securesocial.controllers.Registration.handleSignUp(token)
+GET     /reset                      securesocial.controllers.Registration.startResetPassword
+POST    /reset                      securesocial.controllers.Registration.handleStartResetPassword
+GET     /reset/:token               securesocial.controllers.Registration.resetPassword(token)
+POST    /reset/:token               securesocial.controllers.Registration.handleResetPassword(token)
+GET     /password                   securesocial.controllers.PasswordChange.page
+POST    /password                   securesocial.controllers.PasswordChange.handlePasswordChange
+
+
+# Providers entry points
+GET     /authenticate/:provider     securesocial.controllers.ProviderController.authenticate(provider)
+POST    /authenticate/:provider     securesocial.controllers.ProviderController.authenticateByPost(provider)
+GET     /not-authorized             securesocial.controllers.ProviderController.notAuthorized

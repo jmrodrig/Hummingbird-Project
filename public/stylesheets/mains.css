@@ -1,0 +1,236 @@
+/******************************************************************
+	Fonts
+******************************************************************/
+
+@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);
+
+@font-face {
+    font-family: "HarlowSolid";
+    src: url(../fonts/Harlow-Solid-Italic-Italic.ttf) format("truetype");
+}
+
+/******************************************************************
+	Main Styling
+******************************************************************/
+
+html,body,section {
+	margin: 0px;
+	padding: 0px;
+	/* height: 100%; */
+	width: 100%;
+	color: #252525;
+}
+
+section {
+	height: 100%;
+}
+
+.grad-bar {
+	height:4px;
+	background: -webkit-linear-gradient(left, red, orange, yellow, green, blue, indigo);
+	background: -o-linear-gradient(right, red, orange, yellow, green, blue, indigo);
+	background: -moz-linear-gradient(right, red, orange, yellow, green, blue, indigo);
+	background: linear-gradient(to right, red, orange, yellow, green, blue, indigo);
+	opacity:.6;
+	z-index:300;
+	clear: both;
+}
+
+.georgiaFont {
+	font-family: Georgia,serif;
+}
+
+.harlowFont {
+	font-family: HarlowSolid;
+}
+
+.glyph {
+	display: inline-block;
+	font-family:"Flaticon";
+	line-height: 1;
+	margin-left:0px;
+	vertical-align:middle;
+}
+
+.glyph:before {
+	margin-left:0px;
+	font-size: 20px;
+}
+
+.glyph-icon {
+	padding: 10px;
+	display: inline-block;
+	font-family:"Flaticon";
+	vertical-align:middle;
+}
+
+.icon-medium.glyph-icon:before, .icon-medium.glyph:before {
+	font-size: 30px;
+}
+
+/******************************************************************
+	Navbar
+******************************************************************/
+
+.lir-style.navbar, .lir-style.navbar-default  {
+	/*position: fixed;*/
+	width: 100%;
+	top: 0px;
+	height:auto;
+	margin-bottom:0px;
+	border: none;
+	border-radius: 0px;
+	z-index:300;
+	-webkit-box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
+	-moz-box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
+	box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
+}
+
+@media (min-width: 768px) {
+	.lir-style.navbar, .lir-style.navbar-default  {
+		height:64px;
+	}
+}
+
+.lir-style  .navbar-brand {
+	padding: 5px 15px;
+}
+
+.lir-style  .navbar-nav {
+	margin: auto;
+	padding: inherit;
+	width:100%;
+}
+
+.lir-style  .navbar-nav  > li > a {
+	width:100%;
+	text-align: center;
+	padding-top: 20px;
+	padding-bottom: 20px;
+	font-size:18px;
+	color:#252525;
+	background-color: #F8F8F8;
+	border-bottom: 4px solid rgba(1,1,1,0);
+}
+
+.lir-style  .navbar-nav  > li > a:hover, .lir-style  .navbar-nav  .open > a {
+	background-color: #e7e7e7;
+	border-bottom-color: rgba(1,1,1,.4);
+}
+
+@media (min-width: 768px) {
+	.lir-style  .navbar-nav {
+		margin-right: 2%;
+		width:auto;
+	}
+
+	.lir-style  .navbar-nav  > li > a {
+		width:auto;
+	}
+
+	.lir-style  .navbar-nav  > li > a:hover, .lir-style  .navbar-nav  .open > a {
+		border-bottom: 4px solid rgba(1,1,1,.4);
+	}
+}
+
+.lir-style  .navbar-collapse {
+	max-height:none;
+	padding:inherit;
+}
+
+.lir-style.navbar .grad-bar {
+	margin-top:-4px;
+}
+
+#lir-logo {
+	display:none;
+	height: 50px;
+}
+
+#lir-logo-small {
+	display:block;
+	height: 50px;
+}
+
+@media (min-width: 768px) {
+	#lir-logo {
+		display:block;
+		height: 50px;
+	}
+	#lir-logo-small {
+		display:none;
+		height: 50px;
+	}
+}
+
+#title-input {
+	display:none;
+}
+
+#create-link{
+	display:none;
+}
+
+#stories-link{
+	display:none;
+}
+
+#blog-link{
+	display:none;
+}
+
+#login-link {
+	display:none;
+	background-color: rgba(111, 203, 66, .7);
+	color: white;
+}
+
+#login-link:hover {
+	background-color: rgba(111, 203, 66, 1);
+}
+
+#user-link  {
+	display:none;
+}
+
+#user-link.with-avatar div {
+	display:block;
+}
+
+#user-link div {
+	display:block;
+	height:50px;
+	width:50px;
+	border-radius:25px;
+	padding-right: 5px;
+	background-size: cover;
+	background-position: center;
+    background-repeat: no-repeat;
+	float: left;
+	margin-top: -15px;
+	margin-right: 10px;
+}
+
+#signup-link {
+	display:none;
+	background-color: rgba(111, 203, 66, .7);
+	color: white;
+}
+
+#signup-link:hover {
+	background-color: rgba(111, 203, 66, 1);
+}
+
+#publish-link {
+	display:none;
+}
+
+#delete-link {
+	display:none;
+	background-color: rgba(203, 66, 66, .7);
+	color: white;
+}
+
+#delete-link:hover {
+	background-color: rgba(203, 66, 66, 1);
+}

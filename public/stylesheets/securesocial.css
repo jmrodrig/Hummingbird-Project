@@ -1,0 +1,54 @@
+body {
+	padding:30px;
+}
+
+@media (min-width: 768px) {
+	body {
+		padding:50px;
+	}
+	p {
+		font-size:14px;
+	}
+}
+
+.container {
+		width:540px;
+	}
+
+#logo {
+		margin-top: 10px;
+	}
+
+@media (min-width: 768px) {
+	#logo {
+		margin-left: 5%;
+	}
+}
+
+@media (max-width: 768px) {
+	label.control-label {
+		width:75px !important;
+	}
+	
+	.form-horizontal .controls {
+		margin-left:85px !important;
+	} 
+	
+	.input-xlarge {
+		width:inherit;
+	} 
+	
+	.form-horizontal .form-actions {
+		  padding-left: 30px !important;
+	}
+	
+	.container {
+		width:100%;
+	}
+	
+	
+}
+
+.alert-info, .alert-success, .alert-error {
+	font-size:15px
+}

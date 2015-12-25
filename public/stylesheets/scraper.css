@@ -1,0 +1,97 @@
+
+body {
+	overflow:hidden;
+}
+
+section {
+	position: relative;
+}
+
+h1, h2, h3, h4, p, a {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-decoration: none;
+	outline: none;
+	line-height: 1.6em;
+}
+
+.animate-transition {
+	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/******************************************************************
+	Content Wrapper
+******************************************************************/
+
+#categories-list-wrapper {
+	height:600px;
+	width:20%;
+	overflow-y: scroll;
+}
+
+#item-list-wrapper {
+	height:600px;
+	width:20%;
+	overflow-y: scroll;
+}
+
+#item-content-wrapper {
+	height:600px;
+	width:40%;
+	background-color: #ccc;
+	overflow-y: scroll;
+}
+
+#map-wrapper {
+	height:600px;
+	width:20%;
+	position: relative;
+}
+
+#map-canvas {
+	margin: 0;
+	padding: 0;
+	margin-top:0px;
+	height:100%;
+	width:100%;
+}
+
+#map-sight {
+  position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 100px;
+	height: 100px;
+	pointer-events: none;
+	margin-top: -50px;
+	margin-left: -50px;
+	background-image: url(/assets/images/map_sight_area.png);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+#map-sight-dot {
+  position: absolute;
+	top: 50%;
+	left: 50%;
+	width: 6px;
+	height: 6px;
+	pointer-events: none;
+	margin-top: -3px;
+	margin-left: -3px;
+	background-image: url(/assets/images/map_sight_dot.png);
+	background-size: cover;
+	background-position: center;
+	background-repeat: no-repeat;
+}
+
+#item-content {
+	position: relative;
+}
+
+.floating-box {
+	position:absolute;
+}

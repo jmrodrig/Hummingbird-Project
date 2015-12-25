@@ -1,0 +1,52 @@
+@()
+
+@main("LIR | Dashboard") {
+	<link rel="icon" type="image/png" href="img/lir-logo.png">
+	<!-- Load BS -->
+	<link rel="stylesheet" media="screen" href="/assets/bootstrap-3.0.3/css/bootstrap.min.css">
+	<link rel="stylesheet" media="screen" href="/assets/bootstrap-3.0.3/css/bootstrap.css">
+	<script src="/assets/bootstrap-3.0.3/js/bootstrap.min.js" type="text/javascript"></script>
+	<!-- <link rel="stylesheet" media="screen" href="/assets/bootstrap-3.0.3/css/bootstrap-theme.min.css"> -->
+	<!-- Load CSS -->
+	<link href="/assets/stylesheets/dashboard.css" rel="stylesheet" type="text/css" />
+	<!-- <link href="css/black.css" rel="stylesheet" type="text/css" /> -->
+	<!-- Load Icon Font -->
+	<link href="/assets/stylesheets/webfont.css" rel="stylesheet" type="text/css" />
+	<!-- Load jQuery library -->
+	<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+	<script src="/assets/javascripts/jquery-1.7.1.min.js" type="text/javascript"></script>
+	<!-- <script type="text/javascript" src="js/jquery.min.js"></script>
+	<script type="text/javascript" src="js/jquery-ui.min.js"></script> -->
+	
+	<!-- Load js -->
+	<!-- <script type="text/javascript" src="js/custom.js"></script> -->
+	<!-- iOS -->
+	<meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
+}{
+	<!-- Navigation Bar -->
+	<div class="navbar navbar-inverse navbar-fixed-top" role="navigation">
+		<div class="container">
+			<div class="navbar-header">
+		
+				<a class="navbar-brand font-HarlowSolid" style="font-size:30px" href="">Dashboard</a>
+			</div>
+			<div class="navbar-collapse collapse">
+			<ul class="nav navbar-nav navbar-right">
+				<li><button type="button" class="btn btn-danger navbar-btn">Create Story</button></li>
+				<li><a href="/" >user <b class="caret"></b></a></li>
+			</ul>
+			</div><!--/.nav-collapse -->
+		</div>
+    </div>
+		
+	<!-- Side Bar -->
+	<div id="sidebar">
+		<img id="sidebar-avatar-pic" src="img/avatar-pic.png" alt="avatar-pic">
+		<ul id="sidebar-nav" class="nav nav-pills nav-stacked">
+			<li class="active"><a href="#">All Stories</a></li>
+			<li><a href="#">My Stories</a></li>
+			<li><a href="#">Likes</a></li>
+			<li><a href="#">Followers</a></li>
+		</ul>
+	</div>
+}

@@ -1,0 +1,424 @@
+
+body {
+	overflow:hidden;
+}
+
+section{
+	position: relative;
+}
+
+h1, h2, h3, h4, p, a {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-decoration: none;
+	outline: none;
+	line-height: 1.6em;
+}
+
+.animate-transition {
+	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+/******************************************************************
+	Content Wrapper
+******************************************************************/
+
+#content-wrapper {
+	/*height:85%;*/
+	/* overflow:hidden; */
+}
+
+.content-nav {
+	position:absolute;
+	bottom:5%;
+	width:50px;
+	height:50px;
+	border-radius:25px;
+	background-color:#c3c3c3;
+	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+	z-index:200;
+}
+
+#btn-show-map {
+	right:5%;
+	background-color:#111;
+	color:white;
+	cursor:pointer;
+}
+
+#btn-show-map .glyph-icon:before {
+	margin: auto;
+}
+
+#btn-show-map .close-btn {
+	display:none;
+	padding-top: 5px;
+}
+
+#btn-show-map .open-btn {
+	padding-top:3px;
+}
+
+.map-open #btn-show-map .open-btn {
+	display:none;
+}
+
+.map-open #btn-show-map .close-btn {
+	display:inherit;
+}
+
+/******************************************************************
+	Library Body
+******************************************************************/
+
+#library-body {
+	position: absolute;
+	top:0%;
+	left:0%;
+	width:100%;
+	height:100%;
+	float:left;
+	padding-top:90px;
+	/* background-color:#fff; */
+	background-image: url(/assets/images/canvas-texture.jpg);
+	overflow-y:scroll;
+	-webkit-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	-moz-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	z-index: 100;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	text-align:center;
+}
+
+#library-body h1 {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	text-shadow: 1px 1px 1px rgba(40,40,40,.6);
+	font-size:46px;
+	opacity:.4;
+}
+
+.map-open #library-body {
+	left:-90%;
+}
+
+.posts-open #library-body {
+	left:90%;
+}
+
+@media (min-width: 768px) {
+	#library-body {
+		left:0%;
+		width:76%;
+	}
+	
+	.map-open #library-body {
+		left:-36%;
+	}
+	
+	.posts-open #library-body {
+		left:20%;
+	}
+}
+
+/******************************************************************
+	Story Container
+******************************************************************/
+
+.story-container {
+	display: inline-block;
+	position: relative;
+	height: 300px;
+	overflow: hidden;
+	border-radius: 0px;
+	opacity:0;
+	cursor:pointer;
+	margin:1px;
+	line-height: inherit;
+}
+
+.overlay-container {
+	position:absolute;
+	top:0%;
+	left:0%;
+	width:400%;
+	height:100%;
+	cursor:pointer;
+	background: -webkit-linear-gradient(bottom, rgba(1,1,1,.4), rgba(1,1,1,0)); 
+	background: -o-linear-gradient(top, rgba(1,1,1,.4), rgba(1,1,1,0)); 
+	background: -moz-linear-gradient(top, rgba(1,1,1,.4), rgba(1,1,1,0));  
+	background: linear-gradient(to top, rgba(1,1,1,.4), rgba(1,1,1,0)); 
+}
+
+.story-container.active .overlay-container {
+	top:0%;
+	left:-100%;
+}
+
+.story-container.active .image-container img {
+	opacity:.5;
+}
+
+.story-container.options-active .overlay-container {
+	top:0%;
+	left:-200%;
+}
+
+.story-container.delete-active .overlay-container {
+	top:0%;
+	left:-300%;
+}
+
+.story-container .image-container {
+	position:relative;
+	height:100%;
+	background-color: black;
+}
+
+.story-container .image-container img {
+	position:absolute;
+	min-width:100%;
+	min-height:100%;
+	-webkit-box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.62);
+	-moz-box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.62);
+	box-shadow: 5px 5px 15px 0px rgba(0,0,0,0.62);
+}
+
+.details-container {
+	position:absolute;
+	bottom:0%;
+	left:0%;
+	width:25%;
+	padding: 10px 10px;
+	text-align: left;
+}
+
+.details-container .story-city {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size:18px;
+	color: black;
+	background-color: white;
+	padding: 0px 2px;
+}
+
+.details-container .story-title {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size:24px;
+	color: white;
+}
+
+.details-container .story-published {
+	position:relative;
+	bottom:0px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size:15px;
+	color: #aaa;
+}
+
+.summary-container {
+	position:absolute;
+	top:0%;
+	left:25%;
+	width:25%;
+	height:100%;
+}
+
+.summary-container .story-summary {
+	height: 250px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	font-size: 16px;
+	line-height: 18px;
+	text-align: left;
+	padding: 50px 30px 50px 20px;
+	overflow:hidden;
+	color:white;
+}
+
+.summary-container textarea, .summary-container textarea:focus {
+	border:none;
+	box-shadow: none;
+	outline:none;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	resize:none;
+	background-color: transparent;
+	cursor:pointer;
+}
+
+.summary-container .btn {
+	display:block;
+	color:white;
+	opacity:.7;
+	position: absolute;
+	right: 0px;
+	bottom:20px;
+	padding: 5px 5px;
+	font-size:30px;
+}
+
+.summary-container .btn .glyph:before {
+	font-size:30px;
+}
+
+.options-container {
+	position:absolute;
+	top:0%;
+	left:50%;
+	width:25%;
+	height: 100%;
+	padding: 80px 30px;
+	text-align: center;
+}
+
+.options-container .btn {
+	display:block;
+	color:white;
+	font-size:20px;
+	opacity:.7;
+}
+
+.options-container .btn:first-child {
+	position: absolute;
+	left: 0px;
+	bottom:20px;
+	font-size:30px;
+	padding: 5px 5px;
+}
+
+.options-container .btn:first-child .glyph:before {
+	font-size:30px;
+}
+
+.options-container .btn:hover {
+	opacity:1;
+}
+
+.options-container .btn:active {
+	-webkit-box-shadow: none;
+	-moz-box-shadow: none;
+	box-shadow: none;
+}
+
+.delete-container {
+	position:absolute;
+	top:0%;
+	left:75%;
+	width:25%;
+	height: 100%;
+	padding: 80px 0px;
+}
+
+.delete-container .btn {
+	border-radius:0px;
+	margin:5px;
+}
+
+.delete-container p {
+	color:white;
+}
+
+#create-story {
+	display: block;
+	margin-top: 20px;
+	margin-bottom: 80px;
+	margin-left: auto;
+	margin-right: auto;
+	width: 300px;
+	opacity: 1;
+	background-color: transparent;
+	color: black;
+	border: 15px dotted black;
+	font-size: 90px;
+	line-height: 90px;
+	padding: 80px 10px;
+	text-align: center;
+	vertical-align: middle;
+	border-radius: 50%;
+}
+
+#create-story:hover {
+	opacity:.8;
+}
+
+
+/******************************************************************
+	Library Map
+******************************************************************/
+
+#library-map {
+	position:absolute;
+	bottom:5%;
+	right:5%;
+	width:50px;
+	height:50px;
+	border-radius:25px;
+	background-color:#c3c3c3;
+	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+	z-index:200;
+	overflow:hidden;
+}
+
+@media (min-width: 768px) {
+	#library-map {
+		top:0%;
+		left:76%;
+		width:24%;
+		height:100%;
+		border-radius:0px;
+		z-index:inherit;
+	}
+}
+
+#map-canvas {
+	margin: 0;
+	padding: 0;
+	margin-top:0px;
+	height:100%;
+	width:100%;
+}
+
+#map-canvas img { 
+	max-width: inherit; /* this is a fixer for smth*/
+}
+
+/******************************************************************
+	Social
+******************************************************************/
+
+.social-wrapper {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 5000;
+}
+a.social {
+	display: block;
+	width: 50px;
+	height: 50px;
+	background-image: url(/assets/images/social-black.png);
+	margin: 10px 0px;
+	-webkit-transition: background-color 0.4s;
+	-moz-transition: background-color 0.4s;
+	-ms-transition: background-color 0.4s;
+	-o-transition: background-color 0.4s;
+	transition: background-color 0.4s;
+	background-color: rgba(255, 255, 255, 0.4);
+	border-radius:50%;
+}
+a.social:hover {
+	background-color: rgba(0, 0, 0, 0.4);
+}
+a.social.mail {
+	background-position: 0px 0px;
+}
+a.social.facebook {
+	background-position: 0px -50px;
+}
+a.social.twitter {
+	background-position: 0px -100px;
+}
+

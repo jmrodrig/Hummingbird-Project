@@ -1,0 +1,557 @@
+body {
+	overflow:hidden;
+}
+
+section{
+	position: relative;
+}
+
+h1, h2, h3, h4, p, a, input, div {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-decoration: none;
+	outline: none;
+	line-height: 1.6em;
+}
+
+
+
+/******************************************************************
+	Scroll-bars
+******************************************************************/
+
+::-webkit-scrollbar {
+	height:16px;
+	overflow:visible;
+    width:16px;
+}
+ 
+/* Track */
+::-webkit-scrollbar-track {
+    background-clip: padding-box;
+	border:solid transparent;
+	border-width:0 0 0 4px;
+}
+ 
+/* Handle */
+::-webkit-scrollbar-thumb {
+	background-color:rgba(0,0,0,.2);
+    background-clip: padding-box;
+	border:solid transparent;
+	border-width:1px 1px 1px 6px;
+	min-height:28px;
+	padding:100px 0 0;
+    -webkit-box-shadow: inset 1px 1px 0 rgba(0,0,0,.1),inset 0 -1px 0 rgba(0,0,0,.07); 
+}
+::-webkit-scrollbar-corner {
+	font-size:13px; 
+}
+
+::-webkit-scrollbar-button {
+	height:0;
+	width:0;
+}
+
+
+/******************************************************************
+	Content area
+******************************************************************/
+
+#content-area {
+	margin-top: 64px;
+}
+
+#status {
+	display:none;
+	position:absolute;
+	top:0px;
+	width:100%;
+	height: 30px;
+	padding: 5px;
+	text-align: center;
+	background-color:#79C3F9;
+	color:#fff;
+	z-index: 1000;
+}
+
+#title-input {
+	font-family: Georgia, "Times New Roman", Times, serif;
+	text-align: left;
+	margin: auto;
+	font-size:24px;
+	background-color: transparent;
+	padding: 10px 10px;
+}
+
+input#title-input , input:focus#title-input  {
+	border:none;
+	box-shadow: none;
+	outline:none;
+}
+
+.content-dialogue {
+	display:none;
+	position:absolute;
+	top:0px;
+	left:0px;
+	width:100%;
+	height:100%;
+	background-color:rgba(1,1,1,.7);
+	text-align:center;
+	z-index: 300;
+}
+
+.content-dialogue p {
+	color: white;
+	padding:10px;
+	font-size: 18px;
+}
+
+.content-dialogue p:nth-child(2) {
+	margin-top: 15%;
+	font-size: 25px;
+}
+
+.content-dialogue a {
+	font-size: 20px;
+	padding: 10px 60px;
+	border-radius: 0px;
+}
+
+.content-dialogue .close {
+	margin: 10px;
+	color: white;
+	opacity: 1;
+	font-size: 30px;
+	font-weight: 300;
+}
+
+#share-dialogue .social-wrapper {
+	position:relative;
+	bottom:0px;
+	right:0px;
+}
+
+#share-dialogue .social-wrapper a.social {
+	display:inline-block;
+	margin: 10px 10px;
+	padding: 0px;
+}
+
+/******************************************************************
+	Map canvas
+******************************************************************/
+
+#map-canvas {
+	margin: 0;
+	padding: 0;
+	margin-top:0px;
+	max-width: none;
+	height:100%;
+}
+
+#map-canvas img { 
+	max-width: inherit; /* this is a fixer for smth*/
+}
+
+/******************************************************************
+	Post List
+******************************************************************/
+
+#navPostList {
+	position:absolute;
+	left:20px;
+	top:100px;
+	z-index:1;
+	width: 20%;
+	max-height: 50%;
+	overflow-y:auto;
+	opacity:0.6;
+	transition: all .3s;
+	-webkit-transition: all .3s; /* Safari */
+}
+
+#navPostList:hover {
+	opacity:1;
+}
+
+/******************************************************************
+	Story List Modal controls
+******************************************************************/
+
+#userStoriesModal-container{
+	overflow:hidden;
+	top:150px;
+	border-radius: 15px;
+}
+
+#footer-userStoryList {
+	text-align: center;
+	height: 100px;
+	background: -webkit-linear-gradient(top, rgb(1,1,1) 1%, #222 20%, #222); 
+	background: -o-linear-gradient(bottom, rgb(1,1,1) 1%, #222 20%, #222); 
+	background: -moz-linear-gradient(bottom, rgb(1,1,1) 1%, #222 20%, #222);  
+	background: linear-gradient(to bottom, rgb(1,1,1) 1%, #222 20%, #222); 
+}
+
+#logo-maker-userStoryList {
+	width: 450px;
+	margin-top: 25px;
+}
+
+
+#userStoriesListModalTitle {
+	margin-top: 10px;
+	margin-left: 15px;
+	font-size: 22px;
+}
+
+#user-story-list-item {
+	padding:0px;
+}
+
+#list-item-story-thumbnail {
+	height: 60px;
+	border-radius:5px;
+}
+
+/******************************************************************
+	Story controls
+******************************************************************/
+
+.cursor-crosshair {
+	cursor: crosshair; !important
+}
+
+#controls-bar {
+	position:absolute;
+	top:15px;
+	left:20px;
+}
+
+.story-controls {
+	display:none;
+}
+
+#storyTitleInput {
+	float:left;
+	margin-left:20px;
+	//width:250px;
+	background-color: rgba(255,255,255,0);
+	padding:5px;
+	border: none;
+	font-size:25px;
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.0);
+    box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.0);
+	color:#fff;
+}
+
+//#storyTitleInput:focus {
+//	background-color: rgba(255,255,255,0.1);
+//	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+//	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+//}
+
+#focusedinput {
+	position:absolute;
+	height:46px;
+	background-color: rgba(10,10,10,1);
+	-webkit-box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+	box-shadow: inset 0 1px 1px rgba(0, 0, 0, 0.075), 0 0 8px rgba(102, 175, 233, 0.6);
+	z-index:1000;
+	color:#fff;
+	margin-left:20px;
+	padding:5px;
+	border: none;
+	font-size:25px;
+}
+
+/******************************************************************
+	upload image modal
+******************************************************************/
+
+#uploadImage-selectButton {
+	float:left;
+	margin-bottom:20px;
+}
+
+#uploadImage-preview  {
+	float:left;
+	margin-left:20px;
+	margin-bottom:20px;
+}
+
+#uploadImage-button {
+	float:right;
+}
+
+#uploadImage-progress  {
+	clear:both;
+	margin-top:20px;
+}
+
+#list-initpost-item  {
+	color: #fff;
+	background-color: #ed9c28;
+	//border-color: #d58512;
+}
+
+
+
+/******************************************************************
+	Hints Panel
+******************************************************************/
+
+#hintIcon {
+	font-size:30px;
+	margin-left:10px;
+	float:left;
+}
+
+#hintMessage {
+	float:left;
+	margin-left:20px;
+	margin-bottom:20px;
+	width:90%;
+}
+
+#hintsPanel {
+	position: absolute;
+	bottom: 50px;
+	width: 50%;
+	margin: auto;
+	background-color: rgba(1,1,1,0.8);
+	color: #DDD;
+	padding: 5px 20px;
+	border-radius: 15px;
+	margin-left: -25%;
+	left:50%;
+	z-index:9999;
+}
+
+/******************************************************************
+	Message Modal
+******************************************************************/
+
+#message {
+	display: inline-block;
+	margin: 0;
+	vertical-align: middle;
+}
+
+#message.danger {
+	font-size: 20px;
+}
+
+#message-buttons-container {
+	text-align:right;
+	padding: 0px 20px 20px;
+}
+
+#messageModal .modal-body {
+	padding: 20px 20px 10px 20px;
+}
+
+#messageModal .glyph-icon {
+	vertical-align: middle;
+}
+
+#messageModal .glyph-icon:before {
+	font-size:30px;
+}
+
+/******************************************************************
+	Social
+******************************************************************/
+.social-wrapper {
+	position: fixed;
+	bottom: 20px;
+	right: 20px;
+	z-index: 5000;
+}
+a.social {
+	display: block;
+	width: 50px;
+	height: 50px;
+	background-image: url(/assets/images/social-black.png);
+	margin: 10px 0px;
+	-webkit-transition: background-color 0.4s;
+	-moz-transition: background-color 0.4s;
+	-ms-transition: background-color 0.4s;
+	-o-transition: background-color 0.4s;
+	transition: background-color 0.4s;
+	background-color: rgba(255, 255, 255, 0.4);
+	border-radius:50%;
+}
+a.social:hover {
+	background-color: rgba(0, 0, 0, 0.4);
+}
+a.social.mail {
+	background-position: 0px 0px;
+}
+a.social.facebook {
+	background-position: 0px -50px;
+}
+a.social.twitter {
+	background-position: 0px -100px;
+}
+
+/******************************************************************
+	Video
+******************************************************************/
+
+#player {
+	width:960px;
+	height:540px;
+}
+
+/******************************************************************
+	Story Details Modal
+******************************************************************/
+#storyDetailsModal > .modal-dialog {
+	width:670px;
+	height: 300px;
+}
+
+#storyDetailsModal .modal-body {
+	height: 300px;
+}
+
+#storyDetailsModal-summary {
+	height:200px;
+}
+
+#story-summary-wrapper {
+	display:inline-block;
+	vertical-align:top;
+	width:350px;
+}
+
+#story-thumbnail-wrapper {
+	display:inline-block;
+	width:210px;
+	vertical-align:top;
+	margin-left: 30px;
+}
+
+#thumbnail-image {
+	background-repeat: no-repeat;
+	width: 180px;
+	height: 180px;
+	margin:auto;
+	margin-top: 25px;
+}
+
+#thumbnail-overlay {
+	display:none;
+	width: 100%;
+	height: 100%;
+	background-color: white;
+	opacity: .5;
+	text-align:center;
+}
+
+#thumbnail-image:hover  #thumbnail-overlay {
+	display:block
+}
+
+#thumbnail-overlay .glyph-icon {
+	margin-top:40px;
+}
+
+#thumbnail-overlay .glyph-icon:before {
+	font-size:80px;
+}
+
+#image-crop {
+	overflow: hidden;
+	display:none;
+	text-align: center;
+	margin-top: 10px;
+}
+
+.cropit-image-preview {
+	  width: 180px;
+	  height: 180px;
+}
+
+.cropit-image-preview-container {
+	margin-left: 15px;
+	margin-top: 15px;
+}
+
+.cropit-image-background {
+	opacity: .2;
+}
+
+/* Show move cursor when image has been loaded */
+.cropit-image-preview.cropit-image-loaded {
+  cursor: move;
+}
+
+input.cropit-image-zoom-input {
+  position: relative;
+  width:70px;
+}
+
+input.cropit-image-input {
+  visibility: hidden;
+}
+
+.cropit-controls {
+	position: relative;
+	margin-top: 17px;
+}
+
+.slider-wraper {
+	display:inline-block;
+}
+
+input.cropit-image-zoom-input[type='range'] {
+	-webkit-appearance: none;
+	background-color: #eee;
+	height: 5px;
+	border-radius: 5px;
+	vertical-align: middle;
+}
+
+input.cropit-image-zoom-input[type='range']::-moz-range-track {
+	-moz-appearance: none;
+	background-color: #eee;
+	height: 5px;
+	border-radius: 5px;
+}
+
+input.cropit-image-zoom-input[type='range']::-webkit-slider-thumb {
+	-webkit-appearance: none !important;
+	border-radius: 10px;
+	background-color: #555;
+	//box-shadow:inset 0 0 10px rgba(000,000,000,0.5);
+	//border: 1px solid #999;
+	height: 10px;
+	width: 10px;
+}
+input.cropit-image-zoom-input[type='range']::-moz-range-thumb {
+	-moz-appearance: none;
+	border-radius: 10px;
+	background-color: #555;
+	//box-shadow:inset 0 0 10px rgba(000,000,000,0.5);
+	//border: 1px solid #999;
+	height: 10px;
+	width: 10px;
+}
+
+.large-icon:before {
+	font-size: 25px;
+}
+
+.small-icon:before {
+	font-size: 15px;
+}
+
+.save-icon:before {
+	color:#98ED77
+}
+
+.cancel-icon:before {
+	color:#ED8777
+}

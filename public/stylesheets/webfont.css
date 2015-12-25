@@ -1,0 +1,84 @@
+ 
+@charset "UTF-8";
+ 
+@font-face {
+  font-family: "font-entypo";
+  src:url("../fonts/font-entypo.eot");
+  src:url("../fonts/font-entypo.eot?#iefix") format("embedded-opentype"),
+    url("../fonts/font-entypo.ttf") format("truetype"),
+    url("../fonts/font-entypo.svg#font-entypo") format("svg"),
+    url("../fonts/font-entypo.woff") format("woff");
+  font-weight: normal;
+  font-style: normal;
+}
+ 
+[data-icon]:before {
+  font-family: "font-entypo" !important;
+  content: attr(data-icon);
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+ 
+[class^="icon-"]:before,
+[class*=" icon-"]:before {
+  font-family: "font-entypo" !important;
+  font-style: normal !important;
+  font-weight: normal !important;
+  font-variant: normal !important;
+  text-transform: none !important;
+  speak: none;
+  line-height: 1;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+} 
+ 
+.icon-feather:before {
+   content: "a"; 
+} 
+ 
+.icon-globe:before {
+   content: "b"; 
+} 
+ 
+.icon-paper-plane:before {
+   content: "c"; 
+} 
+ 
+.icon-users:before {
+   content: "d"; 
+} 
+ 
+.icon-pencil:before {
+   content: "e"; 
+} 
+ 
+.icon-lamp:before {
+   content: "f"; 
+} 
+ 
+.icon-book-open:before {
+   content: "g"; 
+} 
+ 
+.icon-archive:before {
+   content: "h"; 
+} 
+ 
+.icon-compass:before {
+   content: "i"; 
+} 
+ 
+.icon-direction:before {
+   content: "j"; 
+} 
+ 
+.icon-location:before {
+   content: "k"; 
+}
+

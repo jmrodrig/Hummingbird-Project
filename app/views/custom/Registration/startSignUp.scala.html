@@ -1,0 +1,97 @@
+@(startForm:play.api.data.Form[String])(implicit request: play.api.mvc.RequestHeader)
+@import helper._
+@import securesocial.core.IdentityProvider
+@implicitFieldConstructor = @{ FieldConstructor(views.html.custom.inputFieldConstructor.f) }
+
+@views.html.custom.main( Messages("securesocial.signup.title") ) {
+
+	
+	
+	<script src="@routes.Assets.at("bootstrap-3.0.3/js/bootstrap.min.js")" type="text/javascript"></script>
+
+    <div class="page-header">
+        <h1>@Messages("securesocial.signup.title")</h1>
+    </div>
+
+    @request.flash.get("error").map { msg =>
+    <div class="alert alert-error">
+        @Messages(msg)
+    </div>
+    }
+
+    <form action="@securesocial.core.providers.utils.RoutesHelper.handleStartSignUp().absoluteURL(IdentityProvider.sslEnabled)(request)"
+          class="form-horizontal"
+          autocomplete="off" method="post"
+    >
+        <fieldset>
+            @helper.inputText(
+            startForm("email"),
+            '_label -> Messages("securesocial.signup.email1"),
+            'class -> "input-xlarge"
+            )
+
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">@Messages("securesocial.signup.createAccount")</button>
+                <a class="btn" href="@securesocial.core.providers.utils.RoutesHelper.login()">@Messages("securesocial.signup.cancel")</a>
+            </div>
+
+        </fieldset>
+    </form>
+	
+	<!---------------------->
+	<!-- Invitation MODAL -->
+	<!---------------------->
+	
+	<div id="invitationModal" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="alertModal" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body">
+					<!-- <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button> -->
+					<h3>Sorry! Invitation only.</h3>
+					<p>Type your invitation code to sign up. If you don't have one, send us an email or go to our facebook page, tell us a bit about you and we'd be very happy to invite you aboard.</p>
+					<a class="social black mail" href="mailto:jose@@lostinreality.net?Subject=Invitation%20Request" target="_blank"></a>
+					<a class=" social black facebook" href="https://www.facebook.com/pages/Lost-in-Reality-LiR/387253791289181" target="_blank"></a> 
+					<div class="form-group">
+						<label for="inputInvitationCode">Invitation code</label>
+						<input  class="form-control" id="inputInvitationCode" placeholder="Enter code">
+					</div>
+					<div class="alert alert-danger" id="wrong-code" hidden="true">Oh snap! Invalid invitation code!</div>
+					<button class="btn btn-default" onclick="validateInvitationCode()">Submit</button>
+					<a href="/">Back</a>
+				</div>
+
+			</div><!-- /.modal-content -->
+		</div><!-- /.modal-dialog -->
+	</div><!-- /.modal -->
+	
+	<script>
+		//window.onload = function() {
+		//	$('#invitationModal').modal({
+		//		keyboard: false,
+		//		backdrop: 'static'
+		//	});
+		//}
+		
+		function validateInvitationCode() {
+			code = $('#inputInvitationCode').val()
+			$.ajax({
+				url: "/validateInvite/" + code, 
+				type: "GET",
+				dataType: "json",
+				contentType:"application/json",
+				success: function() {
+					$('#invitationModal').modal('hide');
+				},
+				error: function() {
+					$('#wrong-code').show();
+				}
+			});
+		}
+		
+		$('#inputInvitationCode').focus(function() {
+			$('#wrong-code').hide('fade');
+		});
+		
+	</script>
+	
+}

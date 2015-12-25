@@ -1,0 +1,44 @@
+@()
+
+@main("") {
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
+
+	<script src="/assets/javascripts/controls/profile-view-handlers.js" type="text/javascript"></script>
+	
+}{
+
+<!----------------->
+<!--   Content   -->
+<!----------------->
+
+<section id="content-wrapper">
+
+	<!------------------------------>
+	<!--   Profile Library Body   -->
+	<!------------------------------>
+
+	<div id="library-body" class="animate-transition">
+		<!--<h1>User Library</h1>-->
+	</div>
+
+	<!---------------------------->
+	<!--  Profile Library Map   -->
+	<!---------------------------->
+
+	<div id="library-map" >
+		<div id="map-canvas"></div>
+	</div>
+
+	<!-------------------->
+	<!--  content-nav   -->
+	<!-------------------->
+
+	<div id="btn-show-map" class="content-nav">
+		<span  class="open-btn glyph-icon icon-medium flaticon-map35"></span> 
+		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span> 
+	</div>
+
+</section>
+
+
+}

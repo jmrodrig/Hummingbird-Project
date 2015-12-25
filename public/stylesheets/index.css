@@ -1,0 +1,641 @@
+
+section{
+	position:relative;
+	width: 100%;
+	height:100%;
+}
+
+body {
+	//background-image: url(/assets/images/canvas-texture.jpg);
+}
+
+h1, h2, h3, h4, p, a {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-decoration: none;
+	outline: none;
+	line-height: 1.6em;
+}
+
+/******************************************************************
+	Navbar
+******************************************************************/
+
+/* #lir-logo {
+	height: 80px;
+	margin-left: 5%;
+	margin-top: 10px;
+	margin-bottom: 10px;
+}
+
+#navbar-buttons {
+	position:fixed;
+	right:0;
+	top:0;
+	margin-top:10px;
+	margin-right:10px;
+	z-index:1000;
+}
+
+#navbar-buttons .btn {
+	margin-right: 10px;
+}
+
+#user-button {
+	margin-right:15px;
+}
+
+#contacts-link {
+	margin-right:20px;
+	margin-top:15px;
+}
+
+#about-link {
+	margin-right:20px;
+	margin-top:15px;
+}
+
+#navbar-create-button {
+	margin-right:10px;
+} */
+
+/******************************************************************
+	General
+******************************************************************/
+
+.scroll-down-button {
+	position: absolute;
+	bottom: 120px;
+	margin-left: -35px;
+	border: 4px solid #ccc;
+	width: 70px;
+	height: 70px;
+	border-radius: 35px;
+	opacity: .4;
+	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+}
+
+.scroll-down-button:hover {
+	opacity: .7;
+}
+
+/******************************************************************
+	Hero 1
+******************************************************************/
+
+#hero-1 {
+	margin-top: 60px;
+}
+
+#container-video-hero-1 {
+	position:absolute;
+	top:0px;
+	width:100%;
+	height:100%;
+	overflow:hidden;
+	-webkit-backface-visibility: hidden;
+}
+
+#video-hero-1 {
+	position:absolute;
+	top:0px;
+}
+
+#overlay-video-hero-1 {
+	position:absolute;
+	top:0px;
+	width:100%;
+	height:100%;
+	text-align: center;
+}
+
+
+
+/******************************************************************
+	Carousel
+******************************************************************/
+
+#hero-carousel {
+	max-width:1680px;
+	margin:auto;
+}
+
+#hero-carousel-wrapper {
+	margin-top: 60px;
+	background-color: rgb(58, 58, 58);
+	-moz-box-shadow:    inset 0 0 100px #000000;
+   -webkit-box-shadow: inset 0 0 100px #000000;
+   box-shadow:         inset 0 0 100px #000000;
+}
+
+
+/******************************************************************
+	Hero 1
+******************************************************************/
+
+#hero1-text {
+	text-align:center;
+	margin: 40px;
+}
+
+#hero1-text h1 {
+	display:block;
+}
+
+#hero1-text span {
+	display:none;
+}
+
+@media (min-width: 768px) {
+	#hero1-text h1 {
+		display:inline-block;
+		padding: 10px;
+	}
+
+	#hero1-text span {
+		display:inline-block;
+	}
+}
+
+#hero-button-wrapper {
+	text-align:center;
+}
+
+#hero-button-wrapper a {
+	display: inline-block;
+	margin: 20px;
+	font-size: 27px;
+	font-family: Lato;
+	vertical-align: middle;
+}
+
+#androidStore-btn {
+cursor: pointer;
+}
+
+#hero-button-wrapper .glyph {
+	padding-right:10px;
+	padding-bottom:3px;
+}
+
+#hero-button-wrapper .glyph:before {
+	padding:3px;
+	font-size: 27px;
+}
+
+/******************************************************************
+	Features
+******************************************************************/
+
+#features-wrapper {
+	width:940px;
+	height: 400px;
+	margin:auto;
+}
+
+.feature {
+	display: block;
+	width: 280px;
+	height: 300px;
+	margin: 10px;
+	float: left;
+}
+
+.feature h3{
+	text-align: center;
+}
+
+.feature-icon{
+	display: block;
+	width:60px;
+	height: 60px;
+	margin:auto;
+}
+
+
+.feature-icon:before {
+	font-size:60px;
+}
+
+/******************************************************************
+	StoryList & Map
+******************************************************************/
+
+#shadow-map {
+	position:absolute;
+	height:150px;
+	top:500px;
+	margin-top:-150px;
+	width: 100%;
+	background: -webkit-linear-gradient(bottom, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
+	background: -o-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
+	background: -moz-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0));  
+	background: linear-gradient(to top, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
+}
+
+#map-canvas {
+	margin: 0;
+	padding: 0;
+	margin-top:50px;
+	max-width: none;
+	height:500px;
+	width:800px;
+	box-shadow: 15px 15px 10px rgba(1,1,1,.3);
+}
+
+#storylist-wrapper {
+	background-color:#005175;
+	height:600px;
+}
+
+#storylist{
+	
+}
+
+#accordion {
+	width:500px;
+}
+
+/******************************************************************
+	Story Details Container
+******************************************************************/
+
+#story-details-container {
+	position: absolute;
+	top: 0;
+	left: 15%;
+	height: 500px;
+	background-color: rgba(187,187,170,0.8);
+	width: 300px;
+	margin-left: -75px;
+	box-shadow: 10px 0px 5px rgba(1,1,1,.2);
+	
+}
+
+#story-details-container.nano {  }
+#story-details-container.nano .content { padding: 15px; }
+#story-details-container.nano .pane   { background: #888; display:none; }
+#story-details-container.nano .slider { background: #111; opacity:1; }
+
+#story-title {
+	font-size: 25px;
+}
+
+#story-details-container p {
+	font-size:15px;
+}
+
+#story-thumbnail {
+	width: 180px;
+	height: 180px;
+	margin:auto;
+	background-repeat:no-repeat;
+	background-size: 100% 100%;
+	border-radius:10px;
+	box-shadow: 5px 5px 5px rgba(1,1,1,.4);
+}
+
+#story-author {
+	color:#888;
+	font-style: italic;
+}
+
+/******************************************************************
+	Hints Panel
+******************************************************************/
+
+#hintIcon {
+	font-size:30px;
+	margin-left:10px;
+	float:left;
+	top:-5px;
+}
+
+#hintMessage {
+	float:left;
+	margin-left:20px;
+	margin-bottom:20px;
+}
+
+#hintsPanel {
+	display: none;
+	position: absolute;
+	margin-top: -100px;
+	margin-left: -275px;
+	min-width: 550px;
+	background-color: rgba(1,1,1,0.7);
+	color: #DDD;
+	padding: 0px 20px;
+	border-radius: 15px;
+	left:50%;
+	z-index:9999;
+}
+
+/******************************************************************
+	Hero 2
+******************************************************************/
+
+#hero2-main {
+	width:100%;
+	margin-bottom: 50px;
+	margin-top: 50px;
+}
+
+#hero2-picture {
+	position: relative;
+	height:451px;
+	width:1240px;
+	margin:auto;
+	background-repeat: no-repeat;
+}
+
+#hero2-header1 {
+	font-size:50px;
+	width: 350px;
+	margin-top: 100px;
+}
+
+#hero2-play-button {
+	margin-left:40px;
+	font-size:60px;
+	margin: 15px 70px;
+	width: 120px;
+	height: 120px;
+	border: 5px solid;
+	border-radius: 120px;
+	-webkit-animation-name: scale-bounce;
+	-webkit-animation-duration:1s;
+	-webkit-animation-iteration-count:infinite;
+}
+
+#hero2-play-button:before {
+	font-size:80px;
+	margin-left:20px;
+}
+
+#hero2-play-button:hover {
+	
+}
+
+#player {
+	/* height:100%; */
+
+}
+
+/******************************************************************
+	Quote
+******************************************************************/
+
+#quote-wrapper {
+	position:relative;
+	width:100%;
+	height: 593px;
+	overflow:hidden;
+	margin-bottom:40px;
+	text-align:center;
+}
+
+#quote-wrapper img {
+	position: absolute;
+	left: 50%;
+	top:-200px;
+	margin-left: -840px;
+	width: 1680px;
+}
+
+#quote-wrapper p {
+	position:absolute;
+	width: 100%;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	color:white;
+	font-size:26px;
+	margin-top:80px;
+	margin-bottom:40px;
+	-o-text-overflow: ellipsis;
+	text-overflow: ellipsis;
+	text-shadow: 2px 2px 2px rgba(40,40,40,1) ;
+}
+
+#quote-name {
+	color:#aaa;
+	font-size:18px;
+}
+
+@media (min-width: 768px) {
+	#quote p {
+		font-size:32px;
+	}
+	#quote-name {
+		font-size:24px;
+	}
+}
+
+/******************************************************************
+	About
+******************************************************************/
+
+#about {
+	position:relative;
+	max-width:1680px;
+	margin:auto;
+}
+
+#about p {
+	display: none;
+	font-size:18px;
+	font-weight: 300;
+	padding-left: 15px;
+}
+
+#about h3 {
+	font-size:34px;
+	line-height: 34px;
+}
+
+@media (min-width: 768px) {
+	#about p {
+		display: inline-block;
+	}
+}
+
+#about-img {
+	width:100%;
+	margin-top:7%;
+}
+
+#about-text-1 {
+	position:absolute;
+	top: 0%;
+	left: 0px;
+	width: 34%;
+	padding: 15px;
+	text-align: justify;
+}
+
+#about-text-2 {
+	position: absolute;
+	top: 50%;
+	left: 60%;
+	width: 40%;
+	padding: 15px;
+	text-align: justify;
+}
+
+#about-text-3 {
+	position: absolute;
+	top: 73%;
+	left:3%;
+	width: 40%;
+	padding: 15px;
+	text-align: justify;
+}
+
+
+
+/******************************************************************
+	Soon
+******************************************************************/
+
+#lir-soon-wrapper {
+	position:relative;
+	margin-top:150px;
+	margin-bottom:150px;
+	background-color:#005175;
+	color:white;
+}
+
+#lir-soon {
+	position:relative;
+	max-width:1000px;
+	margin:auto;
+	padding: 30px;
+	background-color:#005175;
+	text-align:center;
+}
+
+#lir-soon-image {
+	display:none;
+	position: absolute;
+	top: 0%;
+	right: 3%;
+	width: 40%;
+	margin-top: -2%;
+}
+
+@media (min-width: 768px) {
+	#lir-soon-wrapper {
+		margin-top: 5%;
+		margin-bottom: 10%;
+	}
+
+	#lir-soon-image {
+		display:block;
+	}
+	
+	#lir-soon {
+		text-align:left;
+	}
+}
+
+/******************************************************************
+	Footer
+******************************************************************/
+
+#footer {
+	height:40%;
+	background-color:rgba(34,34,34,1); 
+	color:#FFF;
+	text-align:center;
+	height:360px;
+}
+
+#shadow-footer {
+	position:relative;
+	height:50px;
+	width: 100%;
+	background: -webkit-linear-gradient(top, rgba(1,1,1,1), rgba(34,34,34,1)); 
+	background: -o-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1)); 
+	background: -moz-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1));  
+	background: linear-gradient(to bottom, rgba(1,1,1,1), rgba(34,34,34,1)); 
+}
+
+#footer-lir-logo {
+	margin:10px 0 0 0;
+}
+
+#footer-text-1 {
+	font-family:HarlowSolid; 
+	font-size:40px;
+	margin-top:0px;
+}
+
+@media (min-width: 768px) {
+	#footer {
+		text-align:left;
+		height:270px;
+	}
+
+	#footer-lir-logo {
+		margin:0px 100px 0 0;
+		float:right;
+	}
+
+	#footer-text-1 {
+		font-family:HarlowSolid; 
+		font-size:50px;
+		margin-left:40px;
+		margin-top:0px;
+	}
+
+	#footer-text-2 {
+		margin-left:40px;
+	}
+}
+
+/******************************************************************
+	Social
+******************************************************************/
+
+.social-wrapper {
+	position:relative;
+	width: 200px;
+	margin:auto;
+}
+
+a.social {
+	display: inline-block;
+	width: 50px;
+	height: 50px;
+	margin: auto;
+	background-image: url(/assets/images/social.png);
+	-webkit-transition: background-color 0.4s;
+	-moz-transition: background-color 0.4s;
+	-ms-transition: background-color 0.4s;
+	-o-transition: background-color 0.4s;
+	transition: background-color 0.4s;
+	border-radius:50%;
+}
+a.social:hover {
+	background-color: rgba(255, 255, 255, 0.4);
+}
+
+a.social.black {
+	background-image: url(/assets/images/social-black.png);
+}
+
+a.social.black:hover {
+	background-color: rgba(0, 0, 0, 0.4);
+}
+
+a.social.mail {
+	background-position: 0px 0px;
+}
+a.social.facebook {
+	background-position: 0px -50px;
+}
+a.social.twitter {
+	background-position: 0px -100px;
+}
+
+

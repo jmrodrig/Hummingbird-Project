@@ -1,0 +1,162 @@
+@(title: String)
+
+@main("Test Ajax") {
+	<title>Simple Map</title>
+	
+}{
+	<div id="result" >will have result</div>
+	<div>
+		<input type="button" value="Read Story" onclick="readStory()"/>
+		<input type="button" value="Create Story" onclick="createStory()"/>
+		<input type="button" value="Update Story" onclick="updateStory()"/>
+	</div>
+	<div>
+		<input type="button" value="Create Post" onclick="createPost()"/>
+		<input type="button" value="Update Post" onclick="updatePost()"/>
+		<input type="button" value="Delete Post" onclick="deletePost()"/>
+	</div>
+	
+<script>
+	
+	var story;
+	var post;
+
+	function createStory(){
+		$("#result").text("Create story");
+		var storyData = new Object();
+		storyData.title="Created Story Title";
+		storyData.summary="Created Story Summary";
+		
+		$.ajax({
+			url: "/story", 
+			type: "POST",
+			dataType: "json",
+			data: JSON.stringify(storyData),
+			contentType:"application/json",
+			success: function(data){
+				story = data;
+				$("#result").text(JSON.stringify(data));
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+	function readStory(){
+		$("#result").text("Read story");
+		$.ajax({
+			url: "/story/"+story.storyId, 
+			type: "GET",
+			dataType: "json",
+			contentType:"application/json",
+			success: function(data){
+				$("#result").text(JSON.stringify(data));
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+	function updateStory(){
+		$("#result").text("Update story");
+		var storyData = new Object();
+		storyData.id = story.storyId;
+		storyData.title="Updated Story Title";
+		storyData.summary="Updated Story Summary";
+		
+		$.ajax({
+			url: "/story/"+story.storyId, 
+			type: "PUT",
+			dataType: "json",
+			data: JSON.stringify(storyData),
+			contentType:"application/json",
+			success: function(data){
+				$("#result").text(JSON.stringify(data));
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+	function createPost(){
+		$("#result").text("Update post");
+		var postData = new Object();
+		postData.title="Created Post Title";
+		postData.movieUrl="Created Post movieUrl";
+		postData.audioUrl="Created Post audioUrl";
+		postData.imageUrl="Created Post imageUrl";
+		postData.text="Created Post text";
+		postData.location = new Object();
+		postData.location.latitude = 1.0;
+		postData.location.longitude = 3.34;
+		postData.location.radius = 5.0;
+		
+		$.ajax({
+			url: "/story/"+story.storyId+"/post", 
+			type: "POST",
+			dataType: "json",
+			data: JSON.stringify(postData),
+			contentType:"application/json",
+			success: function(data){
+				post = data;
+				$("#result").text(JSON.stringify(data));
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+	function updatePost(){
+		$("#result").text("Update post");
+		var postData = new Object();
+		postData.id=post.postId;
+		postData.title="Updated Post Title";
+		postData.movieUrl="Updated Post movieUrl";
+		postData.audioUrl="Updated Post audioUrl";
+		postData.imageUrl="Updated Post imageUrl";
+		postData.text="Updated Post text";
+		postData.location = new Object();
+		postData.location.latitude = 2.5;
+		postData.location.longitude = 4.34;
+		postData.location.radius = 5.0;
+		
+		$.ajax({
+			url: "/story/"+story.storyId+"/post/"+post.postId, 
+			type: "PUT",
+			dataType: "json",
+			data: JSON.stringify(postData),
+			contentType:"application/json",
+			success: function(data){
+				post = data;
+				$("#result").text(JSON.stringify(data));
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+	function deletePost(){
+		$("#result").text("Update post");
+		$.ajax({
+			url: "/story/"+story.storyId+"/post/"+post.postId, 
+			type: "DELETE",
+			dataType: "json",
+			contentType:"application/json",
+			success: function(data){
+				$("#result").text("Post deleted");
+			},
+			error: function(error){
+				$("#result").text(error);
+			}
+		});
+	}
+	
+
+</script>
+	
+}

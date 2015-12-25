@@ -1,0 +1,65 @@
+New log file opened at Tue Dec 08 18:28:23 WET 2015 by 29077@Joses-MacBook-Pro.local
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,sbt client logs are in: /Users/jose/Documents/LIR/WebApp/lir_app/.sbtserver/connections/activator-c7ac2848-df02-4cce-a561-933e4533d153.log))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,sbt server socket logs are in: /Users/jose/Documents/LIR/WebApp/lir_app/.sbtserver/connections/master.log))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,sbt general server logs are in: /Users/jose/Documents/LIR/WebApp/lir_app/.sbtserver/master.log))
+Reading next message from client.
+Got request: ListenToEvents()
+Reading next message from client.
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> --initialize))
+Got request: ListenToBuildChange()
+Reading next message from client.
+Got request: SendSyntheticBuildChanged()
+Reading next message from client.
+Got request: KeyLookupRequest(discoveredMainClasses)
+Reading next message from client.
+Got request: KeyLookupRequest(mainClass)
+Reading next message from client.
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: (3,ReceivedResponse())
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> initialize))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> onFailure load-failed))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> boot))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> reload))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,[Loading] Scanning directory /Users/jose/Documents/LIR/WebApp/lir_app/project))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,[Loading] Found non-root projects ))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,[Loading] Done in /Users/jose/Documents/LIR/WebApp/lir_app/project, returning: ()))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,deducing auto plugins based on known facts Set(Atom(sbt.plugins.CorePlugin)) and clauses Clauses(List(Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.IvyPlugin))), Clause(Atom(sbt.plugins.JUnitXmlReportPlugin),Set(Atom(sbt.plugins.JvmPlugin))), Clause(Atom(sbt.plugins.CorePlugin),Set(Atom(sbt.plugins.IvyPlugin))), Clause(Atom(sbt.plugins.IvyPlugin),Set(Atom(sbt.plugins.JvmPlugin))), Clause(Atom(sbt.plugins.JvmPlugin),Set(Atom(sbt.plugins.JUnitXmlReportPlugin)))))))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: deduced result: Matched(sbt.plugins.CorePlugin,sbt.plugins.IvyPlugin,sbt.plugins.JvmPlugin,sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,sorting: ns: List(sbt.plugins.CorePlugin, sbt.plugins.IvyPlugin, sbt.plugins.JvmPlugin, sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: sorting:: found: List(sbt.plugins.CorePlugin) not found List(sbt.plugins.IvyPlugin, sbt.plugins.JvmPlugin, sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: sorting:: found: List(sbt.plugins.CorePlugin, sbt.plugins.IvyPlugin) not found List(sbt.plugins.JvmPlugin, sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: sorting:: found: List(sbt.plugins.CorePlugin, sbt.plugins.IvyPlugin, sbt.plugins.JvmPlugin) not found List(sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: sorting:: found: List(sbt.plugins.CorePlugin, sbt.plugins.IvyPlugin, sbt.plugins.JvmPlugin, sbt.plugins.JUnitXmlReportPlugin) not found List()))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,  :: sorted deduced result: List(sbt.plugins.CorePlugin, sbt.plugins.IvyPlugin, sbt.plugins.JvmPlugin, sbt.plugins.JUnitXmlReportPlugin)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,[Loading] Done in /Users/jose/Documents/LIR/WebApp/lir_app/project, returning: (lir_app-build)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(info,Loading project definition from /Users/jose/Documents/LIR/WebApp/lir_app/project))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,Running task... Cancel: sbt.TaskCancellationStrategy$Null$@62515aab, check cycles: false))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,
+Initial source changes: 
+	removed:Set()
+	added: Set()
+	modified: Set()
+Removed products: Set()
+External API changes: API Changes: Set()
+Modified binary dependencies: Set()
+Initial directly invalidated sources: Set()
+
+Sources indirectly invalidated by:
+	product: Set()
+	binary dep: Set()
+	external source: Set()))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,All initially invalidated sources: Set()
+))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,Copy resource mappings: 
+	(/Users/jose/Documents/LIR/WebApp/lir_app/project/target/scala-2.10/sbt-0.13/resource_managed/main/sbt/sbt.builds,/Users/jose/Documents/LIR/WebApp/lir_app/project/target/scala-2.10/sbt-0.13/classes/sbt/sbt.builds)))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,[Loading] Loading project backoffice @ /Users/jose/Documents/LIR/WebApp/lir_app))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(/Users/jose/Documents/LIR/WebApp/lir_app/build.sbt:5: error: reference to fork is ambiguous;))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(it is imported twice in the same scope by))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(import _root_.play.Project._))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(and import Keys._))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(fork in run := true))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogStdErr(^))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(error,Type error in expression))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> load-failed))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(error,Failed to load project.))
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: BuildFailedToLoad()
+Sending msg to client activator-c7ac2848-df02-4cce-a561-933e4533d153: DetachedLogEvent(LogMessage(debug,> server-wait-for-reboot))

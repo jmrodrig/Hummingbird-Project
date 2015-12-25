@@ -1,0 +1,447 @@
+@(title: String)(header: Html)(content: Html)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <title>@title</title>
+        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/lir-logo.png")">
+		
+		<meta name="description" content="Explore the places around you with a map of stories. Sign up, download the app and start discovering." />
+
+		<!-- Twitter Card data -->
+		<meta name="twitter:site" content="lostinreality.net">
+		<meta name="twitter:title" content="Lost in Reality">
+		<meta name="twitter:description" content="Explore the places around you with a map of stories. Sign up, download the app and start discovering.">
+		<meta name="twitter:image" content="@routes.Assets.at("images/lir_front.jpg")">
+
+		<!-- Open Graph data -->
+		<meta property="og:title" content="Lost in Reality" />
+		<meta property="og:type" content="article" />
+		<meta property="og:url" content="lostinreality.net"/>
+		<meta property="og:image" content="@routes.Assets.at("images/lir_front.jpg")" />
+		<meta property="og:description" content="Explore the places around you with a map of stories. Sign up, download the app and start discovering." /> 
+		
+		<script src="https://maps.googleapis.com/maps/api/js?v=3.exp&sensor=false&libraries=geometry"></script>
+		<!--<script src="https://maps.googleapis.com/maps/api/js?libraries=geometry"></script>-->
+		
+		<!-- modules -->
+		<script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("flexigrid/js/flexigrid.pack.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("lightboxme/js/jquery.lightbox_me.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("formplugin/js/jquery.form.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("formplugin/js/jquery.form.js")" type="text/javascript"></script>		
+		<script src="@routes.Assets.at("bootstrap-3.0.3/js/bootstrap.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.debounce-1.0.5.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jshashtable-3.0.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.json-2.4.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/studs/serverconnector.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.fileDownload.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/dropzone.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.ocupload-1.1.2.packed.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.elastic.source.js")" type="text/javascript"></script>
+		<script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.nanoscroller.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/angular.min.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/jquery.cropit.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/googleAnalyticsTracker.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/animatescroll.js")" type="text/javascript"></script>
+		
+		<!-- jQuery-File-Upload-9.5.4 files -->
+		<!-- The Load Image plugin is included for the preview images and image resizing functionality -->
+		<script src="/assets/javascripts/load-image.all.min.js"></script>
+		<!-- The Canvas to Blob plugin is included for image resizing functionality -->
+		<script src="http://blueimp.github.io/JavaScript-Canvas-to-Blob/js/canvas-to-blob.min.js"></script>
+		<!-- <script src="/assets/javascripts/controls/maps-view-handlers.js" type="text/javascript"></script> -->
+		<!-- The Iframe Transport is required for browsers without support for XHR file uploads -->
+		<script src="/assets/javascripts/jquery.iframe-transport.js"></script>
+		<!-- The basic File Upload plugin -->
+		<script src="/assets/javascripts/jquery.fileupload.js"></script>
+		<!-- The File Upload processing plugin -->
+		<script src="/assets/javascripts/jquery.fileupload-process.js"></script>
+		<!-- The File Upload image preview & resize plugin -->
+		<script src="/assets/javascripts/jquery.fileupload-image.js"></script>
+		<!-- The File Upload audio preview plugin -->
+		<script src="/assets/javascripts/jquery.fileupload-audio.js"></script>
+		<!-- The File Upload video preview plugin -->
+		<script src="/assets/javascripts/jquery.fileupload-video.js"></script>
+		<!-- The File Upload validation plugin -->
+		<script src="/assets/javascripts/jquery.fileupload-validate.js"></script>
+		
+		<!-- javascripts -->
+		<script src="@routes.Assets.at("javascripts/controls/post.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/user.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/story.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/transition.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/lirmanager.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/infobubble.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/simplemapoverlay.js")" type="text/javascript"></script>
+		<script src="@routes.Assets.at("javascripts/controls/postwindow.js")" type="text/javascript"></script>
+		
+		<script>
+			//--- processError method ---//
+			function processError(error){
+				console.log(error)
+			}
+		</script>
+		
+		<!-- stylesheets -->
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("flexigrid/css/flexigrid.pack.css")">		
+		<link rel="stylesheet" href="@routes.Assets.at("jQuery-File-Upload-9.5.4/css/jquery.fileupload.css")">
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.0.3/css/bootstrap.min.css")">
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.0.3/css/bootstrap.css")">
+		<!-- <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.0.3/css/bootstrap-theme.min.css")"> -->
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/animations.css")">
+		<link rel="stylesheet" href="@routes.Assets.at("stylesheets/nanoscroller.css")"> 
+		<link rel="stylesheet" href="@routes.Assets.at("stylesheets/elastic.css")"> 
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/postwindow.css")">
+		
+		<!-- icon font -->
+		<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/flaticon.css")"> 
+		
+		<!-- Main Css -->
+		<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/mains.css")">
+		
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+		
+		<script>
+			window.scrollTo(0,1);
+		</script>
+		
+		<!--<script>
+			function retractNavBar(lastScrollTop, currentScrollTop) {
+				var st = currentScrollTop,
+					navbarHeight = $('.navbar').outerHeight(true);
+				if ($('.navbar').hasClass('withdrawing')) {
+					return st;
+				}
+				
+				
+				if (st > lastScrollTop){
+					//scrolling down
+					if ($('.navbar').hasClass('withdrawn')) {
+						return st;
+					}
+					//$('.navbar-collapse').collapse('hide')
+					$('.navbar').addClass('withdrawing')
+								.addClass('withdrawn')
+								.animate( {top: -1*navbarHeight}, 200, 'easeOutCubic', function() {
+									$(this).removeClass('withdrawing')
+					});
+				} else {
+					//scrolling up
+					if (!$('.navbar').hasClass('withdrawn')) {
+						return st;
+					}
+					$('.navbar').addClass('withdrawing')
+								.removeClass('withdrawn')
+								.animate( {top: 0}, 200, 'easeOutCubic', function() {
+									$(this).removeClass('withdrawing')
+					});
+			   }
+			   return st;
+			}
+		
+			$(function() {
+				var lastScrollTop = $(window).scrollTop();
+				
+				$(window).scroll(function() {
+					var currentScrollTop = $(window).scrollTop();
+					lastScrollTop = retractNavBar(lastScrollTop,currentScrollTop);
+				});				
+			});			
+		</script>-->
+		
+		<!-- FACEBOOK -->
+		<script>
+		  window.fbAsyncInit = function() {
+			FB.init({
+			  appId      : '1494692634127358',
+			  xfbml      : true,
+			  version    : 'v2.2'
+			});
+		  };
+
+		  (function(d, s, id){
+			 var js, fjs = d.getElementsByTagName(s)[0];
+			 if (d.getElementById(id)) {return;}
+			 js = d.createElement(s); js.id = id;
+			 js.src = "//connect.facebook.net/en_US/sdk.js";
+			 fjs.parentNode.insertBefore(js, fjs);
+		   }(document, 'script', 'facebook-jssdk'));
+		</script>
+		
+		<!-- TWITTER -->
+		<script>
+		  $('.twitter-share').click(function(event) {
+			var width  = 575,
+				height = 400,
+				left   = ($(window).width()  - width)  / 2,
+				top    = ($(window).height() - height) / 2,
+				url    = this.href,
+				opts   = 'status=1' +
+						 ',width='  + width  +
+						 ',height=' + height +
+						 ',top='    + top    +
+						 ',left='   + left;
+			
+			window.open(url, 'twitter', opts);
+		 
+			return false;
+		  });
+		</script>
+		
+		<!-- MAP STYLE -->
+		<!-- <script>
+		var mapstyles = [
+			{
+				"featureType": "all",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "on"
+					}
+				]
+			},
+			{
+				"featureType": "administrative",
+				"elementType": "labels.text.fill",
+				"stylers": [
+					{
+						"color": "#444444"
+					}
+				]
+			},
+			{
+				"featureType": "landscape",
+				"elementType": "all",
+				"stylers": [
+					{
+						"color": "#f2f2f2"
+					}
+				]
+			},
+			{
+				"featureType": "poi",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "poi.attraction",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "on"
+					}
+				]
+			},
+			{
+				"featureType": "poi.park",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "on"
+					},
+					{
+						"saturation": "-43"
+					}
+				]
+			},
+			{
+				"featureType": "road",
+				"elementType": "all",
+				"stylers": [
+					{
+						"saturation": -100
+					},
+					{
+						"lightness": 45
+					}
+				]
+			},
+			{
+				"featureType": "road.highway",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "simplified"
+					}
+				]
+			},
+			{
+				"featureType": "road.arterial",
+				"elementType": "labels.icon",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "transit",
+				"elementType": "all",
+				"stylers": [
+					{
+						"visibility": "off"
+					}
+				]
+			},
+			{
+				"featureType": "water",
+				"elementType": "all",
+				"stylers": [
+					{
+						"color": "#2a444e"
+					},
+					{
+						"visibility": "on"
+					}
+				]
+			}
+		]
+
+	</script>-->
+		
+        @header
+		
+    </head>
+    <body>
+		<!---------------->
+		<!--   NavBar   -->
+		<!---------------->
+
+		<nav class="lir-style navbar navbar-default">
+		  <div class="container-fluid">
+			<!-- Brand and toggle get grouped for better mobile display -->
+			<div class="navbar-header">
+			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
+			  </button>
+			  <a class="lir-style navbar-brand" href="/">
+				<img id="lir-logo" src="/assets/images/lir-logo-banner-simple-small.png" alt="lir-logo">
+				<img id="lir-logo-small" src="/assets/images/lir-logo.png" alt="lir-logo">
+			  </a>
+			  <input id="title-input" />
+			</div>
+
+			<!-- Collect the nav links, forms, and other content for toggling -->
+			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			  <ul class="nav navbar-nav pull-right">
+			    <li><a id="blog-link" href="http://blog.lostinreality.net/">Blog</a></li>
+				<li><a id="stories-link" class="ga-event-navbar-library" href="/library">Stories<span class="sr-only">(current)</span></a></li>
+				<li><a id="create-link" class="ga-event-navbar-createstory" href="/profile">+ Create a Story</a></li>
+				<li><a id="publish-link" href="#" onclick="openPublishDialog();">Publish & Share</a></li>
+				<li><a id="delete-link" href="#" onclick="$('#delete-dialogue').fadeIn(200);">Delete Story</a></li>
+				<li><a id="signup-link" class="ga-event-navbar-signup" href="/signup">Sign Up</a></li>
+				<li><a id="login-link" class="ga-event-navbar-login" href="/login" >Log in</a></li>
+				<li class="dropdown">
+				  <a id="user-link" href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
+					<span class="caret"></span>
+				  </a>
+				  <ul class="dropdown-menu" role="menu">
+					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li> -->
+					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">+ Create a Story</a></li> -->
+					<li><a href="/library" class="ga-event-navbar-library">Stories</a></li>
+					<li class="divider"></li>
+					<li><a href="/logout">Log out</a></li>
+				  </ul>
+				</li>
+			  </ul>
+			</div><!-- /.navbar-collapse -->
+		  </div><!-- /.container-fluid -->
+		  <div class="grad-bar"></div>
+		</nav>
+		
+		@content
+		
+    </body>
+	
+	<script>
+	
+	//--------------------------------->
+	//--   Load Google Goal Events   -->
+	//--------------------------------->
+	
+	//navbar
+	
+	$(".ga-event-navbar-mystories").click( function() {
+		ga('send','event','navbar', 'mystories'); //Google Analytics track event
+	});
+	
+	$(".ga-event-navbar-signup").click( function() {
+		ga('send','event','navbar', 'signup') //Google Analytics track event
+	});
+
+	$(".ga-event-navbar-createstory").click( function() {
+		ga('send','event','navbar', 'createstory') //Google Analytics track event
+	});
+
+	$(".ga-event-navbar-login").click( function() {
+		ga('send','event','navbar', 'login') //Google Analytics track event
+	});
+	
+	$(".ga-event-navbar-library").click( function() {
+		ga('send','event','navbar', 'library'); //Google Analytics track event
+	});
+	
+	//map
+	
+	$(".ga-event-map-publish").click( function() {
+		ga('send','event','map', 'publish') //Google Analytics track event
+	});
+	
+	$(".ga-event-map-unpublish").click( function() {
+		ga('send','event','map', 'unpublish') //Google Analytics track event
+	});
+
+	$(".ga-event-map-createstory").click( function() {
+		ga('send','event','map', 'createstory') //Google Analytics track event
+	});
+
+	$(".ga-event-map-addpost").click( function() {
+		ga('send','event','map', 'addpost') //Google Analytics track event
+	});
+
+	$(".ga-event-map-addconnection").click( function() {
+		ga('send','event','maker', 'addconnection') //Google Analytics track event
+	});
+	
+	//index
+
+	$(".ga-event-index-download").click( function() {
+		ga('send','event','index', 'download'); //Google Analytics track event
+	});
+	
+	$(".ga-event-index-library").click( function() {
+		ga('send','event','index', 'library'); //Google Analytics track event
+	});
+	
+	$(".ga-event-index-createstory").click( function() {
+		ga('send','event','index', 'createstory'); //Google Analytics track event
+	});
+	
+	
+	//create
+	
+	//share
+	$(".ga-event-share-facebookshare").click( function() {
+		ga('send','event','share', 'facebookshare'); //Google Analytics track event
+	});
+	
+	//library
+	
+	//my stories
+	
+	
+	</script>
+	
+	
+</html>

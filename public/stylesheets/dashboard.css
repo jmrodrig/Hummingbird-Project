@@ -1,0 +1,143 @@
+/******************************************************************
+*******************************************************************
+
+Template Name: corsica
+Theme URI: http://themeforest.ninetofive.me/corsica/
+Description: corsica | App landing page
+Author: ninetofive
+Author URI: http://www.ninetofive.me
+Version: 1.0
+							
+Designed & Handcrafted by Zan from ninetofive.me
+									
+*******************************************************************
+******************************************************************/
+
+/******************************************************************
+	Fonts
+******************************************************************/
+@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);	
+
+@font-face {
+    font-family: "HarlowSolid";
+    src: url(../fonts/Harlow-Solid-Italic-Italic.ttf) format("truetype");
+}							
+
+/******************************************************************
+	This is the CSS Reset
+******************************************************************/
+html, body, div, span, applet, object, iframe, h1, h2, h3, h4, h5, h6, p, blockquote, pre, a, abbr, acronym, address, big, cite, code, del, dfn, em, img, ins, kbd, q, s, samp, small, strike, strong, sub, sup, tt, var, b, u, i, center, dl, dt, dd, ol, ul, li, fieldset, form, label, legend, table, caption, tbody, tfoot, thead, tr, th, td, article, aside, canvas, details, embed, figure, figcaption, footer, header, hgroup, menu, nav, output, ruby, section, summary, time, mark, audio, video {
+	margin: 0;
+	padding: 0;
+	border: 0;
+	font-size: 100%;
+	vertical-align: baseline;
+}
+article, aside, details, figcaption, figure, footer, header, hgroup, menu, nav, section {
+	display: block;
+}
+body {
+	line-height: 1;
+}
+body, html {
+	width: 100%;
+	height: 100%;
+}
+ol, ul {
+	list-style: none;
+}
+blockquote, q {
+	quotes: none;
+}
+blockquote:before, blockquote:after, q:before, q:after {
+	content: '';
+	content: none;
+}
+table {
+	border-collapse: collapse;
+	border-spacing: 0;
+}
+								
+/******************************************************************
+	Custom user-defined
+******************************************************************/
+
+#sidebar {
+	position:absolute;
+	width: 200px;
+	height:100%;
+	background-color:#303030;
+}
+
+#sidebar-nav {
+	margin-top:100px;
+}
+
+#sidebar-avatar-pic {
+	margin-top:50px;
+	width:200px;
+}
+
+#hero-image {
+	max-width: 800px;
+	width: 60%;
+	margin-right: 5%;
+	margin-top: 150px;
+	margin-bottom: 50px;
+	float:right;
+}
+
+#home-section {
+	min-height: 100%;
+}
+
+#signup-section {
+	height:800px;
+}
+
+#banner-page-bottom {
+	margin-top: 90px;
+	max-width:407px;
+}
+
+#menu-logo {
+	height:30px;
+	width:30px;
+	margin-top: 0px;
+}
+
+.feature div.portrait img  {
+	height:130px;
+	width:130px;
+	margin-top: 0px;
+}
+
+.feature div.portrait {
+	width: 130px;
+	height: 130px;
+	margin-top: 30px;
+	box-shadow: 0 0 0 5px #FFF;
+	border-radius: 50%;
+	margin-left: auto;
+	margin-right: auto;
+	-webkit-transition: box-shadow 0.25s;
+	-moz-transition: box-shadow 0.25s;
+	-o-transition: box-shadow 0.25s;
+	transition: box-shadow 0.25s;
+	overflow:hidden;
+}
+.feature div.portrait:hover {
+	box-shadow: 0 0 0 10px #FFF;
+}
+
+.font-HarlowSolid {
+	font-family: "HarlowSolid", Verdana, Arial, sans-serif;
+}
+
+.capitalize {
+	text-transform: capitalize;
+}
+
+.button.team-wrapper {
+	height:450px;
+}

@@ -1,0 +1,229 @@
+@font-face {
+	font-family: "Flaticon";
+	src: url("flaticon.eot");
+	src: url("flaticon.eot#iefix") format("embedded-opentype"),
+	url("flaticon.woff") format("woff"),
+	url("flaticon.ttf") format("truetype"),
+	url("flaticon.svg") format("svg");
+	font-weight: normal;
+	font-style: normal;
+}
+[class^="flaticon-"]:before, [class*=" flaticon-"]:before,
+[class^="flaticon-"]:after, [class*=" flaticon-"]:after {   
+	font-family: Flaticon;
+        font-size: 20px;
+font-style: normal;
+margin-left: 20px;
+}.flaticon-android2:before {
+	content: "\e000";
+}
+.flaticon-arrow:before {
+	content: "\e001";
+}
+.flaticon-arrows:before {
+	content: "\e002";
+}
+.flaticon-big58:before {
+	content: "\e003";
+}
+.flaticon-brush7:before {
+	content: "\e004";
+}
+.flaticon-chat3:before {
+	content: "\e005";
+}
+.flaticon-check14:before {
+	content: "\e006";
+}
+.flaticon-check26:before {
+	content: "\e007";
+}
+.flaticon-check28:before {
+	content: "\e008";
+}
+.flaticon-checkmark5:before {
+	content: "\e009";
+}
+.flaticon-checkmark6:before {
+	content: "\e00a";
+}
+.flaticon-close13:before {
+	content: "\e00b";
+}
+.flaticon-close15:before {
+	content: "\e00c";
+}
+.flaticon-close19:before {
+	content: "\e00d";
+}
+.flaticon-comedy3:before {
+	content: "\e00e";
+}
+.flaticon-cross29:before {
+	content: "\e00f";
+}
+.flaticon-cross37:before {
+	content: "\e010";
+}
+.flaticon-cross8:before {
+	content: "\e011";
+}
+.flaticon-cross84:before {
+	content: "\e012";
+}
+.flaticon-cross92:before {
+	content: "\e013";
+}
+.flaticon-crowd:before {
+	content: "\e014";
+}
+.flaticon-cursor12:before {
+	content: "\e015";
+}
+.flaticon-dark:before {
+	content: "\e016";
+}
+.flaticon-delete3:before {
+	content: "\e017";
+}
+.flaticon-delete48:before {
+	content: "\e018";
+}
+.flaticon-distance1:before {
+	content: "\e019";
+}
+.flaticon-donation:before {
+	content: "\e01a";
+}
+.flaticon-download149:before {
+	content: "\e01b";
+}
+.flaticon-drawing4:before {
+	content: "\e01c";
+}
+.flaticon-email20:before {
+	content: "\e01d";
+}
+.flaticon-equalizer3:before {
+	content: "\e01e";
+}
+.flaticon-exclamation:before {
+	content: "\e01f";
+}
+.flaticon-expand:before {
+	content: "\e020";
+}
+.flaticon-facebook30:before {
+	content: "\e021";
+}
+.flaticon-facebook31:before {
+	content: "\e022";
+}
+.flaticon-gps13:before {
+	content: "\e023";
+}
+.flaticon-heart13:before {
+	content: "\e024";
+}
+.flaticon-idea:before {
+	content: "\e025";
+}
+.flaticon-information3:before {
+	content: "\e026";
+}
+.flaticon-international12:before {
+	content: "\e027";
+}
+.flaticon-light33:before {
+	content: "\e028";
+}
+.flaticon-like:before {
+	content: "\e029";
+}
+.flaticon-listen:before {
+	content: "\e02a";
+}
+.flaticon-location26:before {
+	content: "\e02b";
+}
+.flaticon-locator5:before {
+	content: "\e02c";
+}
+.flaticon-love4:before {
+	content: "\e02d";
+}
+.flaticon-magnifier12:before {
+	content: "\e02e";
+}
+.flaticon-male80:before {
+	content: "\e02f";
+}
+.flaticon-map35:before {
+	content: "\e030";
+}
+.flaticon-map47:before {
+	content: "\e031";
+}
+.flaticon-media23:before {
+	content: "\e032";
+}
+.flaticon-minimize1:before {
+	content: "\e033";
+}
+.flaticon-multiplication:before {
+	content: "\e034";
+}
+.flaticon-new75:before {
+	content: "\e035";
+}
+.flaticon-paperplane:before {
+	content: "\e036";
+}
+.flaticon-pencil43:before {
+	content: "\e037";
+}
+.flaticon-picture11:before {
+	content: "\e038";
+}
+.flaticon-play43:before {
+	content: "\e039";
+}
+.flaticon-play48:before {
+	content: "\e03a";
+}
+.flaticon-prohibited1:before {
+	content: "\e03b";
+}
+.flaticon-search54:before {
+	content: "\e03c";
+}
+.flaticon-settings22:before {
+	content: "\e03d";
+}
+.flaticon-social19:before {
+	content: "\e03e";
+}
+.flaticon-thumb32:before {
+	content: "\e03f";
+}
+.flaticon-undo18:before {
+	content: "\e040";
+}
+.flaticon-user91:before {
+	content: "\e041";
+}
+.flaticon-verify5:before {
+	content: "\e042";
+}
+.flaticon-warning12:before {
+	content: "\e043";
+}
+.flaticon-wrong2:before {
+	content: "\e044";
+}
+.flaticon-x1:before {
+	content: "\e045";
+}
+.flaticon-youtube7:before {
+	content: "\e046";
+}

@@ -1,0 +1,78 @@
+@()
+
+@main("LIR | Stories") {
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/library.css")">
+
+	<script src="/assets/javascripts/controls/library-view-handlers.js" type="text/javascript"></script>
+	
+}{
+
+<!----------------->
+<!--   Content   -->
+<!----------------->
+
+<section id="content-wrapper">
+
+	<!-------------------->
+	<!--   Library Body   -->
+	<!-------------------->
+
+	<div id="library-body" class="animate-transition">
+		<div id="create-story-container">
+			<div id="story-user" class="author-container">
+				<div id="user-thumbnail" class='story-author-thumbnail'></div>
+				<span id="story-username-location" class='story-author-location'></span>
+				<span class="address"></span>
+			</div>
+			<textarea id="story-text"></textarea>
+			<div id="story-image-container">
+				<img id="story-image">				
+			</div>
+			<div id="story-create-article" class="article-container">
+				<img class="article-image">
+				<h4 class="article-title"></h4>
+				<p readonly class="article-description"></p>
+				<p class="article-host"></p>
+			</div>
+			<div id="create-story-options">
+				<a id="story-add-picture-button" class="btn">add image
+					<form enctype="multipart/form-data" id="image-upload-form"> 
+						<input id="f" name="profileImg[]" type="file" />
+					</form>
+				</a>
+				<a id="story-publish-button" class="btn btn-primary ga-event-map-publish" onclick="createStory()">Publish</a>
+			</div>
+		</div>
+		
+		<div id="no-stories-message">
+			<p>There are no stories here.</p>
+			<p>Drag the map to look for stories or publish a story on the location the map points to.</p>
+		</div>
+	</div>
+
+	<!-------------------->
+	<!--  Library Map   -->
+	<!-------------------->
+
+	<div id="library-map" >
+		<div id="map-canvas"></div>
+		<div id="map-sight">
+			<div id="map-sight-dot"></div>
+		</div>
+		
+		
+	</div>
+
+	<!-------------------->
+	<!--  content-nav   -->
+	<!-------------------->
+
+	<div id="btn-show-map" class="content-nav">
+		<span  class="open-btn glyph-icon icon-medium flaticon-map35"></span> 
+		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span> 
+	</div>
+
+</section>
+
+
+}

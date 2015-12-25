@@ -1,0 +1,41 @@
+.animation-standout {
+	-webkit-animation-name: animationStandout;
+	-webkit-animation-duration: 0.5s; 
+	-webkit-animation-iteration-count: 1;
+}
+
+@-webkit-keyframes animationStandout {
+	from { -webkit-transform: scale( 0.5 )}
+	50% {-webkit-transform: scale( 1.2 )}
+	90% {-webkit-transform: scale( .95 )}
+	to {-webkit-transform: scale( 1 )}
+}
+
+@-webkit-keyframes scale-bounce {
+	from {-webkit-transform: scale(1)}
+	25% {-webkit-transform: scale(1.2)}
+	50% {-webkit-transform: scale(1)}
+	to {-webkit-transform: scale(1)}
+}
+
+
+.animate-translation-left {
+	-webkit-transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition:  left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: left 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.animate-translation-top {
+	-webkit-transition: top 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition:  top 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: top 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: top 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.animate-translation-all {
+	-webkit-transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition:  all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: all 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
