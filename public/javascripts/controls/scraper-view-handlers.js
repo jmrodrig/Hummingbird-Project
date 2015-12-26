@@ -7,6 +7,7 @@ var itemHTML;
 
 var map;
 var story;
+var storyTitle;
 var domainStory = new Object();
 
 var optionsMap = {
@@ -116,12 +117,12 @@ fetchItemHTML("http://www.bbc.com/travel/story/20151123-the-last-king-of-ireland
   //bodyhtml = article.split('<body')[1].split('</body>')[0];
   $('#item-content').empty();
   console.log(article);
-  $('#item-content').html(article);
+  $('#item-content').html(article.html);
 });
 
 function fetchItemHTML(url,onFinished) {
   stud_fetchFeedsItemHTML(url, function(data) {
-    itemHTML = data;
+    itemHTML = new Object(data);
     if (onFinished)
       onFinished(data)
   }, processError);
@@ -166,7 +167,7 @@ function populateItemsList(iArray) {
                   //bodyhtml = article.split('<body')[1].split('</body>')[0];
                   $('#item-content').empty();
                   console.log(article);
-                  $('#item-content').html(article);
+                  $('#item-content').html(article.html);
                 });
               });
   });
@@ -227,6 +228,8 @@ function stud_fetchFeedsItemHTML(url,success, error){
 	$.ajax({
 		url: "/fetch/html/" + encodeURIComponent(url),
 		type: "GET",
+    dataType: "json",
+		contentType:"application/json",
 		success: success,
 		error: error
 	});

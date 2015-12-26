@@ -189,7 +189,6 @@ public class FeedsFetcher extends Controller {
 
 		//String url = "http://api.diffbot.com/v3/article?token=3b36ec5e68e944f0cd2477d85bda3ff4&url=" + URLEncoder.encode(itemUrl, "UTF-8");
 		String url = itemUrl;
-		System.out.println("\nSending 'GET' request to URL : " + url);
 
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
@@ -221,28 +220,96 @@ public class FeedsFetcher extends Controller {
 
 		String responseString = responseStrBuilder.toString();
 
+		// Parse with Jsoup
+		controllers.json.Article article = parseWebsiteContent(responseString);
+		String json = new Gson().toJson(article);
+		System.out.println("Response : " + json);
 
+		return ok(json);
 
+	}
 
-		Document doc = Jsoup.parse(responseString);
+	private static controllers.json.Article parseWebsiteContent(String html) {
+		Document doc = Jsoup.parse(html);
+		controllers.json.Article article = new controllers.json.Article();
+
+		//Parse article title
+		String[] titleRegexs = {
+						"meta[name=\"twitter:title\"]",
+						"meta[property=\"twitter:title\"]",
+						"meta[property=\"og:title\"]",
+						"meta[itemprop=\"name\"]",
+						"meta[name=\"title\"]"
+		};
+		article.title = "";
+		for (String reg : titleRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.title = metas.first().attr("content");
+				System.out.println("ARTICLE TITLE: " + article.title);
+				break;
+			};
+		};
+		//Parse article description
+		String[] descriptionRegexs = {
+						"meta[name=\"twitter:description\"]",
+						"meta[property=\"twitter:description\"]",
+						"meta[property=\"og:description\"]",
+						"meta[name=\"description\"]"
+		};
+		article.description = "";
+		for (String reg : descriptionRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.description = metas.first().attr("content");
+				System.out.println("ARTICLE DESCRIPTION: " + article.description);
+				break;
+			};
+		};
+		//Parse article author
+		String[] authorRegexs = {
+						"meta[name=\"twitter:author\"]",
+						"meta[property=\"twitter:author\"]",
+						"meta[property=\"og:author\"]",
+						"meta[name=\"author\"]"
+		};
+		article.author = "";
+		for (String reg : authorRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.author = metas.first().attr("content");
+				System.out.println("ARTICLE AUTHOR: " + article.author );
+				break;
+			};
+		};
+		//Parse article cover image
+		String[] imageRegexs = {
+						"meta[name=\"twitter:image:src\"]",
+						"meta[property=\"og:image\"]",
+						"meta[itemprop=\"image\"]"
+		};
+		article.imageUrl = "";
+		for (String reg : imageRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.imageUrl = metas.first().attr("content");
+				System.out.println("ARTICLE IMAGE: " + article.imageUrl );
+				break;
+			};
+		};
+		//Parse article date
+
+		//Parse article content (html)
+		article.html = "";
 		Elements paragraphs = doc.select("p");
-
-
-
-		//System.out.println("Response : " + parent.html());
 
 		for (Element p : paragraphs) {
 			System.out.println("PARAGRAPH TEXT LENGTH: " + p.text().length());
 			if (p.text().length() > 300 )
-				return ok(p.parent().html());
+				article.html = p.parent().html();
 		}
 
-
-
-		//String jsonP = new Gson().toJson(paragraphs);
-
-		return ok(responseString);
-
+		return article;
 	}
 
 }
