@@ -64,8 +64,30 @@ section {
 	vertical-align:middle;
 }
 
+.icon-no-margins::before {
+  margin:0px !important;
+}
+
+.icon-round-borders {
+  border-radius: 100%;
+}
+
+.icon-shadow {
+  -moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+}
+
 .icon-medium.glyph-icon:before, .icon-medium.glyph:before {
 	font-size: 30px;
+}
+
+.icon-small.glyph-icon:before, .icon-small.glyph:before {
+	font-size: 15px;
+}
+
+.icon-xsmall.glyph-icon:before, .icon-xsmall.glyph:before {
+	font-size: 10px;
 }
 
 /******************************************************************

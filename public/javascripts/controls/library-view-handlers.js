@@ -20,12 +20,12 @@ var markerIcon = {
 };
 
 
-var defaultStoryMapCss 
-var defaultStoryMapColapseCss 
-var openStoryMapCss 
-var openStoryMapColapseCss 
+var defaultStoryMapCss
+var defaultStoryMapColapseCss
+var openStoryMapCss
+var openStoryMapColapseCss
 
-var libOpenWidth = .6;
+var libOpenWidth = .5;
 var mapOpenWidth = .9;
 
 var fr = null;
@@ -37,9 +37,9 @@ var grabMetadataOnPause = true;
 
 //--- initialize method ---//
 function initialize() {
-	
+
 	$('#blog-link').css('display' , 'block' );
-	
+
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
@@ -50,7 +50,7 @@ function initialize() {
 			$('#stories-link').css('display' , 'block' );
 			$('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
 							.css('display' , 'block' );
-			
+
 			$('#user-link div, #user-thumbnail').css('background-image','url(' + avatarUrl + ')');
 			$('#story-username-location').html(user.getFullName())
 		},
@@ -63,116 +63,124 @@ function initialize() {
 
 
 	initiateMap();
-	
+
 	intializeEvents();
-	
+
 	readPublishedStories();
 }
 
 function intializeEvents() {
 	//----------------
-	$('#content-wrapper').css({ height: $(window).innerHeight() });
-	
+	$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
+
 	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
-	updateMapContainerSize(libOpenWidth,mapOpenWidth);
-	
+	updateMapContainerSize();
+
 	//----------------
 	$('#btn-show-map').click(function() {
 		$('#content-wrapper').toggleClass('map-open');
-		toggleMapContainerState(libOpenWidth,mapOpenWidth)
+		toggleMapContainerState()
 	});
-	
+
+  //--- Google Analytics track event ----//
 	$(".ga-event-map-publish").click( function() {
 		ga('send','event','map', 'publish') //Google Analytics track event
 	});
-	
+
 	//----------------
-	$(window).resize(function() {	
-		$('#content-wrapper').css({ height: $(window).innerHeight() });
+	$(window).resize(function() {
+		$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
 		$('#content-wrapper').removeClass('map-open');
-		updateMapContainerSize(libOpenWidth,mapOpenWidth);
-		if ($(window).innerWidth() < 768) 
+		updateMapContainerSize();
+		if ($(window).innerWidth() < 768)
 			$('#content-wrapper').addClass('container-collapsed');
-		else 
+		else
 			$('#content-wrapper').removeClass('container-collapsed');
-			
+
 		$('.story-container').removeClass('active').removeClass('options-active')
 	});
-	
+
 	//----------------
 	// $('#story-map').hover(function() {
 		// if (!$('#content-wrapper').hasClass('container-collapsed'))
 			// toggleOpenMap();
 	// });
-	
+
 	var lastScrollTop = $('#library-body').scrollTop()
-	
+
+  // RETRACT NAVBAR
 	// $('#library-body').scroll(function() {
 		// var currentScrollTop = $('#library-body').scrollTop();
 		// lastScrollTop = retractNavBar(lastScrollTop,currentScrollTop);
-	// });	
-	
-	// STORY TEXT AREA
-	$('#story-text').keyup(function() {
+	// });
+
+  //ADD ARTICLE LINK
+  $('#story-add-link-button').click(function() {
+    $('#story-insert-article').show();
+  })
+
+	//STORY TEXT AREA: LOOK FOR URL AND SET ARTICLE
+	$('#article-link').keyup(function() {
 		txt = $(this).val();
 		webUrl = getUrlFromText(txt);
-		if (grabMetadataOnPause && webUrl) {
+		if (grabMetadataOnPause) {
 			grabMetadataOnPause = false;
 			grabWebsiteMetadata(webUrl)
 			setTimeout(function() { pauseGrabMetadata(); }, 1000 );
 		}
 	});
-	
+
 	function pauseGrabMetadata() {
 		grabWebsiteMetadata(webUrl);
 		grabMetadataOnPause = true
 	}
-	
+
+  // ADD IMAGE FILE
 	$('#f').change(function(ev) {
 		imageFile = ev.target.files[0];
 		var fileReader = new FileReader();
-		
+
 		if (imageFile) {
 			$('#story-image-container').show();
 		} else {
 			$('#story-image-container').hide();
 		}
-		
+
 		fileReader.onload = function(ev2) {
 			console.dir(ev2);
 			$('#story-image').attr('src', ev2.target.result);
 		};
-		
+
 		fileReader.readAsDataURL(imageFile);
 		fr = fileReader;
 	});
-	
+
 }
 
-function updateMapContainerSize(libOpenWidth,mapOpenWidth) {
+function updateMapContainerSize() {
 	var mapClosedWidth = 1-libOpenWidth;
 	var libClosedWidth = 1 - mapOpenWidth;
 	var wS = $('#content-wrapper').innerWidth();
 	var hS = $('#content-wrapper').innerHeight();
 	if ($('#content-wrapper').hasClass('map-open')) {
 		if ($('#content-wrapper').hasClass('container-collapsed'))
-			size = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
+			mapsize = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
 		else
-			size = { left:(1-mapOpenWidth)*wS , top:0*hS, width:mapOpenWidth*wS , height:1.00*hS, borderRadius:0 }
+			mapsize = { left:(1-mapOpenWidth)*wS , top:0*hS, width:mapOpenWidth*wS , height:1.00*hS, borderRadius:0 }
 	} else {
 		if ($('#content-wrapper').hasClass('container-collapsed'))
-			size = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
+			mapsize = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
 		else
-			size = { left:(1-mapClosedWidth)*wS , top:0*hS, width:mapClosedWidth*wS , height:1.00*hS, borderRadius:0  }
+			mapsize = { left:(1-mapClosedWidth)*wS , top:0*hS, width:mapClosedWidth*wS , height:1.00*hS, borderRadius:0  }
 	}
-	$('#library-map').css(size)
-	$('#map-canvas').css({width:size.width, height:size.height})
-	google.maps.event.trigger(map, 'resize');	
+	$('#library-map').css(mapsize)
+	$('#map-canvas').css({width:mapsize.width, height:mapsize.height})
+	google.maps.event.trigger(map, 'resize');
 }
 
-function toggleMapContainerState(libOpenWidth,mapOpenWidth) {
-	var mapClosedWidth = 1-libOpenWidth;
+function toggleMapContainerState() {
+	var mapClosedWidth = 1 - libOpenWidth;
 	var libClosedWidth = 1 - mapOpenWidth;
 	var wS = $('#content-wrapper').innerWidth();
 	var hS = $('#content-wrapper').innerHeight();
@@ -180,13 +188,18 @@ function toggleMapContainerState(libOpenWidth,mapOpenWidth) {
 	defaultLibraryMapColapseCss = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
 	openLibraryMapCss = { left:(1-mapOpenWidth)*wS , top:0*hS, width:mapOpenWidth*wS , height:1.00*hS, borderRadius:0 }
 	openLibraryMapColapseCss = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
-	
+
 	if ($('#content-wrapper').hasClass('map-open')) {
-		if ($('#content-wrapper').hasClass('container-collapsed'))
+    console.log(mapOpenWidth*wS);
+		if ($('#content-wrapper').hasClass('container-collapsed')) {
+      $('#library-body').css({ left:.9*wS });
 			resizeMap(defaultLibraryMapColapseCss,openLibraryMapColapseCss,true);
-		else
+		} else {
 			resizeMap(defaultLibraryMapCss,openLibraryMapCss,true);
+      $('#library-body').css({ left:-(mapOpenWidth-mapClosedWidth)*wS });
+    }
 	} else {
+    $('#library-body').css({ left:0 });
 		if ($('#content-wrapper').hasClass('container-collapsed'))
 			resizeMap(openLibraryMapColapseCss,defaultLibraryMapColapseCss,false);
 		else
@@ -194,30 +207,35 @@ function toggleMapContainerState(libOpenWidth,mapOpenWidth) {
 	}
 }
 
-function toggleOpenMap(libOpenWidth,mapOpenWidth) {
+function toggleOpenMap() {
 	$('#content-wrapper').toggleClass('map-open');
-	toggleMapContainerState(libOpenWidth,mapOpenWidth)
+  console.log(mapOpenWidth*$('#content-wrapper').innerWidth());
+  if ($('#content-wrapper').hasClass('map-open'))
+    $('#library-body').css({ right:mapOpenWidth*$('#content-wrapper').innerWidth() });
+  else
+    $('#library-body').css({ left:0 });
+	toggleMapContainerState()
 }
 
 function buildLibraryBody(stories) {
 
 	$('.story-container').remove();
 	var libraryBody = $("#library-body");
-	
+
 	if(!stories[0]) {
 		$('#no-stories-message').show();
 		return;
 	} else
 		$('#no-stories-message').hide();
-	
+
 	stories.forEach(function(story) {
 		var storyContainer = $('<div/>').attr('id', 'story-' + story.id)
 							.addClass('story-container')
 
-		
+
 		//Story author container
 		var authorContainer = $('<div class="author-container"/>').appendTo(storyContainer);
-		
+
 		//Story author thumbnail
 		if (story.author.avatarUrl)
 			avatarUrl = story.author.avatarUrl;
@@ -226,14 +244,14 @@ function buildLibraryBody(stories) {
 		var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
 								.css('background-image','url(' + avatarUrl + ')')
 								.appendTo(authorContainer)
-						
+
 		//Story author & Location
 		var authorName = story.author.fullName;
 		authorContainer.append("<span class='story-author-location'>" + authorName +  "</span>");
 		if (story.locationName && story.locationName.length > 0)
 			address = " at " + story.locationName + "."
 		authorContainer.append('<span class="address">' + address + '</span>');
-		
+
 		// Summary container
 		if (story.summary && story.summary.length > 0) {
 			var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainer);
@@ -245,29 +263,30 @@ function buildLibraryBody(stories) {
 		if (story.thumbnail && story.thumbnail.length > 0) {
 			var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id)
 								.append('<img atl="image for ' + story.title + '">');
-								
+
 			imageContainer.find('img').load(function() {
 				// $(this).height(storyContainer.height())
 				// storyContainer.css({ width: $(this).width(), opacity:1 });
 				$(this).unbind();
 			});
-			
+
 
 			imageContainer.find('img').attr('src',story.thumbnail)
 
 			storyContainer.append(imageContainer);
 		}
-		
-		
+
+
 		// article container
 		if (story.articleTitle) {
 			var articleContainer = $('<div class="article-container"/>').appendTo(storyContainer)
-						.append('<img class="article-image" src=' + story.articleImage + '">')
-						.append('<a class="article-title" href="'+ story.articleLink +'">' + story.articleTitle + '</a>')
+						.append('<img class="article-image" src=' + story.articleImage + '>')
+						.append('<h4 class="article-title" >' + story.articleTitle + '</h4>')
 						.append('<textarea readonly class="article-description" rows=4>' + story.articleDescription + '</textarea>')
-						.append('<p class="article-host">' + getHostFromUrl(story.articleLink) + '</p>');			
+						.append('<p class="article-host">' + getHostFromUrl(story.articleLink) + '</p>')
+            .click(function() {window.open(story.articleLink);});
 		}
-		
+
 
 		//UNPUBLISH BUTTON
 		var id = story.id;
@@ -281,60 +300,82 @@ function buildLibraryBody(stories) {
 											readPublishedStories();
 										});
 									});
-			
+
 		}
 
 		//add to Library Body
-		storyContainer.appendTo(libraryBody);	
-		
-		
+		storyContainer.appendTo(libraryBody);
+
+
 	});
-	
+
 	$("textarea.story-summary, #story-text").elastic();
-	
-	
+
+
 };
 
 function addArticleContainer(data) {
-	article = data;
-	$('#story-create-article').show();
-	$('#story-create-article .article-image').attr('src',article.imageUrl)
-	$('#story-create-article .article-title').text(article.title)
-	$('#story-create-article .article-description').text(article.description)
-	$('#story-create-article .article-host').text(article.host)						
+	$('#story-article').show();
+	$('#story-article .article-image').attr('src',article.imageUrl)
+	$('#story-article .article-title').text(article.title)
+	$('#story-article .article-description').text(article.description)
+	$('#story-article .article-host').text(article.host)
+}
+
+function removeArticleContainer() {
+	$('#story-article').hide();
+	$('#story-article .article-image').attr('src',"")
+	$('#story-article .article-title').text("")
+	$('#story-article .article-description').text("")
+	$('#story-article .article-host').text("")
 }
 
 //--- initiateMap method ---//
 function initiateMap() {
 	var mapOptions = {
 		zoom : 16,
-		streetViewControl: false,
+		streetViewControl: true,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-		panControl : false,
-		panControlOptions : {position: google.maps.ControlPosition.RIGHT_CENTER},
-		zoomControl : false,
+    scaleControl : true,
+		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.ROADMAP,
+		mapTypeId : google.maps.MapTypeId.HYBRID,
 		mapTypeControl : true,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
 		center : defaultLocation
 	}
-		
+
 	map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
 
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
 		google.maps.event.addListener(map, 'click', mapLeftClicked);
-		google.maps.event.addListener(map, 'dragend', mapCenterChanged);	
-		google.maps.event.addListener(map, 'zoom_changed', mapCenterChanged);		
+		google.maps.event.addListener(map, 'dragend', mapCenterChanged);
+		google.maps.event.addListener(map, 'zoom_changed', mapCenterChanged);
 		google.maps.event.removeListener(listener);
 	});
-	
+
 	updateFocusedAddress();
+
+  //-- SearchBox --//
+  var input = document.getElementById('location-in');
+  var searchBox = new google.maps.places.SearchBox(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  //Bias the SearchBox results towards current map's viewport.
+  searchBox.setBounds(map.getBounds());
+  map.addListener('bounds_changed', function() {
+    searchBox.setBounds(map.getBounds());
+  });
+  searchBox.addListener('places_changed', function() {
+    var places = searchBox.getPlaces();
+    if (places.length == 0)
+      return;
+    map.setCenter(places[0].geometry.location);
+  });
 }
 
 //--- method resizeMap ---//
-function resizeMap(oldState,newState,isExpand) {	
+function resizeMap(oldState,newState,isExpand) {
 	if (!map) return;
 	if (isExpand) {
 		$('#library-map').animate(newState, 500, 'easeOutCubic');
@@ -361,11 +402,11 @@ function focusOnPostMarker(location) {
 	map.panTo(latlng);
 	map.setZoom(17);
 
-    // if (map) map.setOptions({ 
+    // if (map) map.setOptions({
 			// center: latlng,
-			// zoom : 13 
+			// zoom : 13
 		// });
-   
+
 }
 
 function mapCenterChanged() {
@@ -388,7 +429,7 @@ function fitStoryOnView(markers) {
 		if (map) centerOnUserLocation();
 	}
 	else if (markers.length == 1) {
-		if (map) map.setOptions({ 
+		if (map) map.setOptions({
 			center: markers[0].getPosition(),
 			zoom : 16 });
 	}
@@ -485,11 +526,11 @@ function sortStoriesWithDistance(stories,pivot) {
 	})
 	return sortedList;
 }
-	
+
 
 
 function computeStoryDistance(pivotLatLng,story) {
-	storyLatLng = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)	
+	storyLatLng = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
 	distance = google.maps.geometry.spherical.computeDistanceBetween(pivotLatLng, storyLatLng);
 	return distance
 }
@@ -500,7 +541,7 @@ function drawPublishedStoryMarkersOnMap(publishedStories) {
 	var story
 	for ( var i = 0; i < publishedStories.length; i++) {
 		publishedStory = publishedStories[i];
-		if (publishedStory.location != null) { 
+		if (publishedStory.location != null) {
 			var marker = new google.maps.Marker({
 				position : new google.maps.LatLng(publishedStory.location.latitude, publishedStory.location.longitude, true),
 				icon: markerIcon,
@@ -523,7 +564,7 @@ function getAddressFromLatLng(latlng,element) {
 			if (results[0]) {
 				lastAddress = results[0].formatted_address
 				element.html(" at " + results[0].formatted_address + ".");
-				
+
 			}
 		} else {
 			element.html("");
@@ -550,7 +591,7 @@ function buildStoryLocation(result) {
 		locality = getTypeGeoCode(result,'administrative_area_level_2') + ', '
 	if (country == '')
 		country = getTypeGeoCode(result,'administrative_area_level_1')
-	
+
 	return locality + country;
 }
 
@@ -576,9 +617,9 @@ function createStory() {
 		story.setArticle(article.title,
 						article.description,
 						article.imageUrl,
-						webUrl)	
+						webUrl)
 	}
-	//setArticle	
+	//setArticle
 	story.createStory(function(st){
 		//upload story pics
 		var story = st
@@ -617,24 +658,31 @@ function getUrlFromText(text) {
 		regex = "www."
 	else
 		return false;
-		
+
 	url = text.split(regex)[1].split(" ")[0]
-	
+
 	if (regex == "www.")
 		regex = "http://www."
-	
+
 	return regex + url
-		
-		
+
 }
 
 function grabWebsiteMetadata(webUrl) {
-	stud_fetchHtml(webUrl, function(data) {
-		addArticleContainer(data);	
+  if (!webUrl) {
+    article = null;
+    removeArticleContainer();
+    return false;
+  }
+  stud_fetchHtml(webUrl, function(data) {
+    article = data;
+		addArticleContainer(data);
 		return true;
 	},
 	function() {
 		console.log("failed to grab metadata")
+    article = null;
+    removeArticleContainer();
 		return false;
 	})
 }
@@ -646,7 +694,7 @@ function getHostFromUrl(url) {
 function publishFinished(storyId) {
 	cleanStoryCreationElements();
 	clearAllMarkers()
-	
+
 	readPublishedStories();
 }
 
@@ -654,10 +702,10 @@ function cleanStoryCreationElements() {
 	article = null;
 	imageFile = null;
 	webUrl = null;
-	
+
 	$('#story-text').val("");
 	$('#story-text').height(75);
-	$('#story-create-article').hide()
+	$('#story-article').hide()
 	$('#story-image-container').hide();
 }
 
@@ -670,7 +718,7 @@ function clearAllMarkers() {
 
 function unpublish(storyId, onFinished){
 	$.ajax({
-		url: "/story/" + storyId + "/publish/0", 
+		url: "/story/" + storyId + "/publish/0",
 		type: "POST",
 		dataType: "json",
 		// contentType:"application/json",
@@ -684,4 +732,3 @@ function computeRadarRadius() {
 	radius = 3*Math.pow(2,21-zoom);
 	return radius;
 }
-

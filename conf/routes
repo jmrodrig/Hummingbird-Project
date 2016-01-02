@@ -26,9 +26,11 @@ POST 		/fetchhtml									controllers.Application.fetchHtml()
 GET 		/fetch/category								controllers.utils.FeedsFetcher.fetchCategories()
 GET 		/fetch/category/:id/:options								controllers.utils.FeedsFetcher.fetchItemsFromCategories(id: String, options: String)
 GET 		/fetch/item/:id								controllers.utils.FeedsFetcher.fetchItemDetails(id: String)
-GET     /fetch/html/:url              controllers.utils.FeedsFetcher.fetchItemHTML(url: String)
+GET     /fetch/html/:url              controllers.utils.FeedsFetcher.fetchArticle(url: String)
+GET     /fetch/html/:url/:levels       controllers.utils.FeedsFetcher.fetchmoreArticle(url: String, levels: Integer)
 GET			/validateInvite/:invitationCode				controllers.Application.validInvite(invitationCode: String)
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
+POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 
 
 #Stories

@@ -36,6 +36,9 @@ public class Application extends Controller {
 			return badRequest("exception");
 		}
 
+		if (html.equals(""))
+			return badRequest("bad url");
+
 		String json = new Gson().toJson(fetcher.grabMetadataFromHtml(html,url));
 		return ok(json);
 	}
