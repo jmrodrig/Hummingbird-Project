@@ -22,18 +22,40 @@
 	<div id="item-list" class="list-group"></div>
 </div>
 
-<div id="item-content-wrapper" class="pull-left">
-	<div id="item-content"></div>
+<div id="article-content-wrapper" class="pull-left">
+	<div id="article-content">
+		<img id="article-content-image" src="">
+		<h1 id="article-content-title"></h1>
+		<h4 id="article-content-description"></h4>
+		<h3 id="article-content-author"></h3>
+		<h3 id="article-content-date"></h3>
+		<a id="article-content-source"></a>
+		<div id="article-content-html"></div>
+	</div>
 </div>
 
 <div id="map-wrapper" class="pull-left">
+	<input id="location-in" class="controls" type="text" placeholder="Search Box">
 	<div id="map-canvas"></div>
 	<div id="map-sight">
 		<div id="map-sight-dot"></div>
 	</div>
+	<button id="set-location-button" type="button" class="btn btn-default" onclick="setLocation()">Set Location</button>
 </div>
 
-
+<div id="tools">
+	<button id="remove-element-button" type="button" class="btn btn-default" onclick="startRemoveElement()">Clean content</button>
+	<button id="fetch-more" type="button" class="btn btn-default" onclick="fetchmoreArticle()">Fetch more</button>
+	<div class="btn-group" role="group" aria-label="...">
+		<button id="single-location-mode" type="button" class="btn btn-primary" onclick="switchLocationMode('single')">Single location</button>
+		<button id="multi-location-mode" type="button" class="btn btn-default" onclick="switchLocationMode('multi')">Multiple location</button>
+	</div>
+	<div id="add-location-buttons" class="btn-group hidden" >
+		<button type="button" class="btn btn-default" onclick="selectLocationContent()">Select</button>
+		<button type="button" class="btn btn-default" onclick="newLocation()">New</button>
+	</div>
+	<div id="location-buttons" class="btn-group hidden" role="group" ></div>
+</div>
 </section>
 
 

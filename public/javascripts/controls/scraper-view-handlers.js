@@ -4,12 +4,25 @@ var fdata;
 var categoriesArray;
 var itemsArray;
 var itemHTML;
+var article;
 
 var map;
+var story = new Object();
+var storyTitle;
+var domainStory = new Object();
+var locationMode = "single";
+var stories = new Hashtable();
+var mapLocationStories = new Hashtable();
+var currentStoryId;
+
+var isRemovingElements = false;
+var isSelectingLocationContent = false;
+var level;
+
 
 var optionsMap = {
   count: 20,
-  ranked: "oldest",  //newest or oldest
+  ranked: "newest",  //newest or oldest
   unreadOnly: true
 }
 
@@ -18,8 +31,12 @@ for (var opt in optionsMap){
   optionsStrg = optionsStrg + opt + "=" + optionsMap[opt] + "&";
 }
 
+// ----- INITIALIZATION ------//
+
 $(function() {
-  $('#item-content').mouseup(function(e) {
+  fetchFeeds();
+
+  $('#article-content').mouseup(function(e) {
     if ($('.floating-box').has(e.target).length > 0)
       return;
     $('.floating-box').remove();
@@ -31,25 +48,37 @@ $(function() {
         if (selectionText.length > 0) {
           // create floating box
           var floatingBox = $('<div class="floating-box" >');
-          $('#item-content').append(floatingBox);
+          $('#article-content').append(floatingBox);
           // set buttons and events
           var buttonGroup = $('<div class="btn-group" role="group">');
-          $('<button type="button" class="btn btn-default">Location</button>')
+          if (locationMode == "single") {
+            $('<button type="button" class="btn btn-default">Location</button>')
+                                  .click(function() {
+                                    openAddLocationDialog(selectionText);
+                                  })
+                                  .appendTo(buttonGroup);
+          } else if (locationMode == "multi") {
+            $('<button type="button" class="btn btn-default">Add Location</button>')
+                                  .click(function() {
+                                    splitArticleForNewLocation(selection.getRangeAt(0));
+                                  })
+                                  .appendTo(buttonGroup);
+          }
+          $('<button type="button" class="btn btn-default">Date</button>')
                                 .click(function() {
-                                  console.log(selectionText);
-                                  geoCodeAddress(selectionText);
+                                  openAddRuleDialog(selection.focusNode.parentNode,selectionText,"date");
                                 })
                                 .appendTo(buttonGroup);
-          $('<button type="button" class="btn btn-default">Title</button>')
+          $('<button type="button" class="btn btn-default">Author</button>')
                                 .click(function() {
-                                  console.log('resetTitleButton')
+                                  openAddRuleDialog(selection.focusNode.parentNode,selectionText,"author");
                                 })
                                 .appendTo(buttonGroup);
           buttonGroup.appendTo(floatingBox);
           // position buttons floating box
-          var bounding = range.getClientRects()[0],
-          offsetTop = $('#content-wrapper').position().top - $('#item-content-wrapper').scrollTop(),
-          offsetLeft = $('#item-content-wrapper').position().left;
+          var bounding = range.getBoundingClientRect(),
+          offsetTop = $('#content-wrapper').position().top - $('#article-content-wrapper').scrollTop(),
+          offsetLeft = $('#article-content-wrapper').position().left;
           floatingBox.css({ top: bounding.bottom - offsetTop, left: bounding.left-offsetLeft });
         }
       }
@@ -57,69 +86,76 @@ $(function() {
   });
 });
 
-function geoCodeAddress(address) {
-  var geocoder = new google.maps.Geocoder();
-  geocoder.geocode( { 'address': address}, function(results, status) {
-    if (status == google.maps.GeocoderStatus.OK) {
-      // var marker = new google.maps.Marker({
-      //   map: map,
-      //   position: results[0].geometry.location,
-      //   title: address
-      // });
-      // build address options list
-      if (results.length > 0) {
-        var listLocations = $('<div class="list-group"></div>')
-        results.forEach(function(r) {
-          $('.btn-group').remove();
-          $('<a href="#" class="list-group-item">' + r.formatted_address + '</a>')
-                       .appendTo(listLocations)
-                       .click(function(e) {
-                         index = $(e.target).index();
-                         map.setCenter(results[index].geometry.location);
-                         $('.floating-box > button').removeAttr("disabled");
-                       });
-        });
-        listLocations.appendTo($('.floating-box'));
-        $('<button type="button" class="btn btn-success" disabled="disabled">Set Location</button>')
-                        .click(function(e) {
-                          index = $(e.target).index();
-                          var marker = new google.maps.Marker({
-                            map: map,
-                            position: map.getCenter()
-                          });
-                          $('.floating-box').remove();
-                        })
-                        .appendTo($('.floating-box'));
-      }
+//------------ FUNCTIONS ----------//
 
-      } else {
-      alert("Geocode was not successful for the following reason: " + status);
-    }
-  });
+function openAddRuleDialog(elm,selection,field) {
+  $('.floating-box').empty();
+  var fbox = $('.floating-box');
+  $('<span>set rule for date</span>').text("set rule for date").appendTo(fbox);
+  $('<p>').text($('<div>').append($(elm).clone()).html()).appendTo(fbox);
+  $('<input id="strategy-in" type="text" placeholder="strategy"><input id="value-in" type="text" placeholder="value">').appendTo(fbox)
+  $('<button type="button" class="btn btn-success">Set</button>').click(function() {
+      if (field == "date") {
+        article.date = selection;
+        $('#article-content-date').html(article.date);
+      }
+      if (field == "author") {
+        article.author = selection;
+        $('#article-content-author').html(article.author);
+      }
+      $('.floating-box').remove();
+    })
+    .appendTo(fbox);
 }
 
-// stud_fetchFeedsAllCategories(function(data) {
-//   categoriesArray = data
-//   populateCategoriesList(categoriesArray)
-//   // fetch items for the first category
-//   stud_fetchFeedsItemsOfCategory(categoriesArray[0].id,optionsStrg,function(data){
-//     itemsArray = data.items;
-//     populateItemsList(data.items)
-//     $('#categories-list a:first-child').addClass('active');
-//   }, processError);
-// }, processError);
+function openAddLocationDialog(address) {
+  $('.floating-box').empty();
+  $('<input id="location-in" type="text">')
+        .appendTo($('.floating-box'))
+        .val(address)
+        .change(function() {
+          address = $('.floating-box input').val()
+          populateLocationDialog(address);
+        });
+  populateLocationDialog(address);
+}
 
-fetchItemHTML("http://www.bbc.com/travel/story/20151123-the-last-king-of-ireland?ocid=global_travel_rss", function(article) {
-  //$('#item-content-wrapper').text(item.alternate[0].href + '\n\n' + articleText);
-  //bodyhtml = article.split('<body')[1].split('</body>')[0];
-  $('#item-content').empty();
-  console.log(article);
-  $('#item-content').html(article);
-});
+function populateLocationDialog(address) {
 
-function fetchItemHTML(url,onFinished) {
-  stud_fetchFeedsItemHTML(url, function(data) {
-    itemHTML = data;
+
+}
+
+function fetchFeeds() {
+  stud_fetchFeedsAllCategories(function(data) {
+    categoriesArray = data
+    populateCategoriesList(categoriesArray)
+    // fetch items for the first category
+    stud_fetchFeedsItemsOfCategory(categoriesArray[0].id,optionsStrg,function(data){
+      itemsArray = data.items;
+      populateItemsList(data.items)
+      $('#categories-list a:first-child').addClass('active');
+    }, processError);
+  }, processError);
+}
+// fetchArticle("http://www.bbc.com/travel/story/20151123-the-last-king-of-ireland?ocid=global_travel_rss", function(a) {
+//   article = a;
+//   $('#article-content *').removeClass("highlight")
+//                         .removeClass("toberemoved")
+//                         .removeClass("hidecontent");
+//   console.log(article);
+//   $('#article-content-title').html(article.title);
+//   $('#article-content-image').attr("src",article.imageUrl)
+//   $('#article-content-description').html(article.description);
+//   $('#article-content-author').html(article.author);
+//   $('#article-content-date').html(article.date);
+//   $('#article-content-source').html(article.source);
+//   $('#article-content-source').attr("href",article.url);
+//   $('#article-content-html').html(article.html);
+// });
+
+function fetchArticle(url,onFinished) {
+  level = 1;
+  stud_fetchArticle(url, function(data) {
     if (onFinished)
       onFinished(data)
   }, processError);
@@ -157,34 +193,26 @@ function populateItemsList(iArray) {
               .click(function() {
                 $('#item-list .active').removeClass('active')
                 listItemContainer.addClass('active')
-                //$('#item-content-wrapper').html('');
-                //$("#item-content").attr('src',item.origin.htmlUrl);
-                fetchItemHTML(item.alternate[0].href, function(article) {
-                  //$('#item-content-wrapper').text(item.alternate[0].href + '\n\n' + articleText);
-                  //bodyhtml = article.split('<body')[1].split('</body>')[0];
-                  $('#item-content').empty();
+                fetchArticle(item.alternate[0].href, function(a) {
+                  article = a;
+                  $('#article-content *').removeClass("highlight")
+                                        .removeClass("toberemoved")
+                                        .removeClass("hidecontent");
                   console.log(article);
-                  $('#item-content').html(article);
+                  $('#article-content-title').html(article.title);
+                  $('#article-content-image').attr("src",article.imageUrl)
+                  $('#article-content-description').html(article.description);
+                  $('#article-content-author').html(article.author);
+                  $('#article-content-date').html(article.date);
+                  $('#article-content-source').html(article.source);
+                  $('#article-content-source').attr("href",article.url);
+                  $('#article-content-html').html(article.html);
                 });
               });
   });
 }
 
 
-function extractTextFromHTML(html) {
-  var prgrphs = html.split('<p');
-  console.log(prgrphs.length);
-  var paragraphs = [];
-  for (var i = 1; i < prgrphs.length; i++) {
-    var p = prgrphs[i];
-    p = p.split('</p>',1)[0].split('>',1)[1];
-    if (p.length > 0) {
-      paragraphs.push(p);
-      $('#item-content-wrapper').append('<p>' + p + '</p>');
-    }
-  };
-
-}
 
 
 
@@ -221,16 +249,192 @@ function stud_fetchFeedsItemDetails(item_id,success, error){
 	});
 }
 
-function stud_fetchFeedsItemHTML(url,success, error){
+function stud_fetchArticle(url,success, error){
 	$.ajax({
 		url: "/fetch/html/" + encodeURIComponent(url),
 		type: "GET",
+    dataType: "json",
+		contentType:"application/json",
 		success: success,
 		error: error
 	});
 }
 
-function initiateMap() {
+function stud_fetchmoreArticle(url, level,success, error){
+	$.ajax({
+		url: "/fetch/html/" + encodeURIComponent(url) + "/" + level,
+		type: "GET",
+    dataType: "json",
+		contentType:"application/json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_setNewRule(jsonRule, success, error){
+	$.ajax({
+		url: "/rules/setRule",
+		type: "POST",
+    dataType: "json",
+    data: JSON.stringify(jsonRule),
+		contentType:"application/json",
+		success: success,
+		error: error
+	});
+}
+
+function saveStory() {
+
+}
+
+function startRemoveElement() {
+  if (isRemovingElements) {
+    //finiching up
+    isRemovingElements = false;
+    $('#article-content *').unbind("mouseover")
+                          .removeClass("highlight");
+    $('#article-content').unbind("click");
+    $("#remove-element-button").text("Clean content");
+    return;
+  }
+  isRemovingElements = true;
+  $("#remove-element-button").text("Stop cleaning");
+  $('#article-content *').mouseover(
+    function(e) {$('#article-content *').removeClass("highlight"); $(e.target).addClass("highlight"); console.log(e.target);}
+  );
+  $('#article-content').click(function(e) {
+    $(e.target).addClass("hidecontent").addClass("toberemoved");
+    var undoHideButton = $('<span class="control-remove-content glyph-icon icon-no-margins icon-shadow icon-small icon-round-borders flaticon-dark"></span> ').click(function() {
+      $(e.target).removeClass("hidecontent").removeClass("toberemoved");
+      undoHideButton.remove();
+    });
+    $(e.target).after(undoHideButton);
+  });
+}
+
+function fetchmoreArticle() {
+  level++;
+  console.log(level);
+  console.log("fetchmoreArticle...");
+  stud_fetchmoreArticle(article.url, level, function(a) {
+    console.log("done fetchmoreArticle");
+    article.html = a.html;
+    $('#article-content-html').html(a.html);
+  }, processError);
+}
+
+function switchLocationMode(mode) {
+  if (mode == "single") {
+    locationMode = "single";
+    $("#single-location-mode").removeClass("btn-default").addClass("btn-primary");
+    $("#multi-location-mode").addClass("btn-default").removeClass("btn-primary");
+    $("#add-location-buttons, #location-buttons").addClass("hidden");
+  } else if (mode == "multi") {
+    locationMode = "multi";
+    $("#multi-location-mode").removeClass("btn-default").addClass("btn-primary");
+    $("#single-location-mode").addClass("btn-default").removeClass("btn-primary");
+    $("#add-location-buttons, #location-buttons").removeClass("hidden");
+  }
+}
+
+
+function selectLocationContent() {
+  if (isSelectingLocationContent) {
+    //finiching up
+    isSelectingLocationContent = false;
+    $('#article-content *').unbind("mouseover")
+    $('#article-content').unbind("click");
+    //$("#remove-element-button").text("Clean content");
+    return;
+  }
+  isSelectingLocationContent = true;
+  //$("#remove-element-button").text("Stop cleaning");
+  $('#article-content *').mouseover(function(e) {
+    if ($(e.target).hasClass("control-add-location")) return;
+    $('#article-content *').removeClass("highlight-location-content");
+    $(e.target).addClass("highlight-location-content");
+  });
+  $('#article-content').click(function(e) {
+    if ($(e.target).hasClass("selected-location")) return;
+    if (!currentStoryId) {
+      currentStoryId = 1;
+      stories.put(currentStoryId,"story-" + currentStoryId);
+      $('<button id="story-1" type="button" class="btn btn-default color-1">1</button>')
+            .appendTo($("#location-buttons"))
+            .click(function() {currentStoryId = 1});
+    }
+    $(e.target).addClass("selected-location").attr("story",currentStoryId).addClass(getStoryColorName(currentStoryId));
+    var setLocationButton = $('<span class="control-add-location location-button glyph-icon icon-small icon-no-margins icon-round-borders icon-shadow  flaticon-facebook30"></span> ')
+      .addClass(getStoryColorName(currentStoryId))
+      .click(function() {
+        var st = $(e.target).attr("story");
+        setCurrentStoryId(st);
+        $('#set-location-button').text('Set location for story ' + st)
+                                  .addClass(getStoryColorName(st));
+        stopSelectingLocationContent();
+        console.log(st);
+      });
+    $(e.target).before(setLocationButton);
+    var deselectLocationContentButton = $('<span class="control-add-location deselect-button glyph-icon icon-xsmall icon-no-margins icon-round-borders icon-shadow  flaticon-cross29"></span> ')
+      .addClass(getStoryColorName(currentStoryId))
+      .click(function() {
+        var st = $(e.target).attr("story");
+        $(e.target).removeClass("selected-location")
+                   .removeClass(getStoryColorName(st))
+                   .removeAttr("story");
+        deselectLocationContentButton.remove();
+        setLocationButton.remove();
+      });
+    $(e.target).after(deselectLocationContentButton);
+  });
+}
+
+function stopSelectingLocationContent() {
+  //finiching up
+  isSelectingLocationContent = false;
+  $('#article-content *').unbind("mouseover")
+  $('#article-content').unbind("click");
+  //$("#remove-element-button").text("Clean content");
+}
+
+function setLocation() {
+  var location = map.getCenter();
+  cStId = getCurrentStoryId()
+  mapLocationStories.put(cStId,location);
+  $('#set-location-button').text('Set location')
+                            .removeClass(getStoryColorName(cStId));
+  $('span[story="' + cStId + '"].')
+}
+
+function setCurrentStoryId(id) {
+  currentStoryId = id;
+}
+
+function getCurrentStoryId() {
+  return currentStoryId;
+}
+
+function newLocation() {
+  var n = stories.size()+1;
+  currentStoryId = n
+  stories.put(currentStoryId,"story-" + currentStoryId);
+  $('<button id="story-1" type="button" class="btn">' + currentStoryId + '</button>')
+        .addClass(getStoryColorName(n))
+        .appendTo($("#location-buttons"))
+        .click(function() {
+          console.log("currentStoryId: " + currentStoryId);
+          console.log("n: " + n);
+          currentStoryId = n
+        });
+}
+
+function getStoryColorName(i) {
+  var colornumber = (i % 6);
+  return "color-" + colornumber;
+}
+
+
+function initAutocomplete() {
 	var mapOptions = {
 		zoom : 16,
 		streetViewControl: false,
@@ -251,7 +455,24 @@ function initiateMap() {
 		//google.maps.event.addListener(map, 'click', mapLeftClicked);
 		google.maps.event.removeListener(listener);
 	});
+
+
+  //-- SearchBox --//
+  var input = document.getElementById('location-in');
+  var searchBox = new google.maps.places.SearchBox(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  //Bias the SearchBox results towards current map's viewport.
+  searchBox.setBounds(map.getBounds());
+  map.addListener('bounds_changed', function() {
+    searchBox.setBounds(map.getBounds());
+  });
+  searchBox.addListener('places_changed', function() {
+    var places = searchBox.getPlaces();
+    if (places.length == 0)
+      return;
+    map.setCenter(places[0].geometry.location);
+  });
 }
 
 //--- Listener for window ---//
-google.maps.event.addDomListener(window, 'load', initiateMap);
+google.maps.event.addDomListener(window, 'load', initAutocomplete);

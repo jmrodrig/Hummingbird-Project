@@ -10,6 +10,12 @@ import java.net.URL;
 import java.util.Collections;
 import java.util.List;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
+import java.io.IOException;
 
 
 import de.l3s.boilerpipe.BoilerpipeExtractor;
@@ -32,6 +38,7 @@ import play.mvc.BodyParser;
 import play.mvc.Http.MultipartFormData;
 import play.mvc.Http.MultipartFormData.FilePart;
 import play.mvc.Http.RequestBody;
+import play.api.Play;
 
 import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpResponse;
@@ -156,9 +163,9 @@ public class FeedsFetcher extends Controller {
 
 	}
 
-	public static Result fetchItemHTML(String itemUrl) throws Exception {
+	public static String fetchHTML(String articleUrl) throws Exception {
 		// try {
-    //         final HTMLDocument htmlDoc = HTMLFetcher.fetch(new URL(itemUrl));
+    //         final HTMLDocument htmlDoc = HTMLFetcher.fetch(new URL(articleUrl));
     //         final TextDocument doc = new BoilerpipeSAXInput(htmlDoc.toInputSource()).getTextDocument();
 		// 				final BoilerpipeExtractor extractor = CommonExtractors.ARTICLE_EXTRACTOR;
 		// 				//final BoilerpipeExtractor extractor = CommonExtractors.KEEP_EVERYTHING_EXTRACTOR;
@@ -170,10 +177,10 @@ public class FeedsFetcher extends Controller {
 		//
 		// 				//highlight
 		// 				final HTMLHighlighter hh = HTMLHighlighter.newExtractingInstance();
-		// 				//System.out.println("HIGHLIGHTED HTML : " + hh.process(new URL(itemUrl), extractor));
+		// 				//System.out.println("HIGHLIGHTED HTML : " + hh.process(new URL(articleUrl), extractor));
 		//
     //         String content = ArticleExtractor.INSTANCE.getText(doc);
-		// 				//String content = hh.process(new URL(itemUrl), extractor);
+		// 				//String content = hh.process(new URL(articleUrl), extractor);
 		//
 		//
 		// 				// List<TextBlock> textBlocks = doc.getTextBlocks();
@@ -187,9 +194,8 @@ public class FeedsFetcher extends Controller {
     //     }
 
 
-		//String url = "http://api.diffbot.com/v3/article?token=3b36ec5e68e944f0cd2477d85bda3ff4&url=" + URLEncoder.encode(itemUrl, "UTF-8");
-		String url = itemUrl;
-		System.out.println("\nSending 'GET' request to URL : " + url);
+		//String url = "http://api.diffbot.com/v3/article?token=3b36ec5e68e944f0cd2477d85bda3ff4&url=" + URLEncoder.encode(articleUrl, "UTF-8");
+		String url = articleUrl;
 
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
@@ -201,8 +207,7 @@ public class FeedsFetcher extends Controller {
 		//HttpEntity resEntity = response.getEntity();
 
 		System.out.println("\nSending 'GET' request to URL : " + url);
-		System.out.println("Response Code : " +
-                       response.getStatusLine().getStatusCode());
+		System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
 
 		// URL url_ = new URL(url);
     // // NOTE: Use ArticleExtractor unless DefaultExtractor gives better results for you
@@ -221,28 +226,152 @@ public class FeedsFetcher extends Controller {
 
 		String responseString = responseStrBuilder.toString();
 
+		return responseString;
+	}
+
+	public static Result fetchArticle(String articleUrl) throws Exception {
+		String articleHtml = fetchHTML(articleUrl);
+		// Parse with Jsoup
+		controllers.json.Article article = parseWebsiteContent(articleUrl,articleHtml, 1);
+		String json = new Gson().toJson(article);
+		//System.out.println("Response : " + json);
+
+		return ok(json);
+	}
+
+	public static Result fetchmoreArticle(String articleUrl, Integer level) throws Exception {
+		String articleHtml = fetchHTML(articleUrl);
+		// Parse with Jsoup
+		controllers.json.Article article = parseWebsiteContent(articleUrl, articleHtml, level);
+		String json = new Gson().toJson(article);
+		//System.out.println("Response : " + json);
+
+		return ok(json);
+	}
+
+	final static Charset ENCODING = StandardCharsets.UTF_8;
+
+	private static controllers.json.Article parseWebsiteContent(String url, String html, Integer levels) {
+		//Host
+		String host = url.split("\\.",2)[1].split("/",2)[0];
+		String rulesPath = Play.current().path().getAbsolutePath() + "/private/scrapingrules/";
+		controllers.utils.Rules daterules = new controllers.utils.Rules(rulesPath + "date");
 
 
+		Document doc = Jsoup.parse(html);
+		controllers.json.Article article = new controllers.json.Article();
 
-		Document doc = Jsoup.parse(responseString);
-		Elements paragraphs = doc.select("p");
-
-
-
-		//System.out.println("Response : " + parent.html());
-
-		for (Element p : paragraphs) {
-			System.out.println("PARAGRAPH TEXT LENGTH: " + p.text().length());
-			if (p.text().length() > 300 )
-				return ok(p.parent().html());
+		//Article source
+		article.source = host;
+		//Article source
+		article.url = url;
+		//Parse article title
+		String[] titleRegexs = {
+						"meta[name=\"twitter:title\"]",
+						"meta[property=\"twitter:title\"]",
+						"meta[property=\"og:title\"]",
+						"meta[itemprop=\"name\"]",
+						"meta[name=\"title\"]"
+		};
+		article.title = "";
+		for (String reg : titleRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.title = metas.first().attr("content");
+				//System.out.println("ARTICLE TITLE: " + article.title);
+				break;
+			};
+		};
+		//Parse article description
+		String[] descriptionRegexs = {
+						"meta[name=\"twitter:description\"]",
+						"meta[property=\"twitter:description\"]",
+						"meta[property=\"og:description\"]",
+						"meta[name=\"description\"]"
+		};
+		article.description = "";
+		for (String reg : descriptionRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.description = metas.first().attr("content");
+				//System.out.println("ARTICLE DESCRIPTION: " + article.description);
+				break;
+			};
+		};
+		//Parse article author
+		String[] authorRegexs = {
+						"meta[name=\"twitter:author\"]",
+						"meta[property=\"twitter:author\"]",
+						"meta[property=\"og:author\"]",
+						"meta[name=\"author\"]"
+		};
+		article.author = "";
+		for (String reg : authorRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.author = metas.first().attr("content");
+				break;
+			};
+		};
+		//Parse article cover image
+		String[] imageRegexs = {
+						"meta[name=\"twitter:image:src\"]",
+						"meta[property=\"og:image\"]",
+						"meta[itemprop=\"image\"]"
+		};
+		article.imageUrl = "";
+		for (String reg : imageRegexs) {
+			Elements metas = doc.select(reg);
+			if (metas.size() > 0) {
+				article.imageUrl = metas.first().attr("content");
+				break;
+			};
+		};
+		//Parse article date
+		//TODO: if same host has more than one rule
+		article.date = "";
+		String strategy = daterules.getHostStrategy(host);
+		System.out.println("STRATEGY : " + strategy);
+		if (strategy.equals("class")) {
+			article.date = doc.select("." + daterules.getHostValue(host)).first().text();
+		} else if (strategy.equals("tag&attr")) {
+			String tag = daterules.getHostValue(host).split("\\&",2)[0];
+			String attr = daterules.getHostValue(host).split("\\&",2)[1];
+			System.out.println("TAG & ATTR : " + tag + "&" + attr);
+			if (doc.select(tag + "[" + attr + "]").size() > 0)
+				article.date = doc.select(tag + "[" + attr + "]").first().attr(attr);
 		}
 
 
+		//Parse article content (html)
+		article.html = "";
+		Elements paragraphs = doc.select("p");
+		for (Element p : paragraphs) {
+			if (p.text().length() > 300 ) {
+				Element el = getElementParent(doc,p,levels);
+				article.html = el.html();
+			}
+		}
+		// if none was found, try reducing the length of p (twitter size)
+		if (article.html.equals("")) {
+			for (Element p : paragraphs) {
+				if (p.text().length() >= 180 ) {
+					Element el = getElementParent(doc,p,levels);
+					article.html = el.html();
+				}
+			}
+		}
 
-		//String jsonP = new Gson().toJson(paragraphs);
+		return article;
+	}
 
-		return ok(responseString);
-
+	private static Element getElementParent(Document doc, Element el, Integer levels) {
+		for(Integer i = 0; i < levels+1; i++) {
+			//System.out.println("ELEMENT : " + el.tagName());
+			if (!el.equals(doc.select("body")))
+				el = el.parent();
+		}
+		return el;
 	}
 
 }
