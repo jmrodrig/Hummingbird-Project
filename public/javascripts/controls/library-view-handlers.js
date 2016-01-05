@@ -10,6 +10,7 @@ var user = null;
 var article = null;
 var webUrl = null;
 var storyMarkerList;
+var selectedImageCount;
 
 var defaultAvatarPic = "/assets/images/user-avatar.jpg"
 
@@ -156,6 +157,25 @@ function intializeEvents() {
 		fr = fileReader;
 	});
 
+
+  //CHOOSE ARTICLE IMAGE CONTROLS
+  $('#article-img-select-prev').click(function() {
+    selectedImageCount--;
+    if (selectedImageCount < 0)
+      selectedImageCount = 0;
+    var link = article.imagelinks[selectedImageCount];
+    $('#story-article .article-image').attr('src',link)
+    article.imageUrl = link;
+  });
+
+  $('#article-img-select-next').click(function() {
+    selectedImageCount++;
+    if (selectedImageCount == article.imagelinks.length)
+      selectedImageCount = article.imagelinks.length -1;
+    var link = article.imagelinks[selectedImageCount];
+    $('#story-article .article-image').attr('src',link)
+    article.imageUrl = link;
+  });
 }
 
 function updateMapContainerSize() {
@@ -279,12 +299,20 @@ function buildLibraryBody(stories) {
 
 		// article container
 		if (story.articleTitle) {
-			var articleContainer = $('<div class="article-container"/>').appendTo(storyContainer)
-						.append('<img class="article-image" src=' + story.articleImage + '>')
-						.append('<h4 class="article-title" >' + story.articleTitle + '</h4>')
-						.append('<textarea readonly class="article-description" rows=4>' + story.articleDescription + '</textarea>')
-						.append('<p class="article-host">' + getHostFromUrl(story.articleLink) + '</p>')
-            .click(function() {window.open(story.articleLink);});
+      var articleContainer = $('<div class="article-container"/>').appendTo(storyContainer)
+      if (getHostFromUrl(story.articleLink) == "vine.co") {
+        var iframe = $('<iframe width="480" height="480" frameborder="0"></iframe>').appendTo(articleContainer)
+                                                .attr('src',story.articleLink + "/embed/simple");
+      } else {
+        articleContainer.click(function() {window.open(story.articleLink);});
+        var articleImageContainer = $('<div class="article-img-container"/>').appendTo(articleContainer)
+                                    .append('<img class="article-image" src=' + story.articleImage + '>');
+
+        var articleContentContainer = $('<div class="article-content-container"/>').appendTo(articleContainer)
+  						.append('<h4 class="article-title" >' + story.articleTitle + '</h4>')
+  						.append('<textarea readonly class="article-description" rows=4>' + story.articleDescription + '</textarea>')
+  						.append('<p class="article-host">' + getHostFromUrl(story.articleLink) + '</p>')
+      }
 		}
 
 
@@ -311,23 +339,49 @@ function buildLibraryBody(stories) {
 
 	$("textarea.story-summary, #story-text").elastic();
 
-
 };
+
+function buildVineIframe(link) {
+
+  return iframeContainer;
+}
 
 function addArticleContainer(data) {
 	$('#story-article').show();
-	$('#story-article .article-image').attr('src',article.imageUrl)
-	$('#story-article .article-title').text(article.title)
-	$('#story-article .article-description').text(article.description)
-	$('#story-article .article-host').text(article.host)
+  $('#story-article .article-img-container').show();
+	$('#story-article .article-title').text(article.title).show()
+	$('#story-article .article-description').text(article.description).show()
+	$('#story-article .article-host').text(article.source)
+  if (!article.imageUrl =="" && article.imagelinks.length == 0)
+    $('#story-article .article-image').attr('src',article.imageUrl).show();
+  else if (article.imageUrl=="" && article.imagelinks.length == 0)
+    $('#story-article .article-img-container').hide();
+  else {
+    selectedImageCount = 0;
+    article.imagelinks.splice(0,0,article.imageUrl);
+    $('#story-article .article-image').attr('src',article.imagelinks[0]);
+    $('.article-img-select-controls').show()
+  }
 }
 
 function removeArticleContainer() {
 	$('#story-article').hide();
-	$('#story-article .article-image').attr('src',"")
-	$('#story-article .article-title').text("")
-	$('#story-article .article-description').text("")
-	$('#story-article .article-host').text("")
+	$('#story-article .article-image').attr('src',"");
+	$('#story-article .article-title').text("");
+	$('#story-article .article-description').text("");
+	$('#story-article .article-host').text("");
+  $('.article-img-select-controls').hide();
+  $('#story-article .article-embebed-iframe-container').hide();
+}
+
+function addEmbedVineArticle(webUrl) {
+  $('#story-article .article-img-container').hide();
+  $('#story-article .article-title').hide();
+  $('#story-article .article-description').hide();
+  $('#story-article .article-host').text(article.source);
+  $('#story-article, #story-article .article-embebed-iframe-container').show();
+  $('#story-article iframe').attr('src',webUrl + "/embed/simple");
+
 }
 
 //--- initiateMap method ---//
@@ -674,9 +728,13 @@ function grabWebsiteMetadata(webUrl) {
     removeArticleContainer();
     return false;
   }
+
   stud_fetchHtml(webUrl, function(data) {
     article = data;
-		addArticleContainer(data);
+    if (article.source == "vine.co")
+      addEmbedVineArticle(article.url);
+    else
+		  addArticleContainer(data);
 		return true;
 	},
 	function() {
@@ -705,8 +763,11 @@ function cleanStoryCreationElements() {
 
 	$('#story-text').val("");
 	$('#story-text').height(75);
-	$('#story-article').hide()
 	$('#story-image-container').hide();
+
+  removeArticleContainer();
+  $('#article-link').val("");
+  $('#story-insert-article').hide();
 }
 
 function clearAllMarkers() {

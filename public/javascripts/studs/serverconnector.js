@@ -1,7 +1,7 @@
 
 function stud_createStory(story, success, error){
 	$.ajax({
-		url: "/story", 
+		url: "/story",
 		type: "POST",
 		dataType: "json",
 		data: JSON.stringify(story),
@@ -13,7 +13,7 @@ function stud_createStory(story, success, error){
 
 function stud_updateStory(story, success, error){
 	$.ajax({
-		url: "/story/" + story.id, 
+		url: "/story/" + story.id,
 		type: "PUT",
 		dataType: "json",
 		data: JSON.stringify(story),
@@ -25,7 +25,7 @@ function stud_updateStory(story, success, error){
 
 function stud_readStory(storyId, success, error){
 	$.ajax({
-		url: "/story/" + storyId, 
+		url: "/story/" + storyId,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -36,7 +36,7 @@ function stud_readStory(storyId, success, error){
 
 function stud_publishStory(storyId, publish, success, error){
 	$.ajax({
-		url: "/story/" + storyId + "/publish/" + publish, 
+		url: "/story/" + storyId + "/publish/" + publish,
 		type: "POST",
 		dataType: "json",
 		// contentType:"application/json",
@@ -47,7 +47,7 @@ function stud_publishStory(storyId, publish, success, error){
 
 function stud_notifyStorySubmission(storyId, success, error){
 	$.ajax({
-		url: "/notify/" + storyId , 
+		url: "/notify/" + storyId ,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -58,7 +58,7 @@ function stud_notifyStorySubmission(storyId, success, error){
 
 function stud_deleteStory(storyId, success, error){
 	$.ajax({
-		url: "/story/" + storyId, 
+		url: "/story/" + storyId,
 		type: "DELETE",
 		success: success,
 		error: error
@@ -108,7 +108,7 @@ function stud_updatePost(storyId, post, success, error){
 
 function stud_readPost(storyId, postId, success, error){
 	$.ajax({
-		url: "/story/"+storyId+"/post/"+postId, 
+		url: "/story/"+storyId+"/post/"+postId,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -119,7 +119,7 @@ function stud_readPost(storyId, postId, success, error){
 
 function stud_readTransition(storyId, postId, transitionId, success, error){
 	$.ajax({
-		url: "/story/"+storyId+"/post/"+postId+"/transition/"+transitionId, 
+		url: "/story/"+storyId+"/post/"+postId+"/transition/"+transitionId,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -131,7 +131,7 @@ function stud_readTransition(storyId, postId, transitionId, success, error){
 
 function stud_createTransition(storyId, postId, transition, success, error){
 	$.ajax({
-		url: "/story/"+storyId+"/post/"+postId+"/transition", 
+		url: "/story/"+storyId+"/post/"+postId+"/transition",
 		type: "POST",
 		dataType: "json",
 		data: JSON.stringify(transition),
@@ -143,7 +143,7 @@ function stud_createTransition(storyId, postId, transition, success, error){
 
 function stud_updateThumbnail(storyId, imageData, success, error){
 	$.ajax({
-		url: "/story/"+storyId+"/uploadThumbnail", 
+		url: "/story/"+storyId+"/uploadThumbnail",
 		type: "POST",
 		dataType: "json",
 		data: JSON.stringify(imageData),
@@ -154,9 +154,9 @@ function stud_updateThumbnail(storyId, imageData, success, error){
 }
 
 function stud_updateTransition(storyId, postId, transition, success, error){
-	
+
 	$.ajax({
-		url: "/story/"+storyId+"/post/"+postId+"/transition/"+transition.id, 
+		url: "/story/"+storyId+"/post/"+postId+"/transition/"+transition.id,
 		type: "PUT",
 		dataType: "json",
 		data: JSON.stringify(transition),
@@ -169,7 +169,7 @@ function stud_updateTransition(storyId, postId, transition, success, error){
 
 function stud_deleteTransition(storyId, postId, transitionId, success, error){
 	$.ajax({
-		url: "/story/"+storyId+"/post/"+postId+"/transition/" + transitionId, 
+		url: "/story/"+storyId+"/post/"+postId+"/transition/" + transitionId,
 		type: "DELETE",
 		success: success,
 		error: error
@@ -178,7 +178,7 @@ function stud_deleteTransition(storyId, postId, transitionId, success, error){
 
 function stud_readLoggedUser(success, error){
 	$.ajax({
-		url: "/user", 
+		url: "/user",
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -189,7 +189,7 @@ function stud_readLoggedUser(success, error){
 
 function stud_readUserStories(success, error){
 	$.ajax({
-		url: "/story", 
+		url: "/story",
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -200,7 +200,7 @@ function stud_readUserStories(success, error){
 
 function stud_readPublishedStories(success, error){
 	$.ajax({
-		url: "/publishedstories", 
+		url: "/publishedstories",
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -211,7 +211,7 @@ function stud_readPublishedStories(success, error){
 
 function stud_logoutUser(success, error){
 	$.ajax({
-		url: "/logout", 
+		url: "/logout",
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -222,10 +222,9 @@ function stud_logoutUser(success, error){
 
 function stud_fetchHtml(url,success, error){
 	$.ajax({
-		url: "/fetchhtml", 
-		type: "POST",
+		url: "/fetch/html/" + encodeURIComponent(url),
+		type: "GET",
 		dataType: "json",
-		data: JSON.stringify({"url":url}),
 		contentType:"application/json",
 		success: success,
 		error: error

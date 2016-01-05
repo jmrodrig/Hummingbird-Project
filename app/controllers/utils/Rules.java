@@ -32,12 +32,32 @@ public class Rules extends Controller {
 
 	final static Charset ENCODING = StandardCharsets.UTF_8;
 
-	private List<Rule> rulesList = new ArrayList<>();
+	private List<controllers.utils.Rule> rulesList = new ArrayList<>();
 	private Path pathToRulesFile;
 
-	public Rules(String path) {
+	// constructors for class Rules //
+
+	Rules() {}
+
+	Rules(String path) {
 		readRulesFile(path);
 	}
+
+	// methods for class Rules //
+
+	public void addRule(String host, String strategy, String value) {
+		controllers.utils.Rule rule = new controllers.utils.Rule(host,strategy,value);
+		rulesList.add(rule);
+	}
+
+	public void addRule(controllers.utils.Rule rule) {
+		rulesList.add(rule);
+	}
+
+	public List<controllers.utils.Rule> getRulesList() {
+		return rulesList;
+	}
+
 
 	public void readRulesFile(String filepath) {
 		try {
@@ -45,10 +65,10 @@ public class Rules extends Controller {
 			pathToRulesFile = Paths.get(filepath);
 			List<String> ruleLinesText = Files.readAllLines(pathToRulesFile, ENCODING);
 			for (String ruleText : ruleLinesText) {
-				Rule rule = new Rule();
-				rule.host = ruleText.split(",")[0];
-				rule.strategy = ruleText.split(",")[1];
-				rule.value = ruleText.split(",")[2];
+				String host = ruleText.split(",")[0];
+				String strategy = ruleText.split(",")[1];
+				String value = ruleText.split(",")[2];
+				controllers.utils.Rule rule = new controllers.utils.Rule(host,strategy,value);
 				rulesList.add(rule);
 				//System.out.println("=> RULE: " + ruleText);
 			}
@@ -58,20 +78,13 @@ public class Rules extends Controller {
 		}
 	}
 
-	public String getHostStrategy(String host) {
+	public controllers.utils.Rules getRulesByHost(String host) {
+		Rules rules = new Rules();
 		for (Rule r : rulesList) {
-			if (r.host.equals(host))
-				return r.strategy;
+			if (r.getHost().equals(host))
+				rules.addRule(r);
 		}
-		return "";
-	}
-
-	public String getHostValue(String host) {
-		for (Rule r : rulesList) {
-			if (r.host.equals(host))
-				return r.value;
-		}
-		return "";
+		return rules;
 	}
 
 	public static Result setNewRule() throws Exception {
@@ -83,10 +96,4 @@ public class Rules extends Controller {
 		return ok();
 	}
 
-
-	class Rule {
-		String host;
-		String strategy;
-		String value;
-	}
 }

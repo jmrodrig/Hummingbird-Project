@@ -81,7 +81,7 @@ h1, h2, h3, h4, p, a {
 	width:100%;
 	height:100%;
 	float:left;
-	padding:40px;
+	padding:0px;
 	padding-bottom:50px;
 	/* background-color:#fff; */
 	/*background-image: url(/assets/images/canvas-texture.jpg);*/
@@ -109,6 +109,7 @@ h1, h2, h3, h4, p, a {
 	#library-body {
 		left:0%;
 		width:50%;
+		padding:15px;
 	}
 }
 
@@ -131,7 +132,7 @@ h1, h2, h3, h4, p, a {
 #create-story-container {
 	width: 100%;
 	max-width:600px;
-	padding: 30px;
+	padding: 20px;
 	text-align: initial;
 	background-color: white;
   margin: auto;
@@ -207,6 +208,49 @@ textarea#story-text {
 	display:none;
 }
 
+.article-embebed-iframe-container {
+	display: none;
+}
+
+.article-embebed-iframe-container iframe {
+	width:100%;
+}
+
+.article-img-container {
+	position: relative;
+  padding: 0px;
+	width: 100%;
+}
+
+.article-content-container {
+	padding: 7px;
+}
+
+.article-img-select-controls {
+	display:none;
+	position: absolute;
+  top: 50%;
+  margin-top: -10px;
+  height: 23px;
+  width: 17px;
+  background-color: rgba(1,1,1,.4);
+  border: 1px solid #aaa;
+}
+
+.article-img-select-controls .glyph-icon {
+	vertical-align: inherit;
+	padding: 0px;
+  color: #ccc;
+}
+
+#article-img-select-prev {
+	left: 0%;
+}
+
+#article-img-select-next {
+	right: 0%;
+}
+
 /******************************************************************
 	Story Container
 ******************************************************************/
@@ -214,7 +258,7 @@ textarea#story-text {
 .story-container {
 	width: 100%;
 	max-width:600px;
-	padding: 30px;
+	padding: 20px;
 	text-align: right;
 	background-color: white;
 	border-radius: 0px;
@@ -296,14 +340,13 @@ textarea#story-text {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
-.article-container *:not(img) {
+/*.article-container > *:not(#article-img-container) {
 	padding:7px;
-}
+}*/
 
 .article-image {
 	width:100%;
 	margin-bottom:10px;
-
 }
 
 .article-title {

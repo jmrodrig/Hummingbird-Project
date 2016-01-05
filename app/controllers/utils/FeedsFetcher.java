@@ -46,6 +46,9 @@ import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 
+import controllers.utils.Rules;
+import controllers.utils.Rule;
+
 import play.mvc.Result;
 import play.mvc.Controller;
 
@@ -253,9 +256,8 @@ public class FeedsFetcher extends Controller {
 
 	private static controllers.json.Article parseWebsiteContent(String url, String html, Integer levels) {
 		//Host
-		String host = url.split("\\.",2)[1].split("/",2)[0];
+		String host = url.split("//",2)[1].split("/",2)[0];
 		String rulesPath = Play.current().path().getAbsolutePath() + "/private/scrapingrules/";
-		controllers.utils.Rules daterules = new controllers.utils.Rules(rulesPath + "date");
 
 
 		Document doc = Jsoup.parse(html);
@@ -263,85 +265,54 @@ public class FeedsFetcher extends Controller {
 
 		//Article source
 		article.source = host;
-		//Article source
+		//Article url
 		article.url = url;
 		//Parse article title
-		String[] titleRegexs = {
-						"meta[name=\"twitter:title\"]",
-						"meta[property=\"twitter:title\"]",
-						"meta[property=\"og:title\"]",
-						"meta[itemprop=\"name\"]",
-						"meta[name=\"title\"]"
-		};
-		article.title = "";
-		for (String reg : titleRegexs) {
-			Elements metas = doc.select(reg);
-			if (metas.size() > 0) {
-				article.title = metas.first().attr("content");
-				//System.out.println("ARTICLE TITLE: " + article.title);
-				break;
-			};
-		};
-		//Parse article description
-		String[] descriptionRegexs = {
-						"meta[name=\"twitter:description\"]",
-						"meta[property=\"twitter:description\"]",
-						"meta[property=\"og:description\"]",
-						"meta[name=\"description\"]"
-		};
-		article.description = "";
-		for (String reg : descriptionRegexs) {
-			Elements metas = doc.select(reg);
-			if (metas.size() > 0) {
-				article.description = metas.first().attr("content");
-				//System.out.println("ARTICLE DESCRIPTION: " + article.description);
-				break;
-			};
-		};
-		//Parse article author
-		String[] authorRegexs = {
-						"meta[name=\"twitter:author\"]",
-						"meta[property=\"twitter:author\"]",
-						"meta[property=\"og:author\"]",
-						"meta[name=\"author\"]"
-		};
-		article.author = "";
-		for (String reg : authorRegexs) {
-			Elements metas = doc.select(reg);
-			if (metas.size() > 0) {
-				article.author = metas.first().attr("content");
-				break;
-			};
-		};
-		//Parse article cover image
-		String[] imageRegexs = {
-						"meta[name=\"twitter:image:src\"]",
-						"meta[property=\"og:image\"]",
-						"meta[itemprop=\"image\"]"
-		};
-		article.imageUrl = "";
-		for (String reg : imageRegexs) {
-			Elements metas = doc.select(reg);
-			if (metas.size() > 0) {
-				article.imageUrl = metas.first().attr("content");
-				break;
-			};
-		};
-		//Parse article date
-		//TODO: if same host has more than one rule
-		article.date = "";
-		String strategy = daterules.getHostStrategy(host);
-		System.out.println("STRATEGY : " + strategy);
-		if (strategy.equals("class")) {
-			article.date = doc.select("." + daterules.getHostValue(host)).first().text();
-		} else if (strategy.equals("tag&attr")) {
-			String tag = daterules.getHostValue(host).split("\\&",2)[0];
-			String attr = daterules.getHostValue(host).split("\\&",2)[1];
-			System.out.println("TAG & ATTR : " + tag + "&" + attr);
-			if (doc.select(tag + "[" + attr + "]").size() > 0)
-				article.date = doc.select(tag + "[" + attr + "]").first().attr(attr);
-		}
+		Rules titlerules = new Rules();
+		titlerules.addRule("general","regex&&attr","meta[name=\"twitter:title\"]&&content");
+		titlerules.addRule("general","regex&&attr","meta[property=\"twitter:title\"]&&content");
+		titlerules.addRule("general","regex&&attr","meta[property=\"og:title\"]&&content");
+		titlerules.addRule("general","regex&&attr","meta[name=\"title\"]&&content");
+		titlerules.addRule("general","tag","title");
 
+		article.title = parseByRules(doc, titlerules);
+
+		// if (article.title.equals("")) {
+		// 	titlerules = new Rules(rulesPath + "title");
+		// }
+
+
+		//Parse article description
+		Rules descriptionrules = new Rules();
+		descriptionrules.addRule("general","regex&&attr","meta[name=\"twitter:description\"]&&content");
+		descriptionrules.addRule("general","regex&&attr","meta[property=\"twitter:description\"]&&content");
+		descriptionrules.addRule("general","regex&&attr","meta[property=\"og:description\"]&&content");
+		descriptionrules.addRule("general","regex&&attr","meta[name=\"description\"]&&content");
+
+
+		article.description = parseByRules(doc, descriptionrules);
+
+		//Parse article author
+		Rules authorrules = new Rules();
+		authorrules.addRule("general","regex&&attr","meta[name=\"twitter:author\"]&&content");
+		authorrules.addRule("general","regex&&attr","meta[property=\"twitter:author\"]&&content");
+		authorrules.addRule("general","regex&&attr","meta[property=\"og:author\"]&&content");
+		authorrules.addRule("general","regex&&attr","meta[name=\"author\"]&&content");
+
+		article.author = parseByRules(doc, authorrules);
+
+		//Parse article cover image
+		Rules imgrules = new Rules();
+		imgrules.addRule("general","regex&&attr","meta[name=\"twitter:image:src\"]&&content");
+		imgrules.addRule("general","regex&&attr","meta[property=\"og:image\"]&&content");
+		imgrules.addRule("general","regex&&attr","meta[itemprop=\"image\"]&&content");
+
+		article.imageUrl = parseByRules(doc, imgrules);
+
+		//Parse article date
+		Rules daterulesfile = new Rules(rulesPath + "date");
+		Rules fromcurrenthost = daterulesfile.getRulesByHost(host);
+		article.date = parseByRules(doc, fromcurrenthost);
 
 		//Parse article content (html)
 		article.html = "";
@@ -362,8 +333,64 @@ public class FeedsFetcher extends Controller {
 			}
 		}
 
+		// parse all images within the
+		Document articledoc = Jsoup.parse(article.html);
+
+		ArrayList<String> imagelinks = new ArrayList<String>();
+
+		for (Element el : doc.select("a[href$=.jpg]"))
+			imagelinks.add(el.attr("href"));
+		for (Element el : doc.select("a[*$=.png]"))
+			imagelinks.add(el.attr("href"));
+		for (Element el : doc.select("img"))
+			imagelinks.add(el.attr("src"));
+
+		article.imagelinks = imagelinks;
+
 		return article;
 	}
+
+	private static String parseByRule(Document doc, Rule rule) {
+		String strategy = rule.getStrategy();
+		String value = rule.getValue();
+
+		if (strategy.equals("class")) {
+			if (doc.select("." + value).size() > 0)
+				return doc.select("." + value).first().text();
+		}
+		else if (strategy.equals("tag")) {
+			if (doc.select(value).size()  > 0)
+				return doc.select(value).first().text();
+		}
+		else if (strategy.equals("tag&attr")) {
+			String tag = value.split("\\&",2)[0];
+			String attr = value.split("\\&",2)[1];
+			if (doc.select(tag + "[" + attr + "]").size() > 0)
+				return doc.select(tag + "[" + attr + "]").first().attr(attr);
+		}
+		else if (strategy.equals("regex&&attr")) {
+			String regex = value.split("\\&\\&",2)[0];
+			String attr = value.split("\\&\\&",2)[1];
+			if (doc.select(regex).size() > 0)
+				return doc.select(regex).first().attr(attr);
+		}
+		return "";
+	}
+
+	public static String parseByRules(Document doc, Rules rules) {
+		List<Rule> ruleslist = rules.getRulesList();
+		for (Rule r : ruleslist) {
+			System.out.println("GOING TO PARSEBYRULE ONLY: " + r.getValue());
+			String value = parseByRule(doc, r);
+			if (!value.equals("")) {
+				return value;
+			}
+		}
+		return "";
+	}
+
+
+
 
 	private static Element getElementParent(Document doc, Element el, Integer levels) {
 		for(Integer i = 0; i < levels+1; i++) {
@@ -373,5 +400,7 @@ public class FeedsFetcher extends Controller {
 		}
 		return el;
 	}
+
+
 
 }
