@@ -269,7 +269,7 @@ function buildLibraryBody(stories) {
 		var authorName = story.author.fullName;
 		authorContainer.append("<span class='story-author-location'>" + authorName +  "</span>");
 		if (story.locationName && story.locationName.length > 0)
-			address = " at " + story.locationName + "."
+			var address = " at " + story.locationName + "."
 		authorContainer.append('<span class="address">' + address + '</span>');
 
 		// Summary container
