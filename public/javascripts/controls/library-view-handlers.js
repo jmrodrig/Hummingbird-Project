@@ -3,7 +3,7 @@
 var map;
 var helpOn = true;
 var publishedStories;
-var defaultLocation = new google.maps.LatLng(38.711652, -9.131238);
+var defaultLocation;
 var fitZoom;
 
 var user = null;
@@ -16,11 +16,7 @@ var iframesize;
 
 var defaultAvatarPic = "/assets/images/user-avatar.jpg"
 
-var markerIcon = {
-  url: "/assets/images/marker_icon.png",
-  origin: new google.maps.Point(0, 0),
-  anchor: new google.maps.Point(13, 13)
-};
+var markerIcon;
 
 
 var defaultStoryMapCss
@@ -42,6 +38,14 @@ var isgrabWebsiteMetadataBusy;
 function initialize() {
 
 	$('#blog-link').css('display' , 'block' );
+
+  defaultLocation = new google.maps.LatLng(38.711652, -9.131238);
+
+  markerIcon = {
+    url: "/assets/images/marker_icon.png",
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(13, 13)
+  };
 
 	user = newUserObj();
 	user.constructor();
@@ -268,8 +272,9 @@ function buildLibraryBody(stories) {
 		//Story author & Location
 		var authorName = story.author.fullName;
 		authorContainer.append("<span class='story-author-location'>" + authorName +  "</span>");
-		if (story.locationName && story.locationName.length > 0)
-			var address = " at " + story.locationName + "."
+    var address = "";
+    if (story.locationName && story.locationName.length > 0)
+			address = " at " + story.locationName + "."
 		authorContainer.append('<span class="address">' + address + '</span>');
 
 		// Summary container
@@ -410,7 +415,7 @@ function initiateMap() {
 		google.maps.event.removeListener(listener);
 	});
 
-	updateFocusedAddress();
+	//updateFocusedAddress();
 
   //-- SearchBox --//
   var input = document.getElementById('location-in');
@@ -469,11 +474,12 @@ function mapCenterChanged() {
 	selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
 	sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
 	buildLibraryBody(sortedStories);
-	updateFocusedAddress();
+	//updateFocusedAddress();
 }
 
 function updateFocusedAddress() {
-	getAddressFromLatLng(map.getCenter(),$('#story-user .address'));
+	var addr = getAddressFromLatLng(map.getCenter());
+  $('#story-user .address').html(" at " + addr + ".");
 }
 
 //--- fitStoryOnView ---//
@@ -612,18 +618,15 @@ function drawPublishedStoryMarkersOnMap(publishedStories) {
 }
 
 //--- Convert latLng in readable address ---//
-function getAddressFromLatLng(latlng,element) {
+function getAddressFromLatLng(latlng, callback) {
 	var geocoder = new google.maps.Geocoder();
 	geocoder.geocode({'latLng': latlng }, function(results, status) {
 		if (status == google.maps.GeocoderStatus.OK) {
 			if (results[0]) {
-				lastAddress = results[0].formatted_address
-				element.html(" at " + results[0].formatted_address + ".");
-
+				callback(results[0].formatted_address);
 			}
 		} else {
-			element.html("");
-			lastAddress = "";
+      callback("");
 		}
 	});
 }
@@ -666,15 +669,18 @@ function createStory() {
 	//set new story title
 	story.setTitle("story_" + user.getEmail() + "_" + new Date().getTime());
 	story.setLocation(getMapCenter().lat(),getMapCenter().lng())
-	story.setLocationName(lastAddress);
 	story.setSummary($('#story-text').val());
-	if (article) {
+  //setArticle
+  if (article) {
 		story.setArticle(article.title,
 						article.description,
 						article.imageUrl,
 						webUrl)
 	}
-	//setArticle
+  //set location name
+  story.setLocationName("");
+
+  //save story on server
 	story.createStory(function(st){
 		//upload story pics
 		var story = st
@@ -805,4 +811,8 @@ function computeRadarRadius() {
 	zoom=map.getZoom()
 	radius = 3*Math.pow(2,21-zoom);
 	return radius;
+}
+
+function doCallback() {
+  alert('calling back')
 }
