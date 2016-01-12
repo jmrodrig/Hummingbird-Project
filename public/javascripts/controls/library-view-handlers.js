@@ -675,7 +675,8 @@ function createStory() {
 		story.setArticle(article.title,
 						article.description,
 						article.imageUrl,
-						webUrl)
+						webUrl,
+          "","","")
 	}
   //set location name
   story.setLocationName("");

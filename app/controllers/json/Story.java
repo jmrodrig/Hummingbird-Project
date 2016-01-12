@@ -17,6 +17,9 @@ public class Story {
 	public String articleDescription;
 	public String articleImage;
 	public String articleLink;
+	public String articleDate;
+	public String articleSource;
+	public String articleAuthor;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
@@ -52,6 +55,9 @@ public class Story {
 		result.articleDescription = story.getArticleDescription();
 		result.articleImage = story.getArticleImage();
 		result.articleLink = story.getArticleLink();
+		result.articleDate = story.getArticleDate();
+		result.articleSource = story.getArticleSource();
+		result.articleAuthor = story.getArticleAuthor();
 
 
 		if (forceReadDomainStory || story.isDomainStoryLoaded()){

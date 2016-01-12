@@ -100,6 +100,9 @@ public class Stories extends Controller {
 											jsonStory.articleDescription,
 											jsonStory.articleImage,
 											jsonStory.articleLink,
+											jsonStory.articleDate,
+											jsonStory.articleSource,
+											jsonStory.articleAuthor,
 											location);
 
 		story.setDomainStory(domainStory);
@@ -255,7 +258,7 @@ public class Stories extends Controller {
 											domainStory.getTitle(),
 											domainStory.getSummary(),
 											"", 0.0, "", "",
-											"","","","",
+											"","","","","","","",
 											null);
 			}
 
