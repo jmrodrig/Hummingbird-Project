@@ -20,6 +20,7 @@ public class Story {
 	public String articleDate;
 	public String articleSource;
 	public String articleAuthor;
+	public String articleLanguage;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
@@ -58,6 +59,7 @@ public class Story {
 		result.articleDate = story.getArticleDate();
 		result.articleSource = story.getArticleSource();
 		result.articleAuthor = story.getArticleAuthor();
+		result.articleLanguage = story.getArticleLanguage();
 
 
 		if (forceReadDomainStory || story.isDomainStoryLoaded()){

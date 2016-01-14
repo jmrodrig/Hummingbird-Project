@@ -106,6 +106,9 @@ public class Story extends Model {
 	@Column(name = "article_author")
 	private String articleAuthor;
 
+	@Column(name = "article_language")
+	private String articleLanguage;
+
 	@ManyToMany(cascade = CascadeType.ALL)
 	@JoinTable(name = "stories_labels", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "label_id", referencedColumnName = "id") })
 	private List<Label> labels;
@@ -214,8 +217,9 @@ public class Story extends Model {
 	public String getArticleDate() { return articleDate; }
 	public String getArticleSource() { return articleSource; }
 	public String getArticleAuthor() { return articleAuthor; }
+	public String getArticleLanguage() { return articleLanguage; }
 
-	public void setArticle(String title, String  description, String  image, String  link, String  date, String  source, String  author) {
+	public void setArticle(String title, String  description, String  image, String  link, String  date, String  source, String  author, String lang) {
 		this.articleTitle = title;
 		this.articleDescription = description;
 		this.articleImage = image;
@@ -223,6 +227,7 @@ public class Story extends Model {
 		this.articleDate = date;
 		this.articleSource = source;
 		this.articleAuthor = author;
+		this.articleLanguage = lang;
 	}
 
 	public String getThumbnail() {
@@ -342,7 +347,7 @@ public class Story extends Model {
 
 	public static Story create(User user, String title, String summary, String content, double cost, String filePath,
 								String locationName,
-								String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor,
+								String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage,
 								controllers.json.Location location)
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
@@ -356,6 +361,7 @@ public class Story extends Model {
 																				articleDate,
 																				articleSource,
 																				articleAuthor,
+																				articleLanguage,
 																				location);
 		}
 		story = new Story();
@@ -373,13 +379,14 @@ public class Story extends Model {
 				articleDate,
 				articleSource,
 				articleAuthor,
+				articleLanguage,
 				location);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String content, Double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, controllers.json.Location location) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String content, Double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
@@ -391,18 +398,19 @@ public class Story extends Model {
 				articleDate,
 				articleSource,
 				articleAuthor,
+				articleLanguage,
 				location);
 		return story;
 	}
 
-	private static void setStory(Story story, String title, String summary, String content, double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, controllers.json.Location location) throws IOException {
+	private static void setStory(Story story, String title, String summary, String content, double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(content);
 		story.setCost(cost);
 		story.setPath(filePath);
 		story.setLocationName(locationName);
-		story.setArticle(articleTitle,articleDescription,articleImage,articleLink,articleDate,articleSource,articleAuthor);
+		story.setArticle(articleTitle,articleDescription,articleImage,articleLink,articleDate,articleSource,articleAuthor,articleLanguage);
 		story.setLocation(new Location(location));
 	}
 

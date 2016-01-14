@@ -103,6 +103,7 @@ public class Stories extends Controller {
 											jsonStory.articleDate,
 											jsonStory.articleSource,
 											jsonStory.articleAuthor,
+											jsonStory.articleLanguage,
 											location);
 
 		story.setDomainStory(domainStory);
@@ -258,7 +259,7 @@ public class Stories extends Controller {
 											domainStory.getTitle(),
 											domainStory.getSummary(),
 											"", 0.0, "", "",
-											"","","","","","","",
+											"","","","","","","","",
 											null);
 			}
 
