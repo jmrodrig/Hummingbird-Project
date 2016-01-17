@@ -47,6 +47,7 @@ POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(
 POST	/story/:storyId/uploadimage									controllers.Stories.uploadImage(storyId: Long)
 POST	/story/:storyId/publish/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
 POST	/story/upload												controllers.Stories.uploadStory()
+POST	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
 
 
 #Posts

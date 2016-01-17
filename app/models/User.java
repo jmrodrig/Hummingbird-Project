@@ -28,12 +28,12 @@ public class User extends Model {
 
 	@Version
 	public long version;
-	
+
 	@Id
 	@GeneratedValue
 	@Column(name = "id")
 	private String id;
-	
+
 	@Column(name = "provider")
 	private String provider;
 
@@ -45,10 +45,10 @@ public class User extends Model {
 
 	@Column(name = "fullName")
 	private String fullName;
-	
+
 	@Column(name = "email")
 	private String email;
-	
+
 	@Column(name="avatarUrl")
 	private String avatarUrl;
 
@@ -57,6 +57,9 @@ public class User extends Model {
 
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<UserStory> userStories;
+
+	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
+	private List<Like> likes;
 
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<Invitation> invitations;
@@ -92,7 +95,7 @@ public class User extends Model {
 	public void setLastName(String lastName) {
 		this.lastName = lastName;
 	}
-	
+
 	public String getFullName() {
 		return fullName;
 	}
@@ -108,7 +111,7 @@ public class User extends Model {
 	public void setEmail(String email) {
 		this.email = email;
 	}
-	
+
 	public String getAvatarUrl() {
 		return avatarUrl;
 	}
@@ -140,7 +143,7 @@ public class User extends Model {
 	public void setUserStories(List<UserStory> userStories) {
 		this.userStories = userStories;
 	}
-	
+
 	public void addUserStory(UserStory userStory){
 		this.userStories.add(userStory);
 		this.save();
@@ -151,7 +154,7 @@ public class User extends Model {
 	public static User findByIdentityId(IdentityId identity){
 		return finder.where(Expr.and(Expr.eq("id", identity.userId()), Expr.eq("provider", identity.providerId()))).findUnique();
 	}
-	
+
 	public static User findByEmail(String email) {
 		if (email != null) {
 			User user = finder.where().eq("email", email).findUnique();
@@ -191,7 +194,7 @@ public class User extends Model {
 		user.save(DBConstants.lir_backoffice);
 		return user;
 	}
-	
+
 	public static User create(Identity identity) throws ModelAlreadyExistsException{
 		String firstName = null;
 		String lastName = null;
@@ -220,16 +223,16 @@ public class User extends Model {
 			Logger.error(e.getMessage());
 		}
 		return User.create(
-				identity.identityId().userId(), 
-				identity.identityId().providerId(), 
-				firstName, 
-				lastName, 
+				identity.identityId().userId(),
+				identity.identityId().providerId(),
+				firstName,
+				lastName,
 				identity.fullName(),
 				email,
 				avatarUrl,
 				passwordInfo);
 	}
-	
+
 	public void update(Identity identity){
 		String firstName = null;
 		String lastName = null;

@@ -269,6 +269,25 @@ function buildLibraryBody(stories) {
 
 		}
 
+		// LIKE BUTTON
+		var likeButtonText = (story.currentUserLikesStory) ? 'Liked' : 'Like';
+		var likeButtonClass = (story.currentUserLikesStory) ? 'btn-primary' : 'btn-success';
+		var likeButton = $('<a class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.likes + '</span></a>')
+								.appendTo(storyContainer)
+								.click(function() {
+									var storyId = parseInt($(this).parent().attr('id').split('story-')[1])
+									likeStory(storyId, function(result) {
+										$('#story-' + storyId + ' .story-like-button span').html(result.noOfLikes);
+										if (result.currentUserLikesStory) {
+											$('#story-' + storyId + ' .story-like-button').removeClass('btn-success').addClass('btn-primary')
+																																		.html('Liked  <span class="badge">' + result.noOfLikes + '</span>');
+										} else {
+											$('#story-' + storyId + ' .story-like-button').addClass('btn-success').removeClass('btn-primary')
+																																		.html('Like  <span class="badge">' + result.noOfLikes + '</span>');
+										}
+									});
+								});
+
 		//add to Library Body
 		storyContainer.appendTo(libraryBody);
 	});
@@ -726,6 +745,16 @@ function unpublish(storyId, onFinished){
 		// contentType:"application/json",
 		success: onFinished,
 		error: function() {console.log("Couln't unpublish story");}
+	});
+}
+
+function likeStory(storyId, onFinished){
+	$.ajax({
+		url: "/story/" + storyId + "/like",
+		type: "POST",
+		dataType: "json",
+		success: onFinished,
+		error: function() {console.log("Couln't like story");}
 	});
 }
 
