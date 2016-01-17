@@ -37,9 +37,9 @@ var isgrabWebsiteMetadataBusy;
 //--- initialize method ---//
 function initialize() {
 
-	//$('#blog-link').css('display' , 'block' );
+	$('#blog-link').css('display' , 'block' );
 
-  defaultLocation = new google.maps.LatLng(37, -20);
+  defaultLocation = new google.maps.LatLng(38.711652, -9.131238);
 
   markerIcon = {
     url: "/assets/images/marker_icon.png",
@@ -82,6 +82,13 @@ function intializeEvents() {
 
 	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
+	updateMapContainerSize();
+
+	//----------------
+	$('#btn-show-map').click(function() {
+		$('#content-wrapper').toggleClass('map-open');
+		toggleMapContainerState()
+	});
 
   //--- Google Analytics track event ----//
 	$(".ga-event-map-publish").click( function() {
@@ -91,30 +98,30 @@ function intializeEvents() {
 	//----------------
 	$(window).resize(function() {
 		$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
+		$('#content-wrapper').removeClass('map-open');
+		updateMapContainerSize();
+		if ($(window).innerWidth() < 768)
+			$('#content-wrapper').addClass('container-collapsed');
+		else
+			$('#content-wrapper').removeClass('container-collapsed');
+
+		$('.story-container').removeClass('active').removeClass('options-active')
 
     //resize of Vine's iframe
+
     iframesize = $('.story-container').width();
     $('.vines-iframe').attr("width",iframesize)
                       .attr("height",iframesize);
     $('.article-embebed-iframe-container').height(iframesize);
 	});
 
+	//----------------
+	// $('#story-map').hover(function() {
+		// if (!$('#content-wrapper').hasClass('container-collapsed'))
+			// toggleOpenMap();
+	// });
+
 	var lastScrollTop = $('#library-body').scrollTop()
-
-	// Retract Location Banner
-	$('#content-wrapper').scroll(function() {
-		var currentScrollTop = $('#content-wrapper').scrollTop();
-		if (currentScrollTop < 300)
-			$('#location-banner').css('top', 364 - currentScrollTop + 'px');
-		else
-			$('#location-banner').css('top', '64px');
-	});
-
-	$('#location-banner').keypress(function(e) {
-    if(e.which == 13) {
-        $("#content-wrapper").animate({ scrollTop: 0 }, "slow");
-    }
-});
 
   // RETRACT NAVBAR
 	// $('#library-body').scroll(function() {
@@ -173,6 +180,65 @@ function intializeEvents() {
     $('#story-article .article-image').attr('src',link)
     article.imageUrl = link;
   });
+}
+
+function updateMapContainerSize() {
+	var mapClosedWidth = 1-libOpenWidth;
+	var libClosedWidth = 1 - mapOpenWidth;
+	var wS = $('#content-wrapper').innerWidth();
+	var hS = $('#content-wrapper').innerHeight();
+	if ($('#content-wrapper').hasClass('map-open')) {
+		if ($('#content-wrapper').hasClass('container-collapsed'))
+			mapsize = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
+		else
+			mapsize = { left:(1-mapOpenWidth)*wS , top:0*hS, width:mapOpenWidth*wS , height:1.00*hS, borderRadius:0 }
+	} else {
+		if ($('#content-wrapper').hasClass('container-collapsed'))
+			mapsize = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
+		else
+			mapsize = { left:(1-mapClosedWidth)*wS , top:0*hS, width:mapClosedWidth*wS , height:1.00*hS, borderRadius:0  }
+	}
+	$('#library-map').css(mapsize)
+	$('#map-canvas').css({width:mapsize.width, height:mapsize.height})
+	google.maps.event.trigger(map, 'resize');
+}
+
+function toggleMapContainerState() {
+	var mapClosedWidth = 1 - libOpenWidth;
+	var libClosedWidth = 1 - mapOpenWidth;
+	var wS = $('#content-wrapper').innerWidth();
+	var hS = $('#content-wrapper').innerHeight();
+	defaultLibraryMapCss = { left:(1-mapClosedWidth)*wS , top:0*hS, width:mapClosedWidth*wS , height:1.00*hS, borderRadius:0  }
+	defaultLibraryMapColapseCss = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
+	openLibraryMapCss = { left:(1-mapOpenWidth)*wS , top:0*hS, width:mapOpenWidth*wS , height:1.00*hS, borderRadius:0 }
+	openLibraryMapColapseCss = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
+
+	if ($('#content-wrapper').hasClass('map-open')) {
+    console.log(mapOpenWidth*wS);
+		if ($('#content-wrapper').hasClass('container-collapsed')) {
+      $('#library-body').css({ left:-.9*wS });
+			resizeMap(defaultLibraryMapColapseCss,openLibraryMapColapseCss,true);
+		} else {
+			resizeMap(defaultLibraryMapCss,openLibraryMapCss,true);
+      $('#library-body').css({ left:-(mapOpenWidth-mapClosedWidth)*wS });
+    }
+	} else {
+    $('#library-body').css({ left:0 });
+		if ($('#content-wrapper').hasClass('container-collapsed'))
+			resizeMap(openLibraryMapColapseCss,defaultLibraryMapColapseCss,false);
+		else
+			resizeMap(openLibraryMapCss,defaultLibraryMapCss,false);
+	}
+}
+
+function toggleOpenMap() {
+	$('#content-wrapper').toggleClass('map-open');
+  console.log(mapOpenWidth*$('#content-wrapper').innerWidth());
+  if ($('#content-wrapper').hasClass('map-open'))
+    $('#library-body').css({ right:mapOpenWidth*$('#content-wrapper').innerWidth() });
+  else
+    $('#library-body').css({ left:0 });
+	toggleMapContainerState()
 }
 
 function buildLibraryBody(stories) {
@@ -274,6 +340,7 @@ function buildLibraryBody(stories) {
 	});
 
 	$("textarea.story-summary, #story-text").elastic();
+
 };
 
 function addArticleContainer(data) {
@@ -326,7 +393,7 @@ function buildVineContainer(link) {
 //--- initiateMap method ---//
 function initiateMap() {
 	var mapOptions = {
-		zoom : 2,
+		zoom : 16,
 		streetViewControl: true,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
     scaleControl : true,
@@ -342,17 +409,18 @@ function initiateMap() {
 
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-		//google.maps.event.addListener(map, 'center_changed', mapCenterChanged);
-		//google.maps.event.addListener(map, 'zoom_changed', mapCenterChanged);
+		google.maps.event.addListener(map, 'click', mapLeftClicked);
+		google.maps.event.addListener(map, 'center_changed', mapCenterChanged);
+		google.maps.event.addListener(map, 'zoom_changed', mapCenterChanged);
 		google.maps.event.removeListener(listener);
 	});
 
 	//updateFocusedAddress();
 
   //-- SearchBox --//
-  var input = document.getElementById('location-input');
+  var input = document.getElementById('location-in');
   var searchBox = new google.maps.places.SearchBox(input);
-  //map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
+  map.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
   //Bias the SearchBox results towards current map's viewport.
   searchBox.setBounds(map.getBounds());
   map.addListener('bounds_changed', function() {
@@ -365,9 +433,6 @@ function initiateMap() {
     map.setCenter(places[0].geometry.location);
   });
 }
-
-//--- Listener for window ---//
-google.maps.event.addDomListener(window, 'load', initialize);
 
 //--- method resizeMap ---//
 function resizeMap(oldState,newState,isExpand) {
@@ -386,6 +451,10 @@ function resizeMap(oldState,newState,isExpand) {
 	panY = (oldState.height-newState.height)/2;
 	map.panBy(panX,panY);
 }
+
+
+//--- Listener for window ---//
+google.maps.event.addDomListener(window, 'load', initialize);
 
 //--- focusOnPostMarker ---//
 function focusOnPostMarker(location) {
@@ -433,6 +502,15 @@ function fitStoryOnView(markers) {
 	}
 }
 
+//--- mapLeftClicked method ---//
+function mapLeftClicked(mouseEvent) {
+	if (!story) return;
+	// random click does nothing
+	if (!enablePostCreation) {
+		return;
+	}
+}
+
 function centerOnUserLocation() {
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(function(position) {
@@ -454,9 +532,10 @@ function readPublishedStories() {
 	lirmanager.readPublishedStories(function(lirmanager){
 		publishedStories = lirmanager.getStories();
 		drawPublishedStoryMarkersOnMap(publishedStories)
+		//console.log(publishedStories);
 		selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
-		//sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
-		buildLibraryBody(selectedStories);
+		sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
+		buildLibraryBody(sortedStories);
 	});
 }
 
@@ -733,4 +812,8 @@ function computeRadarRadius() {
 	zoom=map.getZoom()
 	radius = 3*Math.pow(2,21-zoom);
 	return radius;
+}
+
+function doCallback() {
+  alert('calling back')
 }
