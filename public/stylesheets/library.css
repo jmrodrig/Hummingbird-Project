@@ -207,8 +207,7 @@ textarea#story-text {
 .story-container {
 	width: 100%;
 	max-width:600px;
-	padding: 20px;
-	text-align: right;
+	text-align: inherit;
 	background-color: white;
 	border-radius: 0px;
 	margin: auto;
@@ -219,16 +218,32 @@ textarea#story-text {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
+.story-container-header {
+	padding: 0px;
+}
+
+.story-container-body {
+	padding: 20px 15px;
+}
+
+.story-container-footer {
+	padding: 0px 20px;
+	padding-bottom: 20px;
+	text-align: right;
+}
+
 @media (max-width: 768px) {
-	.story-container {
-		padding:10px;
-		padding-top:20px;
+	.story-container-body  {
+		padding: 0px;
 	}
 }
 
 .author-container {
 	margin-bottom:25px;
 	text-align: initial;
+	height: 60px;
+	width: 40%;
+	padding: 20px;
 }
 
 .story-author-thumbnail {
@@ -241,21 +256,36 @@ textarea#story-text {
 	margin-top: -12px;
 	border-radius:23px;
 	margin-right: 10px;
-
 }
 
-.story-author-location {
+.story-author-name {
 	font-size:16px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	text-align: initial;
 }
 
-.author-container .address {
-	color: #999;
+.location-container {
+	width: 60%;
+	text-align: initial;
+	/*background-color: #000000;*/
+	background-image: url(/assets/images/map-bk.jpg);
+	color: white;
+	height: 60px;
+}
+
+.location-container .glyph-icon {
+	padding: 15px 10px;
+	margin-left: 5px;
+}
+
+.location-container .address {
+	display: table-cell;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;
 	margin-left: 5px;
+	height: 60px;
+	vertical-align: middle;
 }
 
 .image-container img {

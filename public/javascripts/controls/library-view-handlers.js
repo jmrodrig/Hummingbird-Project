@@ -190,9 +190,15 @@ function buildLibraryBody(stories) {
 		var storyContainer = $('<div/>').attr('id', 'story-' + story.id)
 							.addClass('story-container')
 
+		//Story container header
+		var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
+		//Story container body
+		var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer);
+		//Story container footer
+		var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
 
 		//Story author container
-		var authorContainer = $('<div class="author-container"/>').appendTo(storyContainer);
+		var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
 
 		//Story author thumbnail
 		if (story.author.avatarUrl)
@@ -203,17 +209,24 @@ function buildLibraryBody(stories) {
 								.css('background-image','url(' + avatarUrl + ')')
 								.appendTo(authorContainer)
 
-		//Story author & Location
+		//Story author name
 		var authorName = story.author.fullName;
-		authorContainer.append("<span class='story-author-location'>" + authorName +  "</span>");
-    var address = "";
+		authorContainer.append("<span class='story-author-name'>" + authorName +  "</span>");
+
+
+		//Story location container
+		var locationContainer = $('<div class="location-container pull-right"/>').appendTo(storyContainerHeader);
+
+		var location = "";
     if (story.locationName && story.locationName.length > 0)
-			address = " at " + story.locationName + "."
-		authorContainer.append('<span class="address">' + address + '</span>');
+			location = story.locationName;
+		$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-20px flaticon-facebook30"></div>').appendTo(locationContainer);
+		$('<p class="address">' + location + '</p>').appendTo(locationContainer);
+
 
 		// Summary container
 		if (story.summary && story.summary.length > 0) {
-			var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainer);
+			var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
 			var textarea = $('<textarea readonly class="story-summary"></textarea>').val(story.summary)
 																		.appendTo(summaryContainer);
 		}
@@ -232,13 +245,13 @@ function buildLibraryBody(stories) {
 
 			imageContainer.find('img').attr('src',story.thumbnail)
 
-			storyContainer.append(imageContainer);
+			imageContainer.appendTo(storyContainerBody);
 		}
 
 
 		// ARTICLE CONTAINER
 		if (story.articleTitle) {
-      var articleContainer = $('<div class="article-container"/>').appendTo(storyContainer);
+      var articleContainer = $('<div class="article-container"/>').appendTo(storyContainerBody);
       if (getHostFromUrl(story.articleLink) == "vine.co") {
         buildVineContainer(story.articleLink).appendTo(articleContainer);
       } else {
@@ -258,7 +271,7 @@ function buildLibraryBody(stories) {
 		var id = story.id;
 		if (story.author.email == user.getEmail() || story.author.email.indexOf("ideas@lostinreality.net")) {
 			var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" >Unpublish</a>')
-									.appendTo(storyContainer)
+									.appendTo(storyContainerFooter)
 									.click(function() {
 										var storyId = parseInt($(this).parent().attr('id').split('story-')[1])
 										unpublish(storyId, function() {
@@ -273,7 +286,7 @@ function buildLibraryBody(stories) {
 		var likeButtonText = (story.currentUserLikesStory) ? 'Liked' : 'Like';
 		var likeButtonClass = (story.currentUserLikesStory) ? 'btn-primary' : 'btn-success';
 		var likeButton = $('<a class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.likes + '</span></a>')
-								.appendTo(storyContainer)
+								.appendTo(storyContainerFooter)
 								.click(function() {
 									var storyId = parseInt($(this).parent().attr('id').split('story-')[1])
 									likeStory(storyId, function(result) {
