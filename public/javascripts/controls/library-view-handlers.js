@@ -221,7 +221,7 @@ function buildLibraryBody(stories) {
     if (story.locationName && story.locationName.length > 0)
 			location = story.locationName;
 		$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-20px flaticon-facebook30"></div>').appendTo(locationContainer);
-		$('<p class="address">' + location + '</p>').appendTo(locationContainer);
+		$('<p class="location">' + location + '</p>').appendTo(locationContainer);
 
 
 		// Summary container
@@ -270,10 +270,10 @@ function buildLibraryBody(stories) {
 		//UNPUBLISH BUTTON
 		var id = story.id;
 		if (story.author.email == user.getEmail() || story.author.email.indexOf("ideas@lostinreality.net")) {
-			var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" >Unpublish</a>')
+			var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" storyId= ' + id + ' >Unpublish</a>')
 									.appendTo(storyContainerFooter)
 									.click(function() {
-										var storyId = parseInt($(this).parent().attr('id').split('story-')[1])
+										var storyId = $(this).attr('storyId');
 										unpublish(storyId, function() {
 											clearAllMarkers();
 											readPublishedStories();
@@ -285,10 +285,10 @@ function buildLibraryBody(stories) {
 		// LIKE BUTTON
 		var likeButtonText = (story.currentUserLikesStory) ? 'Liked' : 'Like';
 		var likeButtonClass = (story.currentUserLikesStory) ? 'btn-primary' : 'btn-success';
-		var likeButton = $('<a class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.likes + '</span></a>')
+		var likeButton = $('<a storyId= ' + id + ' class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.likes + '</span></a>')
 								.appendTo(storyContainerFooter)
 								.click(function() {
-									var storyId = parseInt($(this).parent().attr('id').split('story-')[1])
+									var storyId = $(this).attr('storyId');
 									likeStory(storyId, function(result) {
 										$('#story-' + storyId + ' .story-like-button span').html(result.noOfLikes);
 										if (result.currentUserLikesStory) {
@@ -379,7 +379,7 @@ function initiateMap() {
 		google.maps.event.removeListener(listener);
 	});
 
-	//updateFocusedAddress();
+	//updateFocusedLocationName();
 
   //-- SearchBox --//
   var input = document.getElementById('location-input');
@@ -437,12 +437,12 @@ function mapCenterChanged() {
 	selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
 	sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
 	buildLibraryBody(sortedStories);
-	//updateFocusedAddress();
+	//updateFocusedLocationName();
 }
 
-function updateFocusedAddress() {
+function updateFocusedLocationName() {
 	var addr = getAddressFromLatLng(map.getCenter());
-  $('#story-user .address').html(" at " + addr + ".");
+  $('#story-user .location').html(" at " + addr + ".");
 }
 
 //--- fitStoryOnView ---//

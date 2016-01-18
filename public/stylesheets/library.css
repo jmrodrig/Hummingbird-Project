@@ -81,7 +81,6 @@ h1, h2, h3, h4, p, a {
 #create-story-container {
 	width: 100%;
 	max-width:600px;
-	padding: 20px;
 	text-align: initial;
 	background-color: white;
   margin: auto;
@@ -92,10 +91,31 @@ h1, h2, h3, h4, p, a {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
+#create-story-container .story-container-header {
+	margin-bottom: 15px;
+}
+
+#create-story-container .story-container-body {
+	padding: 0px 15px;
+}
+
+#create-story-container .story-container-footer {
+	padding-bottom: 15px;
+}
+
 @media (max-width: 768px) {
 	#create-story-container {
+	}
+
+	#create-story-container .story-container-header {
+	}
+
+	#create-story-container .story-container-body {
 		padding:10px;
 		padding-top:20px;
+	}
+
+	#create-story-container .story-container-footer {
 	}
 }
 
@@ -109,8 +129,13 @@ h1, h2, h3, h4, p, a {
 }
 
 textarea#story-text {
-	border-width: 1px;
-	border-radius: 6px;
+	border: none;
+	border-left: 1px solid #000;
+	border-radius: 0px;
+}
+
+textarea#story-text:focus {
+	outline: none;
 }
 
 #create-story-options {
@@ -278,8 +303,9 @@ textarea#story-text {
 	margin-left: 5px;
 }
 
-.location-container .address {
+.location-container .location {
 	display: table-cell;
+	padding-right: 5px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;

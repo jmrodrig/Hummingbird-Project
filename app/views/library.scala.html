@@ -37,32 +37,35 @@
 
 	<div id="library-body" class="animate-transition">
 		<div id="create-story-container">
-			<div id="story-user" class="author-container">
-				<div id="user-thumbnail" class='story-author-thumbnail'></div>
-				<span id="story-username-location" class='story-author-location'></span>
-				<span class="address"></span>
-			</div>
-			<textarea id="story-text" placeholder="write your story"></textarea>
-			<div id="story-image-container">
-				<img id="story-image">
-			</div>
-			<div id="story-insert-article">
-				<p>link to article:</p>
-				<input id="article-link" placeholder="article link">
-			</div>
-			<div id="story-article" class="article-container">
-				<div class="article-img-container">
-					<img class="article-image">
-					<div id="article-img-select-prev" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></span></div>
-					<div id="article-img-select-next" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></div>
-				</div>
-				<div class="article-content-container">
-					<h4 class="article-title"></h4>
-					<p readonly class="article-description"></p>
-					<p class="article-host"></p>
+			<div class="story-container-header">
+				<div class="author-container">
+					<div id="user-thumbnail" class='story-author-thumbnail'></div>
+					<span id="story-username-location" class='story-author-name'></span>
 				</div>
 			</div>
-			<div id="create-story-options">
+			<div class="story-container-body">
+				<textarea id="story-text" placeholder="write your story"></textarea>
+				<div id="story-image-container">
+					<img id="story-image">
+				</div>
+				<div id="story-insert-article">
+					<p>link to article:</p>
+					<input id="article-link" placeholder="article link">
+				</div>
+				<div id="story-article" class="article-container">
+					<div class="article-img-container">
+						<img class="article-image">
+						<div id="article-img-select-prev" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></span></div>
+						<div id="article-img-select-next" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></div>
+					</div>
+					<div class="article-content-container">
+						<h4 class="article-title"></h4>
+						<p readonly class="article-description"></p>
+						<p class="article-host"></p>
+					</div>
+				</div>
+			</div>
+			<div id="create-story-options" class="story-container-footer">
 				<a id="story-add-link-button" class="btn" >add link</a>
 				<a id="story-add-picture-button" class="btn">add image
 					<form enctype="multipart/form-data" id="image-upload-form">
