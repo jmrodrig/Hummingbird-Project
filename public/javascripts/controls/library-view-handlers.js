@@ -473,9 +473,9 @@ function readPublishedStories() {
 	lirmanager.readPublishedStories(function(lirmanager){
 		publishedStories = lirmanager.getStories();
 		drawPublishedStoryMarkersOnMap(publishedStories)
-		selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
+		//selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
 		//sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
-		buildLibraryBody(selectedStories);
+		buildLibraryBody(publishedStories);
 	});
 }
 

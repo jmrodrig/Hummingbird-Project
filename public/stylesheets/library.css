@@ -276,12 +276,12 @@ textarea#story-text {
 	overflow:hidden;
 }
 
-.story-unpublish-button {
+.story-like-button {
 
 }
 
 .story-unpublish-button {
-
+	margin-right: 10px;
 }
 
 
