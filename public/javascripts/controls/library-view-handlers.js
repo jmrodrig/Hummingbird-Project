@@ -269,7 +269,7 @@ function buildLibraryBody(stories) {
 
 		//UNPUBLISH BUTTON
 		var id = story.id;
-		if (story.author.email == user.getEmail() || story.author.email.indexOf("ideas@lostinreality.net")) {
+		if (story.author.email == user.getEmail() || user.getEmail().indexOf("@lostinreality.net") > -1) {
 			var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" storyId= ' + id + ' >Unpublish</a>')
 									.appendTo(storyContainerFooter)
 									.click(function() {

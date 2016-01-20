@@ -13,11 +13,11 @@ import play.db.ebean.Model;
 import models.utils.DBConstants;
 
 @Entity
-@Table(name = "story_location")
+@Table(name = "locations")
 public class Location extends Model {
 
 	/**
-	 * 
+	 *
 	 */
 	private static final long serialVersionUID = -1029079807380583068L;
 
@@ -73,7 +73,7 @@ public class Location extends Model {
 	public void setStory(Story story) {
 		this.story = story;
 	}
-	
+
 	public Location(controllers.json.Location location) {
 		this.latitude = location.latitude;
 		this.longitude = location.longitude;
