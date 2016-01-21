@@ -119,22 +119,31 @@ h1, h2, h3, h4, p, a {
 	}
 }
 
-#story-text   {
-	resize:none;
+#story-text {
+	/*height: 100px;*/
 	margin-bottom:10px;
 	line-height: 25px;
 	font-size:16px;
 	font-family: Georgia, "Times New Roman", Times, serif;
 	line-height: 1.44em;
-}
-
-textarea#story-text {
 	border: none;
 	border-left: 1px solid #000;
 	border-radius: 0px;
+	padding: 5px;
 }
 
-textarea#story-text:focus {
+#story-text .placeholder {
+	color: #aaa;
+}
+
+#story-text .tag {
+	background-color: red;
+	color: white;
+	border-radius: 10px;
+  font-weight: 500;
+}
+
+#story-text:focus {
 	outline: none;
 }
 

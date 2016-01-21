@@ -114,7 +114,7 @@ function intializeEvents() {
     if(e.which == 13) {
         $("#content-wrapper").animate({ scrollTop: 0 }, "slow");
     }
-});
+  });
 
   // RETRACT NAVBAR
 	// $('#library-body').scroll(function() {
@@ -305,7 +305,8 @@ function buildLibraryBody(stories) {
 		storyContainer.appendTo(libraryBody);
 	});
 
-	$("textarea.story-summary, #story-text").elastic();
+	loadStoryTextBehaviours();
+
 };
 
 function addArticleContainer(data) {
@@ -775,4 +776,80 @@ function computeRadarRadius() {
 	zoom=map.getZoom()
 	radius = 3*Math.pow(2,21-zoom);
 	return radius;
+}
+
+function loadStoryTextBehaviours() {
+  // elestic behaviour
+  var storyTextElem = $('#story-text');
+
+  storyTextElem.elastic();
+
+  //placeholder
+  var placeholder = storyTextElem.attr('placeholder');
+
+  //event listeners
+  storyTextElem.html('<span class="placeholder">' + placeholder + '</span>')
+                .addClass('empty')
+                .focusin(function() {
+                  $('#story-text.empty').html('').removeClass('empty');
+                })
+                .focusout(function() {
+                  if (storyTextElem.html() == '')
+                    storyTextElem.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
+                })
+                .keypress(function() {
+                  var text = storyTextElem.text();
+
+                  element = document.getElementById('story-text')
+                  console.log(getCaretCharacterOffsetWithin(element));
+                });
+}
+
+function highlightTagsInText(text) {
+  return text + '&';
+
+
+
+  // while (origText.split('#',2).length > 1) {
+  //   tag = origText.split('#',2)[1].split(' ',2)[0];
+  //   result = result + origText.split('#',2)[0] + tag ;
+  //   origText = origText.split('#',2)[1].split(' ',2)[1];
+  //   console.log(origText);
+  // }
+  // return result;
+
+}
+
+function getCaretCharacterOffsetWithin(element) {
+  var caretOffset = 0;
+  var doc = element.ownerDocument || element.document;
+  var win = doc.defaultView || doc.parentWindow;
+  var sel;
+  if (typeof win.getSelection != "undefined") {
+      sel = win.getSelection();
+      if (sel.rangeCount > 0) {
+          var range = win.getSelection().getRangeAt(0);
+          var preCaretRange = range.cloneRange();
+          preCaretRange.selectNodeContents(element);
+          preCaretRange.setEnd(range.endContainer, range.endOffset);
+          caretOffset = preCaretRange.toString().length;
+      }
+  } else if ( (sel = doc.selection) && sel.type != "Control") {
+      var textRange = sel.createRange();
+      var preCaretTextRange = doc.body.createTextRange();
+      preCaretTextRange.moveToElementText(element);
+      preCaretTextRange.setEndPoint("EndToEnd", textRange);
+      caretOffset = preCaretTextRange.text.length;
+  }
+  return caretOffset;
+}
+
+function setCaretCharacterOffsetWithin(element,offset) {
+  var el = document.getElementById("story-text");
+  var range = document.createRange();
+  var sel = window.getSelection();
+  range.setStart(el.childNodes[2], 5);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
 }
