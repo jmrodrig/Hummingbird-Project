@@ -85,6 +85,9 @@ public class Story extends Model {
 	@OneToMany(mappedBy = "story", cascade=CascadeType.ALL)
 	private List<Like> likes;
 
+	@OneToMany(mappedBy = "story", cascade=CascadeType.ALL)
+	private List<SavedStory> savedstories;
+
 	@Column(name = "path")
 	private String path;
 
@@ -191,6 +194,14 @@ public class Story extends Model {
 
 	public void setLikes(List<Like> likes) {
 		this.likes = likes;
+	}
+
+	public List<SavedStory> getSavedStories() {
+		return savedstories;
+	}
+
+	public void setSavedStories(List<SavedStory> savedstories) {
+		this.savedstories = savedstories;
 	}
 
 	public String getPath() {

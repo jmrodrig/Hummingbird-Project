@@ -285,7 +285,7 @@ function buildLibraryBody(stories) {
 		// LIKE BUTTON
 		var likeButtonText = (story.currentUserLikesStory) ? 'Liked' : 'Like';
 		var likeButtonClass = (story.currentUserLikesStory) ? 'btn-primary' : 'btn-success';
-		var likeButton = $('<a storyId= ' + id + ' class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.likes + '</span></a>')
+		var likeButton = $('<a storyId= ' + id + ' class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.noOfLikes + '</span></a>')
 								.appendTo(storyContainerFooter)
 								.click(function() {
 									var storyId = $(this).attr('storyId');
@@ -297,6 +297,25 @@ function buildLibraryBody(stories) {
 										} else {
 											$('#story-' + storyId + ' .story-like-button').addClass('btn-success').removeClass('btn-primary')
 																																		.html('Like  <span class="badge">' + result.noOfLikes + '</span>');
+										}
+									});
+								});
+
+    // LIKE BUTTON
+		var saveStoryButtonText = (story.currentUserSavedStory) ? 'Saved' : 'Save';
+		var saveStoryButtonClass = (story.currentUserSavedStory) ? 'btn-primary' : 'btn-success';
+		var saveStoryButton = $('<a storyId= ' + id + ' class="story-save-button btn ' + saveStoryButtonClass + '" >' + saveStoryButtonText + '  <span class="badge">' + story.noOfSaves + '</span></a>')
+								.appendTo(storyContainerFooter)
+								.click(function() {
+									var storyId = $(this).attr('storyId');
+									saveStory(storyId, function(result) {
+										$('#story-' + storyId + ' .story-save-button span').html(result.noOfSaves);
+										if (result.currentUserSavedStory) {
+											$('#story-' + storyId + ' .story-save-button').removeClass('btn-success').addClass('btn-primary')
+																																		.html('Saved  <span class="badge">' + result.noOfSaves + '</span>');
+										} else {
+											$('#story-' + storyId + ' .story-save-button').addClass('btn-success').removeClass('btn-primary')
+																																		.html('Save  <span class="badge">' + result.noOfSaves + '</span>');
 										}
 									});
 								});
@@ -769,6 +788,16 @@ function likeStory(storyId, onFinished){
 		dataType: "json",
 		success: onFinished,
 		error: function() {console.log("Couln't like story");}
+	});
+}
+
+function saveStory(storyId, onFinished){
+	$.ajax({
+		url: "/story/" + storyId + "/save",
+		type: "POST",
+		dataType: "json",
+		success: onFinished,
+		error: function() {console.log("Couln't save story");}
 	});
 }
 

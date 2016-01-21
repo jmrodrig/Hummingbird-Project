@@ -62,6 +62,9 @@ public class User extends Model {
 	private List<Like> likes;
 
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
+	private List<SavedStory> savedstories;
+
+	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<Invitation> invitations;
 
 	public String getId() {

@@ -13,8 +13,10 @@ public class Story {
 	public User author;
 	public String thumbnail;
 	public String locationName;
-	public Integer likes;
+	public Integer noOfLikes;
+	public Integer noOfSaves;
 	public Boolean currentUserLikesStory;
+	public Boolean currentUserSavedStory;
 	public String articleTitle;
 	public String articleDescription;
 	public String articleImage;

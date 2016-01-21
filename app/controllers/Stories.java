@@ -14,6 +14,7 @@ import javax.persistence.OptimisticLockException;
 import models.User;
 import models.UserStory;
 import models.Like;
+import models.SavedStory;
 import models.exceptions.ModelAlreadyExistsException;
 import models.exceptions.ModelNotFountException;
 import models.utils.Constants;
@@ -51,8 +52,10 @@ public class Stories extends Controller {
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
 			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser());
-			jsonStory.likes = Like.findByStoryId(story.getId()).size();
+			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -61,15 +64,17 @@ public class Stories extends Controller {
 
 	@SecureSocial.SecuredAction
 	public static Result listStories() {
-		User user = getCurrentUser();
-		List<models.Story> stories = models.Story.findAll(user);
+		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findAll(currentUser);
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(user);
-			jsonStory.likes = Like.findByStoryId(story.getId()).size();
-			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(user.getId(), story.getId()) != null) ? true : false;
+			jsonStory.author = controllers.json.User.getUser(currentUser);
+			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
+			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -155,7 +160,8 @@ public class Stories extends Controller {
 
 		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser());
 
-		jsonStory.likes = Like.findByStoryId(storyId).size();
+		jsonStory.noOfLikes = Like.findByStoryId(storyId).size();
+		jsonStory.noOfSaves = SavedStory.findByStoryId(storyId).size();
 
 		String json = new Gson().toJson(jsonStory);
 
@@ -238,18 +244,18 @@ public class Stories extends Controller {
 		return redirect("/uploads" + StringUtils.removeRemovePreString(file.getAbsolutePath(), Play.current().path().getAbsolutePath() + publicPath));
 	}
 
-	@SecureSocial.SecuredAction
-	public static Result saveStory(Long storyId) throws ModelAlreadyExistsException, IOException{
-		User user = getCurrentUser();
-		models.Story story = models.Story.findById(storyId);
-		//TODO: Garantir que a historia é do user
-
-		if (story == null) {
-			return badRequest("Invalid story id");
-		}
-		story.saveDomainStory();
-		return ok("Story saved");
-	}
+	// @SecureSocial.SecuredAction
+	// public static Result saveStory(Long storyId) throws ModelAlreadyExistsException, IOException{
+	// 	User user = getCurrentUser();
+	// 	models.Story story = models.Story.findById(storyId);
+	// 	//TODO: Garantir que a historia é do user
+	//
+	// 	if (story == null) {
+	// 		return badRequest("Invalid story id");
+	// 	}
+	// 	story.saveDomainStory();
+	// 	return ok("Story saved");
+	// }
 
 	@SecureSocial.SecuredAction
 	public static Result uploadStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
@@ -395,6 +401,31 @@ public class Stories extends Controller {
 
     json.addProperty("currentUserLikesStory", currentUserLikesStory);
     json.addProperty("noOfLikes", noOfLikes);
+
+		String json_ = new Gson().toJson(json);
+
+		return ok(json_);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result saveStory(Long storyId) throws ModelAlreadyExistsException, IOException {
+		User currentUser = getCurrentUser();
+		models.Story story = models.Story.findById(storyId);
+		SavedStory savedstory = SavedStory.findByUserIdAndStoryId(currentUser.getId(), storyId);
+
+		if (savedstory == null) {
+			SavedStory.create(currentUser, story);
+		} else {
+			savedstory.delete();
+		}
+
+	  Boolean currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+		Integer noOfSaves = SavedStory.findByStoryId(storyId).size();
+
+		JsonObject json = new JsonObject();
+
+    json.addProperty("currentUserSavedStory", currentUserSavedStory);
+    json.addProperty("noOfSaves", noOfSaves);
 
 		String json_ = new Gson().toJson(json);
 
