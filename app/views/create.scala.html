@@ -4,9 +4,9 @@
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/create.css")">
 
 	<script src="/assets/javascripts/controls/create-view-handlers.js" type="text/javascript"></script>
-	
+
 }{
-	
+
 <!-- <img id="lir-logo" src="/assets/images/lir-logo-banner-simple-small.png" alt="lir-logo"></img>
 
 <div id="navbar-buttons">
@@ -35,18 +35,18 @@
 		<a id="dismiss-dialogue" class="btn btn-info" onclick="$('#delete-dialogue').fadeOut(200);">No</a>
 		<a id="accept-dialogue" class="btn btn-warning" onclick="deleteStory()">Yes</a>
 	</div>
-	
+
 	<div id="publish-dialogue" class="content-dialogue">
 		<button type="button" class="close" onclick="$('#publish-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		<p>You are about to make this story public.<br>Congratulations! =)</p>
 		<p>To publish, you need to make sure that you own the rights of the content of the story or you are allowed to use it and publish it.</p>
 		<p>Use the link below to share the story privately before making it public.</p>
 		<p id="link">@("http://lostinreality.net/read/" + storyId )</p>
-		<p>Would you like to publish?</p> 
+		<p>Would you like to publish?</p>
 		<a id="dismiss-dialogue" class="btn btn-info" onclick="$('#publish-dialogue').fadeOut(200);">Cancel</a>
 		<a id="accept-dialogue" class="btn btn-warning ga-event-map-publish" onclick="publishStory()">Publish</a>
 	</div>
-	
+
 	<div id="share-dialogue" class="content-dialogue">
 		<button type="button" class="close" onclick="$('#share-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		<p>Your story is now published.<br>Congratulations! =)</p>
@@ -56,19 +56,19 @@
 			<a class="social twitter twitter-shr-btn" onclick="openTwitterSharePopup()"></a>
 			<a class="social mail" onclick="$('#share-dialogue').fadeOut(200); $('#link-dialogue').fadeIn(200);" ></a>
 		</div>
-		<p>If you wish to unpublish the story, click bellow.</p> 
+		<p>If you wish to unpublish the story, click bellow.</p>
 		<!-- <a id="dismiss-dialogue" class="btn btn-info" onclick="$('#share-dialogue').fadeOut(200);">Cancel</a> -->
 		<a id="accept-dialogue" class="btn btn-warning ga-event-map-publish" onclick="unpublishStory()">Unpublish</a>
 	</div>
-	
+
 	<div id="link-dialogue" class="content-dialogue">
 		<button type="button" class="close" onclick="$('#link-dialogue').fadeOut(200);" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 		<p>@("http://lostinreality.net/read/" + storyId )</p>
-		<p>You can use this link to share your story privately.</p> 
+		<p>You can use this link to share your story privately.</p>
 		<a id="dismiss-dialogue" class="btn btn-info" onclick="$('#link-dialogue').fadeOut(200);">Ok</a>
 	</div>
-	
-	
+
+
 <!-------------------->
 <!--   Story Menu   -->
 <!-------------------->
@@ -88,18 +88,18 @@
 	<div id="story-map" >
 		<div id="map-canvas"></div>
 	</div>
-	
+
 <!-------------------->
 <!--  content-nav   -->
 <!-------------------->
 
 	<div id="btn-show-posts" class="content-nav">
 		<span  class="open-btn glyph-icon icon-medium flaticon-distance1"></span>
-		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span> 
+		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span>
 	</div>
 	<div id="btn-show-map" class="content-nav">
-		<span  class="open-btn glyph-icon icon-medium flaticon-map35"></span> 
-		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span> 
+		<span  class="open-btn glyph-icon icon-medium flaticon-map35"></span>
+		<span  class="close-btn glyph-icon icon-medium flaticon-cross92"></span>
 	</div>
 
 </section>

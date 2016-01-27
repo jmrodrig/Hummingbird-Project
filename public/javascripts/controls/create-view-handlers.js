@@ -1,5 +1,6 @@
 
 //--- initialize global variables ---//
+
 var map;
 var helpOn = true;
 var story;
@@ -12,18 +13,18 @@ var enablePostCreation;
 var previousPostId;
 var nextPostId;
 
-var defaultStoryMapCss 
-var defaultStoryMapColapseCss 
-var openStoryMapCss 
-var openStoryMapColapseCss 
+var defaultStoryMapCss
+var defaultStoryMapColapseCss
+var openStoryMapCss
+var openStoryMapColapseCss
 
 //--- Listener for window ---//
 google.maps.event.addDomListener(window, 'load', initialize);
 
 //--- initialize method ---//
 function initialize() {
-	
-	
+
+
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
@@ -35,19 +36,19 @@ function initialize() {
 							.css('display' , 'block' );
 			$('#user-link div').css('background-image','url(' + avatarUrl + ')');
 			if (avatarUrl) $('#user-link').addClass('with-avatar');
-			
+
 			$('#publish-link, #delete-link').css('display','block');
 		}
 	);
-	
-	
+
+
 	initiateMap();
 	storyId = document.URL.split("/create/")[1];
-	
+
 	story = new newStoryObj(map);
 	story.constructorId(storyId);
 	story.readStory( function(s) {
-		s.loadStoryElements(true,false,true, function(s){ 
+		s.loadStoryElements(true,false,true, function(s){
 			if (story.getAuthor().email != user.getEmail() || !story.getAuthor().email.indexOf("@lostinreality.net")) {
 				alert('This Story does not belong to you or you are not allowed to edit.');
 				document.location.href = '/profile';
@@ -60,10 +61,10 @@ function initialize() {
 			if (story.isPublished()) $('#publish-link').removeClass('ga-event-maker-publish').addClass('published');
 			buildStoryBody();
 			buildStoryPostList();
-			fitStoryOnView(s.getMarkers());	
+			fitStoryOnView(s.getMarkers());
 		});
 	});
-	
+
 	//initialize events
 	intializeEvents();
 	//loadGaEvents();
@@ -72,48 +73,48 @@ function initialize() {
 function intializeEvents() {
 	//----------------
 	$('#content-wrapper').css({ height: $(window).innerHeight() - $('.navbar').outerHeight(true)});
-	
+
 	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
 	updateMapContainerSize();
-	
+
 	//----------------
 	$('#btn-show-map').click(function() {
 		$('#content-wrapper').removeClass('posts-open');
 		$('#content-wrapper').toggleClass('map-open');
 		toggleMapContainerState()
 	});
-	
+
 	$('#btn-show-posts').click(function() {
 		$('#content-wrapper').removeClass('map-open');
 		$('#content-wrapper').toggleClass('posts-open');
 	});
-	
+
 	$('#story-menu').hover(function() {
 		if ($('#content-wrapper').hasClass('container-collapsed')) return;
 		$('#content-wrapper').removeClass('map-open');
 		$('#content-wrapper').toggleClass('posts-open');
 	});
-	
+
 	//----------------
-	$(window).resize(function() {	
+	$(window).resize(function() {
 		$('#content-wrapper').css({ height: $(window).innerHeight() - $('.navbar').outerHeight(true) });
 		$('#content-wrapper').removeClass('map-open');
 		updateMapContainerSize();
-		if ($(window).innerWidth() < 768) 
+		if ($(window).innerWidth() < 768)
 			$('#content-wrapper').addClass('container-collapsed');
-		else 
+		else
 			$('#content-wrapper').removeClass('container-collapsed');
 	});
-	
+
 	//----------------
 	$('#story-map').hover(function() {
 		// if ($('#content-wrapper').hasClass('map-open')) return;
 		// toggleOpenMap()
 	});
-	
-	
-	
+
+
+
 }
 
 function updateMapContainerSize() {
@@ -132,7 +133,7 @@ function updateMapContainerSize() {
 	}
 	$('#story-map').css(size)
 	$('#map-canvas').css({width:size.width, height:size.height})
-	google.maps.event.trigger(map, 'resize');	
+	google.maps.event.trigger(map, 'resize');
 }
 
 function toggleMapContainerState() {
@@ -142,7 +143,7 @@ function toggleMapContainerState() {
 	defaultStoryMapColapseCss = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
 	openStoryMapCss = { left:.40*wS , top:0*hS, width:.60*wS , height:1.00*hS, borderRadius:0 }
 	openStoryMapColapseCss = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
-	
+
 	if ($('#content-wrapper').hasClass('map-open')) {
 		if ($('#content-wrapper').hasClass('container-collapsed'))
 			resizeMap(defaultStoryMapColapseCss,openStoryMapColapseCss,true);
@@ -167,7 +168,7 @@ function buildStoryBody() {
 	storyHeader = $('<div/>').attr('id', 'post-' + story.getInitPost().getPostId())
 							.addClass('story-header')
 							.addClass('post-node');
-	
+
 	//Prologue/Intro Image - !!! FALTA ADICIONAR O IMAGE CONTROL
 	var imageContainer = $('<div class="image-container no-image"/>').attr('id', 'image-post-' + story.getInitPost().getPostId())
 							.append('<img atl="image for ' + story.getInitPost().getTitle() + '">');
@@ -179,16 +180,16 @@ function buildStoryBody() {
 	var fileUploadInputElem = $('<input type="file" name="files[]" multiple>')
 							.appendTo(fileinputButton);
 	setupImageUploadOnElement(fileUploadInputElem);
-	
+
 	imageContainer.find('img').load(function() {
-		if (story.getInitPost().getImageUrl() && story.getInitPost().getImageUrl().length > 0) 
+		if (story.getInitPost().getImageUrl() && story.getInitPost().getImageUrl().length > 0)
 			imageContainer.removeClass('no-image').addClass('image');
-		else 
+		else
 			imageContainer.removeClass('image').addClass('no-image');
 		$(this).unbind();
 	});
 	imageContainer.find('img').attr('src',story.getInitPost().getImageUrl())
-		
+
 	// remove post image
 	removeImageButton.click(function() {
 		story.getInitPost().setImageUrl(null);
@@ -201,9 +202,9 @@ function buildStoryBody() {
 			});
 		});
 	});
-	
+
 	storyHeader.append(imageContainer);
-	
+
 	//Location
 	addressInput = $('<input class="post-location"/>')
 				.attr('placeholder','LOCATION')
@@ -212,14 +213,14 @@ function buildStoryBody() {
 					story.setLocationName(address);
 					story.updateStory(function() {});
 				});
-	
+
 	if (story.getLocationName() && story.getLocationName().length > 0)
 		addressInput.val(story.getLocationName());
 	else
 		addressInput.val('');
 
 	storyHeader.append(addressInput);
-	
+
 	//Title
 	titleInput = $('<input class="post-title"/>')
 				.attr('placeholder','Story Title')
@@ -235,17 +236,17 @@ function buildStoryBody() {
 						});
 					});
 				});
-	
+
 	if (story.getTitle() && story.getTitle().length > 0)
 		titleInput.val(story.getTitle());
 	else
 		titleInput.val('');
 
 	storyHeader.append(titleInput);
-	
+
 	//Author
 	storyHeader.append("<div class='post-author'><em>by " + story.getAuthor().fullName + "</em></div>");
-	
+
 	//Summary/ Intro Text
 	var textAreaInput = $('<textarea class="post-text" type="text" maxlength="255"/>')
 						.attr('placeholder','...')
@@ -255,20 +256,20 @@ function buildStoryBody() {
 							story.getInitPost().setText(newtext);
 							story.setSummary(newtext);
 							story.updateStory(function() {
-								story.getInitPost().updatePost()					
+								story.getInitPost().updatePost()
 							});
 						});
-	
+
 	if (story.getInitPost().getText() && story.getInitPost().getText().length > 0)
 		textAreaInput.val(story.getInitPost().getText());
 	else
 		textAreaInput.val('');
-	
+
 	storyHeader.append(textAreaInput);
-	
+
 	//Post Overlay
 	storyHeader.append("<div class='post-overlay'/>");
-	
+
 	//Add Location Button
 	$("<div class='add-location-button'>+ Add Location</div>").appendTo(storyHeader)
 		.click(function() {
@@ -280,39 +281,39 @@ function buildStoryBody() {
 			setNewPostPosition(previousPostId,nextPostId);
 			enableCreatePost();
 		});
-		
+
 	storyHeader.resize(function() {
 		console.log('post-node resized')
 	});
-		
+
 	storyHeader.appendTo(storyBody);
 
-	
+
 	//Posts
 	posts.forEach(function(p) {
 		if (!p.isInitPost())
 			buildPostDomElementsEdit(p).appendTo(storyBody);
 	});
-	
+
 	$('.post-text').elastic();
-	
+
 	$('.post-text').keydown(function() {
 		$('#story-body').scrollspy('refresh');
 	});
-	
+
 	$('img').load(function() {
 		console.log('scrollspy refresh')
 		$('#story-body').scrollspy('refresh');
 	});
-	
+
 };
 
-//--- Method buildPostDomElementsEdit ---// 
+//--- Method buildPostDomElementsEdit ---//
 function buildPostDomElementsEdit(post) {
 	var postDomElement = $('<div/>').attr('id', 'post-' + post.getPostId())
 								.addClass('post-node')
 								.addClass('story-post');
-								
+
 	//Title
 	var titleInput = $('<input/>')
 		.attr('placeholder','New Location')
@@ -324,16 +325,16 @@ function buildPostDomElementsEdit(post) {
 				changePostListItemTitle(post);
 			});
 		});
-	
+
 	if (post.getTitle() && post.getTitle().length > 0)
 		titleInput.val(post.getTitle());
 	else
 		titleInput.val('');
 
 	$('<div class="post-title" />').append('<span class="glyph flaticon-facebook30"></span>')
-										.append(titleInput)	
+										.append(titleInput)
 										.appendTo(postDomElement)
-	
+
 	//Post Image - !!! FALTA ADICIONAR O IMAGE CONTROL
 	var imageContainer = $('<div class="image-container no-image"/>').attr('id', 'image-post-' + post.getPostId())
 							.append('<img atl="image for ' + post.getTitle() + '">');
@@ -345,16 +346,16 @@ function buildPostDomElementsEdit(post) {
 	var fileUploadInputElem = $('<input type="file" name="files[]" multiple>')
 							.appendTo(fileinputButton);
 	setupImageUploadOnElement(fileUploadInputElem);
-	
+
 	imageContainer.find('img').load(function() {
-		if (post.getImageUrl() && post.getImageUrl().length > 0) 
+		if (post.getImageUrl() && post.getImageUrl().length > 0)
 			imageContainer.removeClass('no-image').addClass('image');
-		else 
+		else
 			imageContainer.removeClass('image').addClass('no-image');
 		$(this).unbind();
 	});
 	imageContainer.find('img').attr('src',post.getImageUrl())
-	
+
 	// remove post image
 	removeImageButton.click(function() {
 		post.setImageUrl(null);
@@ -363,9 +364,9 @@ function buildPostDomElementsEdit(post) {
 			imageContainer.find('img').attr('src','');
 		});
 	});
-	
+
 	postDomElement.append(imageContainer);
-	
+
 	//Text
 	var textAreaInput = $('<textarea class="post-text"/>')
 		.attr('placeholder','...')
@@ -375,23 +376,23 @@ function buildPostDomElementsEdit(post) {
 			post.setText(newtext);
 			post.updatePost();
 		});
-		
+
 	if (post.getText() && post.getText().length > 0)
 		textAreaInput.val(post.getText());
 	else
 		textAreaInput.val('');
-	
+
 	postDomElement.append(textAreaInput);
-	
+
 	//Post Overlay
 	postDomElement.append("<div class='post-overlay'/>");
-	
+
 	//Delete Location Button
 	$("<div class='delete-location-button'>- Delete Location</div>").appendTo(postDomElement)
 		.click(function() {
 			removePost(post);
 		});
-	
+
 	//Add Location Button
 	$("<div class='add-location-button'>+ Add Location</div>").appendTo(postDomElement)
 		.click(function() {
@@ -403,24 +404,24 @@ function buildPostDomElementsEdit(post) {
 			setNewPostPosition(previousPostId,nextPostId);
 			enableCreatePost();
 		});
-	
+
 	return postDomElement
 }
 
-//--- Method buildStoryPostList ---// 
+//--- Method buildStoryPostList ---//
 function buildStoryPostList() {
 	storyMenu = $("#story-menu");
-	postList = $('<ul id="post-list" class="nav nav-pills nav-stacked"/>');	
-	
+	postList = $('<ul id="post-list" class="nav nav-pills nav-stacked"/>');
+
 	//Intro item
 	postItem = $('<li/>');
 	postItem.append($('<a/>').attr('href','#post-' + story.getInitPost().getPostId())
 			.addClass('post-title')
 			.append(story.getTitle())
 	);
-	
+
 	postItem.appendTo(postList);
-	
+
 	//Post items
 	posts.forEach(function(p) {
 		if (!p.isInitPost())
@@ -428,28 +429,28 @@ function buildStoryPostList() {
 	});
 
 	postList.appendTo(storyMenu);
-	
+
 	// Events
-	
-	$('#story-body').scrollspy({ 
+
+	$('#story-body').scrollspy({
 		target: '#story-menu',
-		offset: 200						
+		offset: 200
 	});
-	
+
 	$('#story-menu').on('activate.bs.scrollspy', function () {
 		activePost = $( "#story-menu li.active a").attr('href');
-		
+
 		//$( "#story-body " + activePost + " .post-overlay" ).hide();
 		//$( "#story-body :not(" + activePost + ") .post-overlay" ).show();
-				
+
 		postId = parseInt(activePost.replace('#post-',''));
 		if (activePost == '#story-header')
 			fitStoryOnView(story.getMarkers());
 		else
 			focusOnPostMarker(story.getPostFromId(postId));
-			
+
 		//########################################
-	
+
 		// var plist = []
 		// var post = story.getPostFromId(postId);
 		// post.getPreviousPosts().forEach(function(p) {
@@ -461,7 +462,7 @@ function buildStoryPostList() {
 			// plist.push(p.getTitle());
 		// })
 		// console.log(post.getTitle() + '\'s next Posts: ' + plist);
-		
+
 		//########################################
 	});
 };
@@ -469,13 +470,13 @@ function buildStoryPostList() {
 //--- buildPostListItem method ---//
 function buildPostListItem(post) {
 	postItem = $('<li/>');
-	//Post Title		
+	//Post Title
 	var title;
-	if (!post.getTitle() || post.getTitle().length == 0) 
+	if (!post.getTitle() || post.getTitle().length == 0)
 		title = 'New Location'
 	else
 		title = post.getTitle();
-		
+
 	postItem.append($('<a/>').attr('href','#post-' + post.getPostId())
 			.addClass('post-title')
 			.append('<span class="glyph flaticon-facebook30"></span>' + title)
@@ -484,7 +485,7 @@ function buildPostListItem(post) {
 
 	//click event
 	postItem.click(function() {});
-	
+
 	return postItem
 }
 
@@ -516,7 +517,7 @@ function initiateMap() {
 		center : defaultLocation,
 		styles: mapstyles
 	}
-		
+
 	map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
 
 	//--- Map Event Handlers ---//
@@ -529,7 +530,7 @@ function initiateMap() {
 }
 
 //--- method resizeMap ---//
-function resizeMap(oldState,newState,isExpand) {	
+function resizeMap(oldState,newState,isExpand) {
 	if (!map) return;
 	if (isExpand) {
 		$('#story-map').animate(newState, 500, 'easeOutCubic');
@@ -549,17 +550,17 @@ function resizeMap(oldState,newState,isExpand) {
 //--- focusOnPostMarker ---//
 function focusOnPostMarker(post) {
 	if (!post.getMarker()) return;
-	
+
 	var latlng = post.getMarker().getPosition();
 	//fitStoryOnView(story.getMarkers())
 	map.panTo(latlng);
 	map.setZoom(20);
 
-    // if (map) map.setOptions({ 
+    // if (map) map.setOptions({
 			// center: latlng,
-			// zoom : 13 
+			// zoom : 13
 		// });
-   
+
 }
 
 //--- fitStoryOnView ---//
@@ -570,7 +571,7 @@ function fitStoryOnView(markers) {
 		if (map) centerOnUserLocation();
 	}
 	else if (markers.length == 1) {
-		if (map) map.setOptions({ 
+		if (map) map.setOptions({
 			center: markers[0].getPosition(),
 			zoom : 16 });
 	}
@@ -597,16 +598,16 @@ function mapLeftClicked(mouseEvent) {
 	if (!enablePostCreation) {
 		return;
 	}
-	
+
 	// create post if PostCreation is enabled
 	var clickedLocation = mouseEvent.latLng;
 	addNewPost(clickedLocation);
-	
+
 	disableCreatePost();
 }
 
 //--- addNewPost method ---//
-function addNewPost(latLng) {	
+function addNewPost(latLng) {
 	if (!story || previousPostId == null) return;
 	var newPost = newPostObj(map);
 	newPost.constructorStoryLatLngRadius(story, latLng.lat(), latLng.lng(), 5.0);
@@ -773,7 +774,7 @@ function unpublishStory() {
 }
 
 function openPublishDialog() {
-	if (story.isPublished()) 
+	if (story.isPublished())
 		$('#share-dialogue').fadeIn(200);
 	else
 		$('#publish-dialogue').fadeIn(200);
@@ -812,7 +813,7 @@ function buildStoryLocation(result) {
 		locality = getTypeGeoCode(result,'administrative_area_level_2') + ', '
 	if (country == '')
 		country = getTypeGeoCode(result,'administrative_area_level_1')
-	
+
 	return locality + country;
 }
 
@@ -829,7 +830,7 @@ function openFacebookSharePopup() {
 				 ',height=' + height +
 				 ',top='    + top    +
 				 ',left='   + left;
-	
+
 	window.open(url, 'popup', opts);
 }
 //Twitter
@@ -844,6 +845,6 @@ function openTwitterSharePopup() {
 				 ',height=' + height +
 				 ',top='    + top    +
 				 ',left='   + left;
-	
+
 	window.open(url, 'popup', opts);
 }

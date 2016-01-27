@@ -343,13 +343,18 @@ public class Story extends Model {
 	public static Finder<Long, Story> finder = new Finder<Long, Story>(Long.class, Story.class);
 	public static JSONSerializer json = new JSONSerializer().include("id", "title", "summary", "cost", "labels.name").exclude("*");
 
-	public static List<Story> findAll(User user) {
-		List<Story> stories = finder.where().in("id", UserStory.findStoryIds(user.getId())).findList();
+	public static List<Story> findAllUserStories(User user) {
+		List<Story> stories = finder.where().in("id", UserStory.findStoryIdsByUser(user.getId())).findList();
+		return stories;
+	}
+
+	public static List<Story> findAllUserSavedStories(User user) {
+		List<Story> stories = finder.where().in("id", SavedStory.findStoryIdsByUser(user.getId())).findList();
 		return stories;
 	}
 
 	public static Story findByUserAndTitle(User user, String title) {
-		Story story = finder.where().and(Expr.eq("title", title), Expr.in("id", UserStory.findStoryIds(user.getId()))).findUnique();
+		Story story = finder.where().and(Expr.eq("title", title), Expr.in("id", UserStory.findStoryIdsByUser(user.getId()))).findUnique();
 		return story;
 	}
 
@@ -403,6 +408,7 @@ public class Story extends Model {
 				articleAuthor,
 				articleLanguage,
 				location);
+		System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		return story;
@@ -413,6 +419,7 @@ public class Story extends Model {
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
+
 		setStory(story, title, summary, content, cost, filePath, locationName, articleTitle,
 				articleDescription,
 				articleImage,
@@ -422,6 +429,7 @@ public class Story extends Model {
 				articleAuthor,
 				articleLanguage,
 				location);
+		story.save(DBConstants.lir_backoffice);
 		return story;
 	}
 

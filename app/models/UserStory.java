@@ -25,35 +25,35 @@ import com.avaje.ebean.Expr;
 public class UserStory extends Model {
 
 	private static final long serialVersionUID = 1L;
-	
+
 	@Version
     public long version;
-	
+
 	@Id
 	@GeneratedValue
 	@Column(name="id")
 	private long id;
-	
+
 	@Column(name="is_author")
 	private boolean isAuthor;
-	
+
 	@Column(name="is_owner")
 	private boolean isOwner;
-	
+
 	@Column(name="rating")
 	private int	rating;
-	
+
 	@Column(name="comment")
 	private String comment;
-	
+
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="user_id")
 	private User user;
-	
+
 	@ManyToOne(fetch=FetchType.LAZY, cascade=CascadeType.ALL)
 	@JoinColumn(name="story_id")
 	private Story story;
-	
+
 	public long getId() {
 		return id;
 	}
@@ -109,37 +109,37 @@ public class UserStory extends Model {
 	public void setStory(Story story) {
 		this.story = story;
 	}
-	
+
 	private static Finder<Long, UserStory> finder = new Finder<Long, UserStory>(Long.class, UserStory.class);
 
-	public static List<UserStory> fingByUserId(String userId) {
-		List<UserStory> userStories = finder.where().eq("user_id", userId).findList(); 
+	public static List<UserStory> findByUserId(String userId) {
+		List<UserStory> userStories = finder.where().eq("user_id", userId).findList();
 		return userStories;
 	}
-	
-	public static List<Long> findStoryIds(String userId){
+
+	public static List<Long> findStoryIdsByUser(String userId){
 		List<Long> storyIds = new ArrayList<Long>();
-		for (UserStory userStory : UserStory.fingByUserId(userId)) {
-			storyIds.add(userStory.getId());
+		for (UserStory userStory : UserStory.findByUserId(userId)) {
+			storyIds.add(userStory.getStory().getId());
 		}
 		return storyIds;
 	}
-	
+
 	public static UserStory fingByUserIdAndStoryId(String userId, long storyId) {
-		UserStory userStory = finder.where(Expr.and(Expr.eq("user_id", userId), Expr.eq("story_id", storyId))).findUnique(); 
+		UserStory userStory = finder.where(Expr.and(Expr.eq("user_id", userId), Expr.eq("story_id", storyId))).findUnique();
 		return userStory;
 	}
-	
+
 	public static UserStory fingByStoryIdAndIsAuthor(long storyId, boolean isAuthor) {
-		UserStory userStory = finder.where(Expr.and(Expr.eq("is_author", isAuthor), Expr.eq("story_id", storyId))).findUnique(); 
+		UserStory userStory = finder.where(Expr.and(Expr.eq("is_author", isAuthor), Expr.eq("story_id", storyId))).findUnique();
 		return userStory;
 	}
-	
+
 	public static UserStory fingByStoryIdAndIsOwner(long storyId, boolean isOwner) {
-		UserStory userStory = finder.where(Expr.and(Expr.eq("is_owner", isOwner), Expr.eq("story_id", storyId))).findUnique(); 
+		UserStory userStory = finder.where(Expr.and(Expr.eq("is_owner", isOwner), Expr.eq("story_id", storyId))).findUnique();
 		return userStory;
 	}
-	
+
 	public static UserStory create(boolean isAuthor, boolean isOwner, int rating, String comment, User user, Story story) throws ModelAlreadyExistsException{
 		UserStory userStory = UserStory.fingByUserIdAndStoryId(user.getId(), story.getId());
 		if (userStory != null)

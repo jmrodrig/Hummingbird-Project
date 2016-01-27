@@ -19,9 +19,6 @@
 
 	<div id="library-map" >
 		<div id="map-canvas"></div>
-		<div id="map-sight">
-			<div id="map-sight-dot"></div>
-		</div>
 	</div>
 
 	<!------------------------>
@@ -36,34 +33,38 @@
 	<!-------------------->
 
 	<div id="library-body" class="animate-transition">
-		<div id="create-story-container">
+		<div id="create-story-view-container" class="animate-transition">
 			<div class="story-container-header">
 				<div class="author-container">
 					<div id="user-thumbnail" class='story-author-thumbnail'></div>
-					<span id="story-username-location" class='story-author-name'></span>
+					<span id="story-username" class='story-author-name'></span>
+				</div>
+				<div class="location-container pull-right" onclick="showStoryMap()"/>
+					<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>
+					<a class="location">Select location</a>
 				</div>
 			</div>
-			<div class="story-container-body">
-				<div id="story-text" contenteditable="true" placeholder="write your story" ></div>
+			<div class="story-container-body animate-transition">
+				<div id="story-text" class="editable" contenteditable="true" placeholder="write your story" ></div>
 				<div id="story-image-container">
+					<button id="remove-story-image" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 					<img id="story-image">
 				</div>
 				<div id="story-insert-article">
-					<p>link to article:</p>
 					<input id="article-link" placeholder="article link">
+					<button id="close-article-link" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 				</div>
-				<div id="story-article" class="article-container">
-					<div class="article-img-container">
-						<img class="article-image">
-						<div id="article-img-select-prev" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></span></div>
-						<div id="article-img-select-next" class="article-img-select-controls"><span  class="glyph-icon icon-no-margins icon-15px flaticon-media23"></div>
-					</div>
-					<div class="article-content-container">
-						<h4 class="article-title"></h4>
-						<p readonly class="article-description"></p>
-						<p class="article-host"></p>
+			</div>
+			<div class='story-set-location-view-container animate-transition'>
+				<a id="return-story-edit" onclick="hideStoryMap()">< go back</a>
+				<input id="story-map-location-input" claas="controls" type="text" placeholder="Search Box">
+				<div class='story-map-container'>
+					<div id="story-map-canvas"></div>
+					<div id="story-map-sight">
+						<div id="story-map-sight-dot"></div>
 					</div>
 				</div>
+				<button id="set-location-btn" type="button" class="btn btn-default btn-block" onclick="selectStoryLocation()">Select story location</button>
 			</div>
 			<div id="create-story-options" class="story-container-footer">
 				<a id="story-add-link-button" class="btn" >add link</a>
@@ -84,6 +85,42 @@
 
 
 </section>
+
+<!------------------------>
+<!--  Open Story view   -->
+<!------------------------>
+
+<div id="open-story-view" class="modal fade">
+	<div class="modal-dialog">
+		<div id="open-story-view-container" class="modal-content">
+			<div class="story-container-header">
+				<div class="author-container">
+					<div id="user-thumbnail" class='story-author-thumbnail'></div>
+					<span id="story-username" class='story-author-name'></span>
+				</div>
+				<div class="location-container pull-right" onclick="showEmbedStoryMap()"/>
+					<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>
+					<a class="location">location</a>
+				</div>
+			</div>
+			<div class="story-container-body">
+				<p id="story-text"></p>
+				<div id="story-image-container">
+					<img id="story-image">
+				</div>
+			</div>
+			<div class='story-set-location-view-container'>
+				<div class='story-map-container'>
+					<a id="return-story-edit" onclick="hideEmbedStoryMap()">< go back</a>
+					<div id="story-embed-map-canvas"></div>
+				</div>
+			</div>
+			<div id="create-story-options" class="story-container-footer">
+				<a id="close-story-view" class="btn" onclick="closeStoryView()">Close</a>
+			</div>
+		</div>
+	</div>
+</div>
 
 
 }

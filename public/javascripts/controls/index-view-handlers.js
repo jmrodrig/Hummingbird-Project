@@ -24,9 +24,9 @@ var toggleStatusIndicator;
 
 //--- initialize method ---//
 function initialize() {
-	
-	$('#blog-link').css('display' , 'block' );
-	
+
+	//$('#blog-link').css('display' , 'block' );
+
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
@@ -51,13 +51,13 @@ function initialize() {
 function initializeEvents() {
 	positionVideoFrame();
 
-	$(window).resize(function() {	
+	$(window).resize(function() {
 		positionVideoFrame()
 	});
-	
+
 	loadYTIframeAPI();
 }
-	
+
 //--- Listener for window ---//
 google.maps.event.addDomListener(window, 'load', initialize);
 
@@ -70,17 +70,17 @@ function positionVideoFrame() {
 		height,
 		left,
 		top;
-	
+
 	if ( windowAspectRatio >= videoAspectRatio) {
-		$('#video-hero-1').css({ 
-			height: windowWidth / videoAspectRatio, 
+		$('#video-hero-1').css({
+			height: windowWidth / videoAspectRatio,
 			width: windowWidth,
 			left: 0,
 			top: (windowHeight - windowWidth / videoAspectRatio)/2
 		});
 	} else {
-		$('#video-hero-1').css({ 
-			height: windowHeight, 
+		$('#video-hero-1').css({
+			height: windowHeight,
 			width: windowHeight * videoAspectRatio,
 			left: (windowWidth - windowHeight * videoAspectRatio)/2,
 			top: 0
@@ -90,7 +90,7 @@ function positionVideoFrame() {
 
 //--- centerOnUserLocation method ---//
 function centerOnUserLocation() {
-	
+
 //	var mapOptions = {
 //			zoom : 12,
 //			streetViewControl: false,
@@ -103,8 +103,8 @@ function centerOnUserLocation() {
 //			center : new google.maps.LatLng(60, 105)
 //		};
 //		initiateMap(mapOptions);
-	
-	
+
+
 	if (navigator.geolocation) {
 		navigator.geolocation.getCurrentPosition(function(position) {
 			var user_location = new google.maps.LatLng(
@@ -162,15 +162,15 @@ function centerOnUserLocation() {
 //--- initiateMap method ---//
 function initiateMap(options) {
 	map = new google.maps.Map(document.getElementById('map-canvas'),options);
-	
+
 	readPublishedStories();
-	
-	//--- add listeners		
+
+	//--- add listeners
 	initMapClickHandlers();
-	google.maps.event.addListener(map, 'mousemove', function(cursor) { 
-										//updateSoftArrow(cursor); 
+	google.maps.event.addListener(map, 'mousemove', function(cursor) {
+										//updateSoftArrow(cursor);
 									});
-	document.onkeypress = function(event) { 
+	document.onkeypress = function(event) {
 									if (event.keyCode == 13 && enableTransitionCreation) {
 										if (story) story.connectPosts(connectPostsList);
 										disableCreateTransition();
@@ -209,7 +209,7 @@ function fitStoryOnView(markers) {
 		if (map) centerOnUserLocation();
 	}
 	else if (markers.length == 1) {
-		if (map) map.setOptions({ 
+		if (map) map.setOptions({
 			center: markers[0].getPosition(),
 			zoom : 16 });
 	}
@@ -241,11 +241,11 @@ function loadPublishedStories(publishedStories) {
 		story.map = map;
 		story.readStory( function(s) {
 							playerStories.push(s);
-							s.loadStoryElements(false,true,true, function(st){ 
-								st.drawStoryMarker(function(st) { 
+							s.loadStoryElements(false,true,true, function(st){
+								st.drawStoryMarker(function(st) {
 									showStoryDetails(st);
 									fitStoryOnView([st.marker]);
-								}); 
+								});
 								storyMarkers.push(s.marker);
 								if (playerStories.length >= publishedStories.length) {
 									fitStoryOnView(storyMarkers);
@@ -262,24 +262,24 @@ function drawPublishedStoryMarkersOnMap(publishedStories) {
 	var story
 	for ( var i = 0; i < publishedStories.length; i++) {
 		storyDetails = publishedStories[i];
-		if (storyDetails.location != null) { 
+		if (storyDetails.location != null) {
 			marker = new google.maps.Marker({
 				position : new google.maps.LatLng(storyDetails.location.latitude, storyDetails.location.longitude, true),
 				map : map,
 				title : storyDetails.title,
 				draggable : false
 			});
-			
+
 			marker.storyDetails = storyDetails;
-			
+
 			google.maps.event.addListener(marker, 'click', function() {
 					//showStoryDetails(this.storyDetails);
-					
+
 					fitStoryOnView([this]);
 				});
 			storyMarkerList.push(marker);
 
-			
+
 			story = new newStoryObj(map);
 			story.constructor();
 			story.setDomainStory(storyDetails);
@@ -309,9 +309,9 @@ function showStoryDetails(storyDetails) {
 		$("#story-details-container").show("fade");
 		$("#story-details-container").nanoScroller();
 	});
-	
+
 	//----- Scroll bar -----//
-	 
+
 }
 
 //--- buildStoryList method ---//
@@ -363,11 +363,11 @@ function openVideoWindow() {
 			loadYTIframeAPI();
 		},
 		onClose:	function() {
-			try { 
-				player.destroy(); 
+			try {
+				player.destroy();
 			}
-			catch(err) { 
-				////console.log(err) 
+			catch(err) {
+				////console.log(err)
 			}
 		}
 	});
@@ -440,6 +440,3 @@ function createStory() {
 		});
 	});
 }
-
-
-

@@ -158,6 +158,10 @@ public class User extends Model {
 		return finder.where(Expr.and(Expr.eq("id", identity.userId()), Expr.eq("provider", identity.providerId()))).findUnique();
 	}
 
+	public static User findByUserId(String userId){
+		return finder.where().eq("id", userId).findUnique();
+	}
+
 	public static User findByEmail(String email) {
 		if (email != null) {
 			User user = finder.where().eq("email", email).findUnique();

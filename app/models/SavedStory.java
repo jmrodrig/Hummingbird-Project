@@ -78,6 +78,14 @@ public class SavedStory extends Model {
 		return savedstories;
 	}
 
+	public static List<Long> findStoryIdsByUser(String userId){
+		List<Long> storyIds = new ArrayList<Long>();
+		for (SavedStory savedstory : SavedStory.findByUserId(userId)) {
+			storyIds.add(savedstory.getStory().getId());
+		}
+		return storyIds;
+	}
+
 	public static SavedStory findByUserIdAndStoryId(String userId, long storyId) {
 		SavedStory savedstory = finder.where(Expr.and(Expr.eq("user_id", userId), Expr.eq("story_id", storyId))).findUnique();
 		return savedstory;

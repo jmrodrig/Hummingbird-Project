@@ -94,6 +94,13 @@ section {
 	font-size: 10px;
 }
 
+.animate-transition {
+	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
 /******************************************************************
 	Navbar
 ******************************************************************/
@@ -114,7 +121,7 @@ section {
 
 @media (min-width: 768px) {
 	.lir-style.navbar, .lir-style.navbar-default  {
-		height:64px;
+		/*height:64px;*/
 	}
 }
 
@@ -131,9 +138,9 @@ section {
 .lir-style  .navbar-nav  > li > a {
 	width:100%;
 	text-align: center;
-	padding-top: 20px;
-	padding-bottom: 20px;
-	font-size:18px;
+  padding-top: 15px;
+  padding-bottom: 12px;
+  font-size: 16px;
 	color:#252525;
 	background-color: #F8F8F8;
 	border-bottom: 4px solid rgba(1,1,1,0);
@@ -170,22 +177,22 @@ section {
 
 #lir-logo {
 	display:none;
-	height: 50px;
+	height: 40px;
 }
 
 #lir-logo-small {
 	display:block;
-	height: 50px;
+	height: 40px;
 }
 
 @media (min-width: 768px) {
 	#lir-logo {
 		display:block;
-		height: 50px;
+		height: 40px;
 	}
 	#lir-logo-small {
 		display:none;
-		height: 50px;
+		height: 40px;
 	}
 }
 
@@ -225,15 +232,15 @@ section {
 
 #user-link div {
 	display:block;
-	height:50px;
-	width:50px;
+  height: 40px;
+  width: 40px;
 	border-radius:25px;
 	padding-right: 5px;
 	background-size: cover;
 	background-position: center;
     background-repeat: no-repeat;
 	float: left;
-	margin-top: -15px;
+	margin-top: -10px;
 	margin-right: 10px;
 }
 

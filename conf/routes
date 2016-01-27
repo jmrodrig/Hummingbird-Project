@@ -36,19 +36,20 @@ POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 #Stories
 
 GET		/publishedstories											controllers.Stories.listPublishedStories()
-GET		/story														controllers.Stories.listStories()
+GET		/listuserstories														controllers.Stories.listCurrentUserStories()
+GET		/listusersavedstories														controllers.Stories.listCurrentUserSavedStories()
 GET		/story/:storyId												controllers.Stories.readStory(storyId: Long)
 DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
 POST	/story														controllers.Stories.createStory()
 PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)
 GET		/story/:storyId/download									controllers.Stories.downloadStory(storyId: Long)
-POST	/story/:storyId/save										controllers.Stories.saveStory(storyId: Long)
 POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(storyId: Long)
 POST	/story/:storyId/uploadimage									controllers.Stories.uploadImage(storyId: Long)
 POST	/story/:storyId/publish/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
 POST	/story/upload												controllers.Stories.uploadStory()
 POST	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
 POST	/story/:storyId/save												controllers.Stories.saveStory(storyId: Long)
+DELETE /story/:storyId/deleteimage                controllers.Stories.deleteImage(storyId: Long)
 
 
 #Posts

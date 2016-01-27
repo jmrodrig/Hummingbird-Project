@@ -27,6 +27,8 @@
 
 
 		<!-- modules -->
+
+    <script src="@routes.Assets.at("javascripts/markerclusterer.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("javascripts/jquery-1.7.1.min.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("flexigrid/js/flexigrid.pack.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("lightboxme/js/jquery.lightbox_me.js")" type="text/javascript"></script>
@@ -319,11 +321,11 @@
 		<!--   NavBar   -->
 		<!---------------->
 
-		<nav class="lir-style navbar navbar-default">
+		<nav class="lir-style navbar navbar-default animate-transition">
 		  <div class="container-fluid">
 			<!-- Brand and toggle get grouped for better mobile display -->
 			<div class="navbar-header">
-			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#bs-example-navbar-collapse-1">
+			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#lir-collapsed-navbar">
 				<span class="sr-only">Toggle navigation</span>
 				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
@@ -337,7 +339,7 @@
 			</div>
 
 			<!-- Collect the nav links, forms, and other content for toggling -->
-			<div class="collapse navbar-collapse" id="bs-example-navbar-collapse-1">
+			<div class="collapse navbar-collapse" id="lir-collapsed-navbar">
 			  <ul class="nav navbar-nav pull-right">
 			    <li><a id="blog-link" href="http://blog.lostinreality.net/">Blog</a></li>
 				<li><a id="stories-link" class="ga-event-navbar-library" href="/library">Stories<span class="sr-only">(current)</span></a></li>
@@ -351,7 +353,7 @@
 					<span class="caret"></span>
 				  </a>
 				  <ul class="dropdown-menu" role="menu">
-					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li> -->
+					<li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li>
 					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">+ Create a Story</a></li> -->
 					<li><a href="/library" class="ga-event-navbar-library">Stories</a></li>
 					<li class="divider"></li>
