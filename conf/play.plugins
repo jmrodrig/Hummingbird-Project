@@ -9,9 +9,8 @@
 9999:securesocial.core.providers.utils.BCryptPasswordHasher
 
 
-#10000:securesocial.core.providers.TwitterProvider
-#10001:securesocial.core.providers.FacebookProvider
+10000:securesocial.core.providers.TwitterProvider
+10001:securesocial.core.providers.FacebookProvider
 #10002:securesocial.core.providers.GoogleProvider
 
 10004:securesocial.core.providers.UsernamePasswordProvider
-

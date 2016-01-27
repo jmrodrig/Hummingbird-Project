@@ -110,12 +110,10 @@ function intializeEvents() {
 	$('#content-wrapper').scroll(function() {
 		var currentScrollTop = $('#content-wrapper').scrollTop();
 		if (currentScrollTop < 350)
-      $('#location-banner').removeClass('animate-transition')
-                          .removeClass('collapsed-navbar')
-                          .css('top', 405 - currentScrollTop + 'px');
+      $('#location-banner').removeClass('animate-transition collapsed-navbar');
     else
-			$('#location-banner').addClass('collapsed-navbar').addClass('animate-transition')
-                          .css('top', '4px');
+			$('#location-banner').addClass('collapsed-navbar animate-transition');
+
 	});
 
 	$('#location-banner').keypress(function(e) {
