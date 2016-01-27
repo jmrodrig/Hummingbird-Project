@@ -324,9 +324,9 @@ function buildArticleContainer(art,addToContainer,options) {
       $('<div class="article-description-overlay"/>').appendTo(articleDescriptionContainer);
 
     if (art.author) {
-      $('<p class="article-host-author">' + art.author + ' | ' + formatSource(art.source) + '</p>').appendTo(articleContentContainer);
+      $('<p class="article-host-author">' + art.author + ' | ' + formatArticleSource(art) + '</p>').appendTo(articleContentContainer);
     } else {
-      $('<p class="article-host-author">' + formatSource(art.source) + '</p>').appendTo(articleContentContainer);
+      $('<p class="article-host-author">' + formatArticleSource(art) + '</p>').appendTo(articleContentContainer);
     }
   }
   return articleContainer;
@@ -1108,8 +1108,10 @@ function computeRadarRadius() {
 	return radius;
 }
 
-function formatSource(src) {
-  var s = src;
+function formatArticleSource(art) {
+  var s = art.source;
+  if (!s)
+    s = getHostFromUrl(art.url);
   if (s.split('.')[0] == 'www')
     return s.replace('www.','')
   else
@@ -1132,7 +1134,7 @@ function loadStoryTextBehaviours() {
                   $('#story-text.empty').html('').removeClass('empty');
                 })
                 .focusout(function() {
-                  if (storyTextElem.html() == '')
+                  if (storyTextElem.html() == '' || storyTextElem.html()== '<br>' )
                     storyTextElem.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
                 })
                 .keypress(function() {
@@ -1144,10 +1146,17 @@ function loadStoryTextBehaviours() {
                 });
 }
 
-function getStoryText() {
-  if ($('#story-text').find('.placeholder')[0])
-    $('#story-text').find('.placeholder')[0].remove();
-  return $('#story-text')[0].innerText.replace(/[^\x00-\x7F]/g, "").replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+function getStoryText(jqTextElement) {
+  if (jqTextElement.find('.placeholder')[0])
+    jqTextElement.find('.placeholder')[0].remove();
+  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+    return jqTextElement[0].innerHTML.replace(/<br>/g,'\n')
+                                    .replace(/&nbsp;/g,' ')
+                                    .replace(/[^\x00-\x7F]/g, "")
+                                    .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+  }
+  return jqTextElement[0].innerText.replace(/[^\x00-\x7F]/g, "")
+                                  .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
 function highlightTagsInText(text) {
