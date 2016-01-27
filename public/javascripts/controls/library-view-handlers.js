@@ -231,9 +231,10 @@ function buildLibraryBody(stories) {
 
 		// Summary container
 		if (story.summary && story.summary.length > 0) {
-			var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+			var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
 			var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer);
       summary[0].innerText = story.summary;
+      $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 		}
 
 		//Thumbnail
@@ -254,7 +255,7 @@ function buildLibraryBody(stories) {
         imageUrl: story.articleImage,
         source: story.articleSource,
         url: story.articleLink
-      },storyContainerBody);
+      },storyContainerBody,{colapsedescription:true});
 		}
 
 
@@ -289,22 +290,22 @@ function buildLibraryBody(stories) {
 
 function addArticleContainer(art) {
   removeArticleContainer();
-  buildArticleContainer(art,$('#create-story-view-container .story-container-body'))
+  buildArticleContainer(art,$('#create-story-view-container .story-container-body'),{colapsedescription:false})
 }
 
 function removeArticleContainer() {
   $('#create-story-view-container .article-container').remove();
 }
 
-function buildArticleContainer(art,addToContainer,sizeOptions) {
+function buildArticleContainer(art,addToContainer,options) {
   var articleContainer = $('<div class="article-container"/>').appendTo(addToContainer);
 
   if (getHostFromUrl(art.url) == "vine.co") {
-    buildVineContainer(art.url,articleContainer,sizeOptions);
+    buildVineContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "www.youtube.com") {
-    buildYouTubeContainer(art.url,articleContainer,sizeOptions);
+    buildYouTubeContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "vimeo.com") {
-    buildVimeoContainer(art.url,articleContainer,sizeOptions);
+    buildVimeoContainer(art.url,articleContainer,options);
   } else {
     articleContainer.click(function() {window.open(art.url);});
 
@@ -314,8 +315,13 @@ function buildArticleContainer(art,addToContainer,sizeOptions) {
     }
 
     var articleContentContainer = $('<div class="article-content-container"/>').appendTo(articleContainer)
-          .append('<h4 class="article-title" >' + art.title + '</h4>')
-          .append('<p class="article-description">' + art.description + '</p>');
+    var articleTitle = $('<h4 class="article-title" >' + art.title + '</h4>').appendTo(articleContentContainer);
+    var articleDescriptionContainer = $('<div class="article-description-container collapsed">').appendTo(articleContentContainer);
+    var articleDescription = $('<p class="article-description">' + art.description + '</p>').appendTo(articleDescriptionContainer);
+    if (!options.colapsedescription)
+      articleDescriptionContainer.removeClass('collapsed');
+    else
+      $('<div class="article-description-overlay"/>').appendTo(articleDescriptionContainer);
 
     if (art.author) {
       $('<p class="article-host-author">' + art.author + ' | ' + formatSource(art.source) + '</p>').appendTo(articleContentContainer);
@@ -326,11 +332,11 @@ function buildArticleContainer(art,addToContainer,sizeOptions) {
   return articleContainer;
 }
 
-function buildVineContainer(link,addToContainer,sizeOptions) {
+function buildVineContainer(link,addToContainer,options) {
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="vines-iframe" frameborder="0"></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") {
+                                            if (options.size == "large") {
                                               addToContainer.addClass('large-view');
                                               iframesize = 540;
                                               addToContainer.width(iframesize);
@@ -349,14 +355,14 @@ function buildVineContainer(link,addToContainer,sizeOptions) {
   return iframeContainer;
 }
 
-function buildYouTubeContainer(link,addToContainer,sizeOptions) {
+function buildYouTubeContainer(link,addToContainer,options) {
   var VIDEO_RATIO = 16/9;
   var videoId = link.split('https://www.youtube.com/watch?v=')[1];
   var src = "https://www.youtube.com/embed/" + videoId + "?rel=0&amp;controls=0&amp;showinfo=0"
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="youtube-iframe" frameborder="0" allowfullscreen></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") addToContainer.addClass('large-view');
+                                            if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
                                             iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
@@ -371,14 +377,14 @@ function buildYouTubeContainer(link,addToContainer,sizeOptions) {
   return iframeContainer;
 }
 
-function buildVimeoContainer(link,addToContainer,sizeOptions) {
+function buildVimeoContainer(link,addToContainer,options) {
   var VIDEO_RATIO = 16/9;
   var videoId = link.split('https://vimeo.com/')[1];
   var src = "https://player.vimeo.com/video/" + videoId + "?color=ff0179&title=0&byline=0&portrait=0"
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="vimeo-iframe" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") addToContainer.addClass('large-view');
+                                            if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
                                             iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
@@ -471,7 +477,7 @@ function openStoryView(option) {
       imageUrl: s.articleImage,
       source: s.articleSource,
       url: s.articleLink
-    },$('#open-story-view .story-container-body'),"large");
+    },$('#open-story-view .story-container-body'),{size:"large"});
   }
 
 

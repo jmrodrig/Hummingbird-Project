@@ -303,7 +303,7 @@ h1, h2, h3, h4, p, a {
 	background: -webkit-linear-gradient(bottom, rgba(255,255,255,1), rgba(255,255,255,0.88));
 	background: -o-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
 	background: -moz-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
-	background: inear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.88));
+	background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.88));
 }
 
 .article-details-container {
@@ -439,6 +439,8 @@ h1, h2, h3, h4, p, a {
 }
 
 #create-edit-open-story-view #story-text {
+	max-width: 600px;
+	margin: auto;
 	margin-bottom:10px;
 	line-height: 25px;
 	font-size:16px;

@@ -98,6 +98,7 @@ h1, h2, h3, h4, p, a {
 #create-story-view-container .story-container-body {
 	padding: 20px 15px;
 	clear: both;
+	cursor: initial;
 }
 
 #create-story-view-container .story-container-footer {
@@ -398,6 +399,24 @@ h1, h2, h3, h4, p, a {
 	margin-bottom:25px;
 }
 
+.summary-container.collapsed {
+	position: relative;
+	height: 100px;
+	overflow: hidden;
+}
+
+.summary-container-overlay {
+	position: absolute;
+	top: 70px;
+	height: 30px;
+	width: 100%;
+	background: -webkit-linear-gradient(bottom, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: -o-linear-gradient(top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: -moz-linear-gradient(top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: linear-gradient(to top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+}
+
+
 .story-summary, .story-summary:focus {
 	border:none;
 	box-shadow: none;
@@ -453,6 +472,23 @@ h1, h2, h3, h4, p, a {
 	color: black;
 	margin-top: 0px;
 	font-weight: 400;
+}
+
+.article-description-container.collapsed {
+	height: 100px;
+	position: relative;
+	overflow: hidden;
+}
+
+.article-description-overlay {
+	position: absolute;
+	top: 70px;
+	height: 30px;
+	width: 100%;
+	background: -webkit-linear-gradient(bottom, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: -o-linear-gradient(top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: -moz-linear-gradient(top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
+	background: linear-gradient(to top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
 }
 
 .article-description {
@@ -579,6 +615,8 @@ h1, h2, h3, h4, p, a {
 }
 
 #open-story-view #story-text {
+	max-width: 600px;
+	margin: auto;
 	margin-bottom:10px;
 	line-height: 25px;
 	font-size:16px;
