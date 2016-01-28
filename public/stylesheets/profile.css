@@ -414,6 +414,7 @@ h1, h2, h3, h4, p, a {
 }
 
 #create-edit-open-story-view .location-container {
+	display: table;
 	width: 50%;
 	text-align: initial;
 	background-image: url(/assets/images/map-bk.jpg);
@@ -429,19 +430,15 @@ h1, h2, h3, h4, p, a {
 }
 
 #create-edit-open-story-view .location-container .location {
-	display: block;
+	display: table-cell;
 	/*white-space: nowrap;*/
-	padding: 9px 8px;
+	padding: 0px 8px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;
 	margin-left: 20px;
 	vertical-align: middle;
 	color: white;
-}
-
-#create-edit-open-story-view .location-container .location.wrapped-text {
-	padding: 0px 8px;
 }
 
 #create-edit-open-story-view #story-text {

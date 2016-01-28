@@ -595,6 +595,7 @@ h1, h2, h3, h4, p, a {
 }
 
 #open-story-view .location-container {
+	display: table;
 	width: 60%;
 	text-align: initial;
 	background-image: url(/assets/images/map-bk.jpg);
@@ -609,14 +610,14 @@ h1, h2, h3, h4, p, a {
 }
 
 #open-story-view .location-container .location {
-	display: block;
+	display: table-cell;
+	vertical-align: middle;
 	white-space: nowrap;
-	padding: 3px 8px;
+	padding: 0px 8px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;
 	margin-left: 5px;
-	vertical-align: middle;
 	color: white;
 }
 
