@@ -478,7 +478,9 @@ function openStoryView(option) {
       $('#create-edit-open-story-view #story-image').attr('src',s.thumbnail);
       $('#create-edit-open-story-view #story-image-container').show();
     }
-    $('#create-edit-open-story-view .location').text(s.locationName);
+    var locationElement = $('#create-edit-open-story-view .location').text(s.locationName);
+    if (locationElement.innerHeight() > 22)
+      locationElement.addClass('wrapped-text');
     $('#create-edit-open-story-view #story-map-location-input').val(s.locationName);
     storylocation = s.location;
     locationName = s.locationName;

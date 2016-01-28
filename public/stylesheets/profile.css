@@ -231,7 +231,6 @@ h1, h2, h3, h4, p, a {
 	/*background-color: #000000;*/
 	background-image: url(/assets/images/map-bk.jpg);
 	color: white;
-	height: 30px;
 }
 
 .location-container .glyph-icon {
@@ -240,12 +239,13 @@ h1, h2, h3, h4, p, a {
 
 .location-container .location {
 	display: block;
-	white-space: nowrap;
+	/*white-space: nowrap;*/
 	padding: 5px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 12px;
 	font-weight: 400;
 	margin-left: 5px;
+	margin-bottom: 0px;
 	vertical-align: middle;
 }
 
@@ -373,7 +373,8 @@ h1, h2, h3, h4, p, a {
   padding: 20px;
 	height: 580px;
 	cursor: initial;
-	overflow: scroll;
+	overflow-y: scroll;
+	overflow-x: hidden;
 }
 
 #create-edit-open-story-view .story-container-footer {
@@ -418,24 +419,29 @@ h1, h2, h3, h4, p, a {
 	background-image: url(/assets/images/map-bk.jpg);
 	color: white;
 	height: 50px;
-	padding: 10px 4px;
+	padding: 4px 4px;
 	cursor: pointer;
 }
 
 #create-edit-open-story-view .location-container .glyph-icon {
 	padding: 3px 5px;
+	margin-top: 7px;
 }
 
 #create-edit-open-story-view .location-container .location {
 	display: block;
-	white-space: nowrap;
-	padding: 3px 8px;
+	/*white-space: nowrap;*/
+	padding: 9px 8px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;
-	margin-left: 5px;
+	margin-left: 20px;
 	vertical-align: middle;
 	color: white;
+}
+
+#create-edit-open-story-view .location-container .location.wrapped-text {
+	padding: 0px 8px;
 }
 
 #create-edit-open-story-view #story-text {
@@ -511,9 +517,11 @@ h1, h2, h3, h4, p, a {
 
 #create-edit-open-story-view #story-insert-article {
 	display:none;
-	margin: 15px 0px;
 	width: 100%;
-	margin-bottom: 60px;
+	max-width: 500px;
+  margin: auto;
+	margin-top: 15px;
+	margin-bottom: 55px;
 }
 
 #create-edit-open-story-view #story-insert-article p {

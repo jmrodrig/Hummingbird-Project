@@ -548,7 +548,8 @@ h1, h2, h3, h4, p, a {
 	clear: both;
   padding: 20px;
 	height: 580px;
-	overflow: scroll;
+	overflow-y: scroll;
+	overflow-x: hidden;
 	cursor: initial;
 }
 

@@ -661,7 +661,9 @@ function initiateMap() {
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
     buildStoryContainersForStoriesWithinBounds();
-		google.maps.event.addListener(map, 'bounds_changed', buildStoryContainersForStoriesWithinBounds);
+		// google.maps.event.addListener(map, 'bounds_changed', buildStoryContainersForStoriesWithinBounds);
+    google.maps.event.addListener(map, 'dragend', buildStoryContainersForStoriesWithinBounds);
+    google.maps.event.addListener(map, 'zoom_changed', buildStoryContainersForStoriesWithinBounds);
 		google.maps.event.removeListener(listener);
 	});
 

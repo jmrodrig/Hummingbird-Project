@@ -7,4 +7,4 @@ CHANGE COLUMN `article_description` `article_description` LONGTEXT NULL DEFAULT 
 # --- !Downs
 
 ALTER TABLE `lir_backoffice`.`stories`
-CHANGE COLUMN `location_name` `location_name` VARCHAR(555) NULL DEFAULT NULL ;
+CHANGE COLUMN `article_description` `article_description` VARCHAR(555) NULL DEFAULT NULL ;
