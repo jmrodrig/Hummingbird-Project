@@ -619,6 +619,7 @@ h1, h2, h3, h4, p, a {
 	font-weight: 400;
 	margin-left: 5px;
 	color: white;
+	width: 100%;
 }
 
 #open-story-view #story-text {

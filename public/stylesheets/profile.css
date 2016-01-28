@@ -439,6 +439,7 @@ h1, h2, h3, h4, p, a {
 	margin-left: 20px;
 	vertical-align: middle;
 	color: white;
+	width: 100%;
 }
 
 #create-edit-open-story-view #story-text {
