@@ -226,9 +226,9 @@ h1, h2, h3, h4, p, a {
 }
 
 .location-container {
+	display: table;
 	width: 100%;
 	text-align: initial;
-	/*background-color: #000000;*/
 	background-image: url(/assets/images/map-bk.jpg);
 	color: white;
 }
@@ -238,15 +238,15 @@ h1, h2, h3, h4, p, a {
 }
 
 .location-container .location {
-	display: block;
+	display: table-cell;
 	/*white-space: nowrap;*/
-	padding: 5px;
+	padding: 0px 8px 0px 0px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 12px;
 	font-weight: 400;
-	margin-left: 5px;
 	margin-bottom: 0px;
 	vertical-align: middle;
+	width:100%;
 }
 
 .image-container img {
@@ -277,6 +277,7 @@ h1, h2, h3, h4, p, a {
 	position: relative;
 	padding: 2px 7px;
 	overflow: hidden;
+	width: 100%;
 }
 
 .story-summary, .story-summary:focus {
@@ -422,6 +423,9 @@ h1, h2, h3, h4, p, a {
 	height: 50px;
 	padding: 4px 4px;
 	cursor: pointer;
+	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
 #create-edit-open-story-view .location-container .glyph-icon {
@@ -432,7 +436,7 @@ h1, h2, h3, h4, p, a {
 #create-edit-open-story-view .location-container .location {
 	display: table-cell;
 	/*white-space: nowrap;*/
-	padding: 0px 8px;
+	padding: 0px 8px 0px 4px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	font-size: 14px;
 	font-weight: 400;
@@ -443,7 +447,7 @@ h1, h2, h3, h4, p, a {
 }
 
 #create-edit-open-story-view #story-text {
-	max-width: 600px;
+	max-width: 500px;
 	margin: auto;
 	margin-bottom:10px;
 	line-height: 25px;

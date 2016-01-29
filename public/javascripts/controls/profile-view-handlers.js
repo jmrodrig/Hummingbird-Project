@@ -801,6 +801,8 @@ function createStory() {
     return;
   }
 
+  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
+
   if (editingstory) {
     editStory();
     return;
@@ -825,23 +827,30 @@ function createStory() {
 	}
 
   //save story on server
-	story.createStory(function(st){
+  stud_createStory(story.domainStory,function(st){
 		//upload story pics
-		var story = st
-		storyId = story.getStoryId()
 		if (saveimagefile) {
-			uploadStoryImage(storyId,function() {
-				story.publishStory(1,function(pubsStory) {
-          publishFinished(pubsStory);
-        })
+			uploadStoryImage(st.id,function() {
+				stud_publishStory(st.id,1,function(pubsStory) {
+          postingFinished(pubsStory);
+        },
+        function() {
+          postingError();
+        });
 			});
 		} else {
 			//publish
-			story.publishStory(1,function(pubsStory) {
-        publishFinished(pubsStory);
-      })
+      stud_publishStory(st.id,1,function(pubsStory) {
+        postingFinished(pubsStory);
+      },
+      function() {
+        postingError();
+      });
 		}
-	});
+	},
+  function() {
+    postingError();
+  });
 }
 
 function editStory() {
@@ -866,7 +875,7 @@ function editStory() {
   }
 
   //save story on server
-	story.createStory(function(st){
+	stud_createStory(story.domainStory,function(st){
 		//upload story pics
     var story = st
 		storyId = story.getStoryId()
@@ -881,7 +890,10 @@ function editStory() {
 		} else {
       editFinished(st);
     }
-	});
+	},
+  function() {
+    postingError();
+  });
 }
 
 function uploadStoryImage(storyId,onFinished) {
@@ -1017,7 +1029,8 @@ function getStoryText(jqTextElement) {
                                   .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
-function publishFinished(response) {
+function postingFinished(response) {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
   closeStoryView();
   $('#profile-stat-user-created #value').html(parseInt($('#profile-stat-user-created #value').html()) + 1);
   loadUserStories(function() {
@@ -1026,10 +1039,16 @@ function publishFinished(response) {
 }
 
 function editFinished(response) {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
   closeStoryView();
   loadUserStories(function() {
     drawStoryListLayout(userStories.concat(userSavedStories))
   });
+}
+
+function postingError() {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
+  alert('Posting Failed. Error while posting the story.')
 }
 
 function unpublish(storyId, onFinished){

@@ -202,8 +202,7 @@ function buildLibraryBody(stories) {
 		var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
 
 		//Story author container
-		var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
-
+		var authorContainer = $('<div class="author-container"/>').appendTo(storyContainerHeader);
 		//Story author thumbnail
 		if (story.author.avatarUrl)
 			avatarUrl = story.author.avatarUrl;
@@ -219,9 +218,7 @@ function buildLibraryBody(stories) {
 
 
 		//Story location container
-		var locationContainer = $('<div class="location-container pull-right"/>').appendTo(storyContainerHeader)
-
-
+		var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerHeader)
 		var location = "";
     if (story.locationName && story.locationName.length > 0)
 			location = story.locationName;
@@ -232,8 +229,8 @@ function buildLibraryBody(stories) {
 		// Summary container
 		if (story.summary && story.summary.length > 0) {
 			var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
-			var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer);
-      summary[0].innerText = story.summary;
+			var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer)
+                                                      .text(story.summary);
       $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 		}
 
@@ -453,7 +450,7 @@ function openStoryView(option) {
 
 
   // Load Story details
-  $('#open-story-view #story-text')[0].innerText = s.summary;
+  $('#open-story-view #story-text').text(s.summary);
   if (s.thumbnail) {
     $('#open-story-view #story-image').attr('src',s.thumbnail);
     $('#open-story-view #story-image-container').show();
@@ -930,11 +927,13 @@ function createStory() {
     return;
   }
 
+  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
+
 	story = newStoryObj(map);
 	//set new story title
 	story.setTitle("story_" + user.getEmail() + "_" + new Date().getTime());
 	story.setLocation(location.lat,location.lng);
-	story.setSummary(getStoryText());
+	story.setSummary(getStoryText($('#story-text')));
   //setArticle
   if (article) {
 		story.setArticle(article.title,
@@ -949,23 +948,30 @@ function createStory() {
   story.setLocationName(locationName);
 
   //save story on server
-	story.createStory(function(st){
+	stud_createStory(story.domainStory,function(st){
 		//upload story pics
-		var story = st
-		storyId = story.getStoryId()
 		if (saveimagefile) {
-			uploadStoryImage(storyId,function() {
-				story.publishStory(1,function(pubsStory) {
-          publishFinished(pubsStory);
-        })
+			uploadStoryImage(st.id,function() {
+				stud_publishStory(st.id,1,function(pubsStory) {
+          postingFinished(pubsStory);
+        },
+        function() {
+          postingError();
+        });
 			});
 		} else {
 			//publish
-			story.publishStory(1,function(pubsStory) {
-        publishFinished(pubsStory);
-      })
+      stud_publishStory(st.id,1,function(pubsStory) {
+        postingFinished(pubsStory);
+      },
+      function() {
+        postingError();
+      });
 		}
-	});
+	},
+  function() {
+    postingError();
+  });
 }
 
 function uploadStoryImage(storyId,onFinished) {
@@ -1037,11 +1043,17 @@ function getHostFromUrl(url) {
 	return url.split("//")[1].split("/")[0]
 }
 
-function publishFinished(story) {
+function postingFinished(story) {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
   cleanStoryCreationElements();
-  publishedStories.push(story.domainStory);
-  drawPublishedStoryMarkerOnMap(story.domainStory);
+  publishedStories.push(story);
+  drawPublishedStoryMarkerOnMap(story);
   buildStoryContainersForStoriesWithinBounds();
+}
+
+function postingError() {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
+  alert('Posting Failed. Error while posting the story.')
 }
 
 function cleanStoryCreationElements() {
@@ -1146,6 +1158,15 @@ function loadStoryTextBehaviours() {
                   // element = document.getElementById('story-text')
                   // console.log(getCaretCharacterOffsetWithin(element));
                 });
+}
+
+function setStoryText(text,jqTextElement) {
+  jqTextElement.removeClass('empty');
+  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+    jqTextElement[0].innerHTML = text.replace(/\n/g,'<br>');
+  } else {
+    jqTextElement[0].innerText = text;
+  }
 }
 
 function getStoryText(jqTextElement) {
