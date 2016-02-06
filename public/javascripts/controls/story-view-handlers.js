@@ -72,7 +72,7 @@ function initialize() {
       loadUserStories(function() {
         userStoriesMarkerList = drawPublishedStoryMarkersOnMap(userStories,markerIcon);
         userSavedStoriesMarkerList = drawPublishedStoryMarkersOnMap(userSavedStories,markerIcon);
-        drawStoryGridLayout()
+        drawStoryListLayout()
       });
 		},
 		function (){
@@ -131,7 +131,7 @@ function intializeEvents() {
     $('#create-edit-open-story-view  .vines-iframe').attr("width",iframesize)
                       .attr("height",iframesize);
 
-    //drawStoryGridLayout(userStories.concat(userSavedStories))
+    //drawStoryListLayout(userStories.concat(userSavedStories))
 	});
 
   //remove STORY IMAGE
@@ -200,7 +200,7 @@ function  initializeProfileDetails() {
   // STORY COLLECTIONS LIST
   var collectionList = $('#story-collections-list')
   user.domainUser.storyCollections.forEach(function(collection) {
-    $('<li><a href="/collection/' + collection.id + '">' + collection.name + '</a></li>').appendTo(collectionList);
+    $('<li><a href="#">' + collection.name + '</a></li>').appendTo(collectionList);
   });
 }
 
@@ -215,7 +215,7 @@ function clearHighlightedStoryFromMapView() {
   $('#profile-map-cover-left').empty();
 }
 
-function drawStoryGridLayout() {
+function drawStoryListLayout() {
   var stories = userStories.concat(userSavedStories);
 
   $('.story-container').remove();
@@ -325,7 +325,7 @@ function buildStoryContainer(story) {
                                                 deleteStory(story.id, function(response) {
                                                   $('#profile-stat-user-created #value').html(response.noOfStories);
                                                   removeStoryFromUserStoriesList(story);
-                                                  drawStoryGridLayout();
+                                                  drawStoryListLayout();
                                                 });
                                               });
   } else {
@@ -338,7 +338,7 @@ function buildStoryContainer(story) {
                                                 saveStory(story.id, function(response) {
                                                   $('#profile-stat-user-saved #value').html(response.noOfSaved);
                                                   removeStoryFromSavedStoriesList(story);
-                                                  drawStoryGridLayout();
+                                                  drawStoryListLayout();
                                                 });
                                               });
   }
@@ -755,8 +755,8 @@ function initiateMap() {
 
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-		google.maps.event.addListener(map, 'dragend', drawStoryGridLayout);
-		google.maps.event.addListener(map, 'zoom_changed', drawStoryGridLayout);
+		google.maps.event.addListener(map, 'dragend', drawStoryListLayout);
+		google.maps.event.addListener(map, 'zoom_changed', drawStoryListLayout);
     google.maps.event.addListener(map, 'click', clearHighlightedStoryFromMapView);
 		google.maps.event.removeListener(listener);
 	});
@@ -930,21 +930,21 @@ function postingFinished(story) {
 
   userStories.push(story);
   addMarkerForStoryInList(story,userStoriesMarkerList,markerIcon);
-  drawStoryGridLayout()
+  drawStoryListLayout()
   // loadUserStories(function() {
-  //   drawStoryGridLayout(userStories.concat(userSavedStories))
+  //   drawStoryListLayout(userStories.concat(userSavedStories))
   // });
 }
 
 function editFinished(story) {
   $('#story-publish-button').text('Post').removeAttr('disabled');
   closeStoryView();
-  updateStoryFromUserStoriesList(story);
   //if position changes the marker must be repositioned
-  updateMarkerPosition(story);
-  drawStoryGridLayout()
+  var marker = userStoriesMarkerList.get(story.id);
+  marker.setPosition(new google.maps.LatLng(story.location.latitude, story.location.longitude, true));
+  drawStoryListLayout()
   // loadUserStories(function() {
-  //   drawStoryGridLayout(userStories.concat(userSavedStories))
+  //   drawStoryListLayout(userStories.concat(userSavedStories))
   // });
 }
 
@@ -978,20 +978,6 @@ function removeStoryFromSavedStoriesList(story) {
   removeMarkerForStoryInList(story,userSavedStoriesMarkerList);
 }
 
-function updateStoryFromUserStoriesList(story) {
-  for (var i in userStories) {
-    if (userStories[i].id == story.id) {
-      userStories[i] = story;
-    }
-  }
-}
-
-function updateMarkerPosition(story) {
-  var marker = userStoriesMarkerList.get(story.id);
-  marker.setPosition(new google.maps.LatLng(story.location.latitude, story.location.longitude, true));
-  marker.story = story;
-}
-
 //--- drawPublishedStoryMarkersOnMap method ---//
 function drawPublishedStoryMarkersOnMap(stories,icon) {
   markerList  = new Hashtable();
@@ -1014,7 +1000,7 @@ function drawPublishedStoryMarkersOnMap(stories,icon) {
         map.setCenter(new google.maps.LatLng(this.story.location.latitude, this.story.location.longitude, true) )
         drawStoryItemOnMapView(this.story);
       });
-			markerList.put(st_.id,marker);
+			markerList.put(st_,marker);
 		}
 	//fitStoryOnView(storyMarkerList);
 	}
@@ -1035,14 +1021,14 @@ function addMarkerForStoryInList(story,list,icon) {
     map.setCenter(new google.maps.LatLng(this.story.location.latitude, this.story.location.longitude, true) )
     drawStoryItemOnMapView(this.story);
   });
-  list.put(story.id,marker);
+  list.put(story,marker);
 }
 
 function removeMarkerForStoryInList(story,list) {
   var marker = list.get(story.id);
-  markercluster.removeMarker(marker);
+  markercluster.remove(marker);
   marker.setMap(null);
-  list.remove(story.id);
+  list.remove(story);
 }
 
 //--- createStory method ---//
@@ -1134,16 +1120,15 @@ function editStory() {
   //save story on server
 	stud_createStory(story.domainStory,function(st){
 		//upload story pics
-		var storyId = st.id;
+    var story = st
+		storyId = story.getStoryId()
 		if (saveimagefile) {
-			uploadStoryImage(storyId,function(thumbnail) {
-        st.thumbnail = thumbnail;
-        editFinished(st);
+			uploadStoryImage(storyId,function(st_) {
+        editFinished(st_);
 			});
 		} else if (hasImageToDelete(st)) {
-      deleteStoryImage(storyId, function(thumbnail) {
-        st.thumbnail = thumbnail;
-        editFinished(st);
+      deleteStoryImage(storyId, function(st_) {
+        editFinished(st_);
       })
 		} else {
       editFinished(st);
@@ -1169,9 +1154,32 @@ function addStoryToCollection(storyId,collectionId) {
   stud_addStoryToStoryCollection(storyId,collectionId, function() {}, function() {alert('failed: Couldn\'t add story to collection')})
 }
 
+function uploadStoryImage(storyId,onFinished) {
+	url = '/story/'+storyId+'/uploadimage';
+	var uploadImageForm = new FormData($('#image-upload-form')[0]);
+	$.ajax( {
+	  url: url,
+	  type: 'POST',
+	  data:  uploadImageForm,
+	  processData: false,
+	  contentType: false,
+	  success: onFinished
+	} );
+}
+
+function deleteStoryImage(storyId,success,error) {
+  $.ajax({
+		url: '/story/'+storyId+'/deleteimage',
+		type: "DELETE",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
 function hasImageToDelete(st) {
   var imagesrc = $('#create-edit-open-story-view #story-image').attr('src');
-  if (imagesrc == "" && (st.thumbnail != "" && st.thumbnail))
+  if (imagesrc == "" && (st.getThumbnail() != "" && st.getThumbnail()))
     return true;
   return false;
 }
@@ -1277,30 +1285,6 @@ function getStoryText(jqTextElement) {
   }
   return jqTextElement[0].innerText.replace(/[^\x00-\x7F]/g, "")
                                   .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
-}
-
-function uploadStoryImage(storyId,onFinished) {
-	url = '/story/'+storyId+'/uploadimage';
-	var uploadImageForm = new FormData($('#image-upload-form')[0]);
-	$.ajax( {
-	  url: url,
-	  type: 'POST',
-	  data:  uploadImageForm,
-	  processData: false,
-	  contentType: false,
-    dataType: "json",
-	  success: onFinished
-	} );
-}
-
-function deleteStoryImage(storyId,success,error) {
-  $.ajax({
-		url: '/story/'+storyId+'/deleteimage',
-		type: "DELETE",
-    dataType: "json",
-		success: success,
-		error: error
-	});
 }
 
 function unpublish(storyId, onFinished){

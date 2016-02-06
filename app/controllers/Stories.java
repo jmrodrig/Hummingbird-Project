@@ -6,6 +6,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Date;
 
 
 
@@ -15,6 +16,7 @@ import models.User;
 import models.UserStory;
 import models.Like;
 import models.SavedStory;
+import models.StoryCollection;
 import models.exceptions.ModelAlreadyExistsException;
 import models.exceptions.ModelNotFountException;
 import models.utils.Constants;
@@ -51,7 +53,7 @@ public class Stories extends Controller {
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser());
+			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
 			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
@@ -70,7 +72,7 @@ public class Stories extends Controller {
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(currentUser);
+			jsonStory.author = controllers.json.User.getUser(currentUser,true);
 			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
@@ -89,7 +91,7 @@ public class Stories extends Controller {
 
 		for (models.Story story : savedstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser());
+			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
 			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
@@ -140,6 +142,11 @@ public class Stories extends Controller {
 		story.setDomainStory(domainStory);
 
 		jsonStory = controllers.json.Story.getStory(story, true);
+		jsonStory.author = controllers.json.User.getUser(user,true);
+		jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
+		jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(user.getId(), story.getId()) != null) ? true : false;
+		jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+		jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(user.getId(), story.getId()) != null) ? true : false;
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
@@ -164,7 +171,7 @@ public class Stories extends Controller {
 		story.save(DBConstants.lir_backoffice);
 
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser());
+		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
 		jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 		jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
 		String json = new Gson().toJson(jsonStory);
@@ -180,7 +187,7 @@ public class Stories extends Controller {
 
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, true);
 
-		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser());
+		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser(),true);
 
 		jsonStory.noOfLikes = Like.findByStoryId(storyId).size();
 		jsonStory.noOfSaves = SavedStory.findByStoryId(storyId).size();
@@ -377,7 +384,9 @@ public class Stories extends Controller {
 				//String imageName = imageFilePart.getFilename().replace(" ","_");
 				String[] filenameparts = imageFilePart.getFilename().split("\\.");
 				String fileextension = filenameparts[filenameparts.length-1];
-				String imageName = storyId + "_image." + fileextension;
+
+				Long time= new java.util.Date().getTime();
+				String imageName = "image_story_" + storyId + "_" + time + "." + fileextension;
 
 
 				//String fileSrc = "images/";
@@ -403,6 +412,59 @@ public class Stories extends Controller {
 				story.save(DBConstants.lir_backoffice);
 
 				String json = new Gson().toJson("/uploads/images/" + imageName);
+				return ok(json);
+
+			} else {
+				flash("error", "Missing file");
+				return redirect(routes.Application.index());
+			}
+		}
+		return badRequest("Missing file");
+	}
+
+
+	public static Result uploadCollectionImage(Long collectionId) throws IOException {
+		models.StoryCollection collection = models.StoryCollection.findCollectionById(collectionId);
+		if (collection == null) {
+			return badRequest("Invalid Collection id");
+		}
+
+		MultipartFormData body = request().body().asMultipartFormData();
+		List<FilePart> imageFileParts = body.getFiles();
+		for (FilePart imageFilePart : imageFileParts) {
+			if (imageFilePart != null) {
+				File imageFile = imageFilePart.getFile();
+				//String imageName = imageFilePart.getFilename().replace(" ","_");
+				String[] filenameparts = imageFilePart.getFilename().split("\\.");
+				String fileextension = filenameparts[filenameparts.length-1];
+
+				Long time= new java.util.Date().getTime();
+				String imageName = "image_collection_" + collectionId + "_" + time + "." + fileextension;
+
+
+				//String fileSrc = "images/";
+
+				String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/collection_images/";
+
+				File uploadDir  = new File(uploadPath);
+
+				//String uploadPath = Play.current().path().getAbsolutePath() + "/private/upload/";
+				//File uploadDir = new File(uploadPath + fileSrc);
+
+				if (!uploadDir.exists()) {
+					uploadDir.mkdirs();
+				}
+				//fileSrc += imageFilePart.getFilename();
+				File uploadFile = new File(uploadDir, imageName);
+
+				System.out.println(uploadPath + imageName);
+
+				imageFile.renameTo(uploadFile);
+
+				collection.setImageUrl("/uploads/collection_images/" + imageName);
+				collection.save(DBConstants.lir_backoffice);
+
+				String json = new Gson().toJson("/uploads/collection_images/" + imageName);
 
 				return ok(json);
 
@@ -428,8 +490,7 @@ public class Stories extends Controller {
 		story.setThumbnail("");
 		story.save(DBConstants.lir_backoffice);
 
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-		String json = new Gson().toJson(jsonStory);
+		String json = new Gson().toJson("");
 		return ok(json);
 	}
 
@@ -481,6 +542,106 @@ public class Stories extends Controller {
 		String json_ = new Gson().toJson(json);
 
 		return ok(json_);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result createStoryCollection(String collectionName) throws IOException {
+		User currentUser = getCurrentUser();
+		StoryCollection collection;
+		if (collectionName == null) {
+			collection = StoryCollection.create(currentUser,"");
+		} else {
+			collection = StoryCollection.create(currentUser,collectionName);
+		}
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection);
+		String json = new Gson().toJson(jsonCollection);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result updateStoryCollection(Long collectionId) throws IOException {
+		User currentUser = getCurrentUser();
+		controllers.json.StoryCollection jsonCollection = new Gson().fromJson(request().body().asJson().toString(), controllers.json.StoryCollection.class);
+		StoryCollection collection = StoryCollection.findCollectionById(collectionId);
+
+		collection.setName(jsonCollection.name);
+		collection.setDescription(jsonCollection.description);
+		collection.save(DBConstants.lir_backoffice);
+
+		jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection);
+		String json = new Gson().toJson(jsonCollection);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result addStoryToCollection(Long collectionId, Long storyId) throws IOException {
+		//TODO: only allow owner and a selected group of users, with premission of the owner, to add and remove stories
+		User currentUser = getCurrentUser();
+		models.Story story = models.Story.findById(storyId);
+
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		storyCollection.addStoryToCollection(story);
+
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		String json = new Gson().toJson(jsonCollection);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result removeStoryToCollection(Long collectionId, Long storyId) throws IOException {
+		//TODO: only allow owner and a selected group of users, with premission of the owner, to add and remove stories
+		User currentUser = getCurrentUser();
+		models.Story story = models.Story.findById(storyId);
+
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		storyCollection.removeStoryFromCollection(story);
+
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		String json = new Gson().toJson(jsonCollection);
+		return ok(json);
+	}
+
+	public static Result readCollection(Long collectionId) throws IOException {
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		String json = new Gson().toJson(jsonCollection);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result readCollectionStories(Long collectionId) throws IOException {
+		User currentUser = getCurrentUser();
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		List<models.Story> collectionstories = storyCollection.getStories();
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+
+		for (models.Story story : collectionstories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
+			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
+			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	public static Result readPublicCollectionStories(Long collectionId) throws IOException {
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		List<models.Story> collectionstories = storyCollection.getStories();
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+
+		for (models.Story story : collectionstories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
+			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
+			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
 	}
 
 }

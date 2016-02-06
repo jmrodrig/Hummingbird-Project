@@ -10,6 +10,11 @@ import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
 import javax.persistence.Version;
+import javax.persistence.ManyToOne;
+import javax.persistence.ManyToMany;
+import javax.persistence.JoinTable;
+import javax.persistence.JoinColumn;
+
 
 import models.exceptions.ModelAlreadyExistsException;
 import models.utils.DBConstants;
@@ -66,6 +71,10 @@ public class User extends Model {
 
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<Invitation> invitations;
+
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "users_story_collections", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "collection_id", referencedColumnName = "id") })
+	private List<StoryCollection> storyCollections;
 
 	public String getId() {
 		return id;
@@ -150,6 +159,14 @@ public class User extends Model {
 	public void addUserStory(UserStory userStory){
 		this.userStories.add(userStory);
 		this.save();
+	}
+
+	public List<StoryCollection> getStoryCollections() {
+		return storyCollections;
+	}
+
+	public void setStoryCollections(List<StoryCollection> storyCollections) {
+		this.storyCollections = storyCollections;
 	}
 
 	private static Finder<Long, User> finder = new Finder<Long, User>(Long.class, User.class);

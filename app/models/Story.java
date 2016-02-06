@@ -119,6 +119,10 @@ public class Story extends Model {
 	@JoinTable(name = "stories_labels", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "label_id", referencedColumnName = "id") })
 	private List<Label> labels;
 
+	@ManyToMany(cascade = CascadeType.ALL)
+	@JoinTable(name = "stories_story_collections", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "collection_id", referencedColumnName = "id") })
+	private List<StoryCollection> storyCollections;
+
 	@Transient
 	private com.lir.library.domain.Story domainStory;
 

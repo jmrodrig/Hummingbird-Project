@@ -72,6 +72,14 @@ public class Application extends Controller {
 		return ok(views.html.profile.render());
 	}
 
+	public static Result openCollectionView(Long collectionId) {
+		return ok(views.html.collection.render());
+	}
+
+	public static Result openStoryView(Long storyId) {
+		return ok(views.html.story.render());
+	}
+
 	@SecuredAction
 	public static Result create(Long storyId) {
 		return ok(views.html.create.render(storyId));

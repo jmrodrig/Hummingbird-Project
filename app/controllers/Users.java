@@ -18,7 +18,7 @@ public class Users extends Controller {
 
 		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
 		User user = User.findByIdentityId(identity.identityId());
-		controllers.json.User jsonUser = controllers.json.User.getUser(user);
+		controllers.json.User jsonUser = controllers.json.User.getUser(user,true);
 		jsonUser.noOfSaved = SavedStory.findByUserId(user.getId()).size();
 		jsonUser.noOfStories = UserStory.findByUserId(user.getId()).size();
 		String json = new Gson().toJson(jsonUser);
@@ -28,7 +28,7 @@ public class Users extends Controller {
 	@SecureSocial.SecuredAction(ajaxCall=true)
 	public static Result getUserById(String userId) {
 		User user = User.findByUserId(userId);
-		controllers.json.User jsonUser = controllers.json.User.getUser(user);
+		controllers.json.User jsonUser = controllers.json.User.getUser(user,true);
 		jsonUser.noOfSaved = SavedStory.findByUserId(user.getId()).size();
 		jsonUser.noOfStories = UserStory.findByUserId(user.getId()).size();
 		String json = new Gson().toJson(jsonUser);

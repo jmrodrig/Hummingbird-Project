@@ -10,6 +10,8 @@ GET			/read/:storyId						controllers.Application.read(storyId: Long)
 GET			/create/:storyId					controllers.Application.create(storyId: Long)
 GET 		/profile							controllers.Application.profile()
 GET     /scraper              controllers.Application.scraper()
+GET	  /collection/:collectionId											controllers.Application.openCollectionView(collectionId: Long)
+
 
 #GET		Read
 #POST 		Create
@@ -50,6 +52,16 @@ POST	/story/upload												controllers.Stories.uploadStory()
 POST	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
 POST	/story/:storyId/save												controllers.Stories.saveStory(storyId: Long)
 DELETE /story/:storyId/deleteimage                controllers.Stories.deleteImage(storyId: Long)
+POST	/collection/:name												controllers.Stories.createStoryCollection(name: String)
+PUT	  /collection/:collectionId												controllers.Stories.updateStoryCollection(collectionId: Long)
+POST	/collection/:collectionId/story/:storyId												controllers.Stories.addStoryToCollection(collectionId: Long, storyId: Long)
+PUT	  /collection/:collectionId/story/:storyId												controllers.Stories.removeStoryToCollection(collectionId: Long, storyId: Long)
+GET	  /collection/stories/:collectionId											controllers.Stories.readCollectionStories(collectionId: Long)
+GET	  /public/collection/stories/:collectionId											controllers.Stories.readPublicCollectionStories(collectionId: Long)
+GET	  /collection/details/:collectionId											controllers.Stories.readCollection(collectionId: Long)
+POST	/collection/:collectionId/uploadimage									controllers.Stories.uploadCollectionImage(collectionId: Long)
+
+
 
 
 #Posts

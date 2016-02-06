@@ -113,7 +113,6 @@ function intializeEvents() {
       $('#location-banner').removeClass('animate-transition collapsed-navbar');
     else
 			$('#location-banner').addClass('collapsed-navbar animate-transition');
-
 	});
 
 	$('#location-banner').keypress(function(e) {
@@ -847,8 +846,7 @@ function drawPublishedStoryMarkersOnMap(publishedStories) {
 			});
       //add to marker cluster
       markercluster.addMarker(marker);
-			// google.maps.event.addListener(marker, 'click', function() {
-			// });
+			// google.maps.event.addListener(marker, 'click', function() {});
 			storyMarkerList.put(publishedStory.id,marker);
 		}
 	//fitStoryOnView(storyMarkerList);
