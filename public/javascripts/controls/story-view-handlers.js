@@ -380,7 +380,7 @@ function closeChooseCollectionView() {
 //--- initiateMap method ---//
 function initiateStoryMap(story) {
 	var mapOptions = {
-		zoom : 14,
+		zoom : 16,
 		streetViewControl: true,
 		scrollwheel:false,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},

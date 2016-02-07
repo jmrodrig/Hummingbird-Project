@@ -62,7 +62,7 @@ function readCollection() {
     initializeCollectionDetails();
     loadCollectionStories(col.id,function() {
       collectionStoriesMarkerList = drawCollectionMarkersOnMap(collectionStories,markerIcon);
-			fitStoryOnView(collectionStoriesMarkerList.values());
+			fitStoryOnView(collectionStoriesMarkerList.values(),map);
       drawLayout();
 			$('#stories-container').css('opacity','1');
     });
@@ -1091,7 +1091,7 @@ function selectStoryLocation() {
 }
 
 //--- fitStoryOnView ---//
-function fitStoryOnView(markers) {
+function fitStoryOnView(markers,map) {
 	//if (!story) return;
 	var bound = new google.maps.LatLngBounds();
 	if (markers.length == 0) {

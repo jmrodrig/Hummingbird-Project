@@ -74,6 +74,7 @@ function initialize() {
         userStoriesMarkerList = drawPublishedStoryMarkersOnMap(userStories,markerIcon);
         userSavedStoriesMarkerList = drawPublishedStoryMarkersOnMap(userSavedStories,markerIcon);
         drawStoryGridLayout();
+        fitStoryOnView(userStoriesMarkerList.values().concat(userSavedStoriesMarkerList.values()),map);
         $('#stories-container').css('opacity','1');
       });
 		},
@@ -723,7 +724,8 @@ function initiateStoryMap() {
 
   if (storyLocationMarker) {
     storyLocationMarker.setMap(storymap);
-    storymap.setCenter(storyLocationMarker.getPosition());
+    fitStoryOnView([storyLocationMarker],storymap);
+    // storymap.setCenter(storyLocationMarker.getPosition());
   }
 
 	//--- Map Event Handlers ---//
@@ -858,6 +860,27 @@ function showStoryMap() {
 function hideStoryMap() {
   $('#create-edit-open-story-view .story-set-location-view-container').hide();
   $('#create-edit-open-story-view .story-container-body').show();
+}
+
+//--- fitStoryOnView ---//
+function fitStoryOnView(markers,map) {
+	//if (!story) return;
+	var bound = new google.maps.LatLngBounds();
+	if (markers.length == 0) {
+		return;
+	}
+	else if (markers.length == 1) {
+		if (map)
+			map.setOptions({
+				center: markers[0].getPosition(),
+				zoom : 16
+			});
+	} else {
+		for (var i = 0; i < markers.length; i++) {
+				bound.extend( markers[i].getPosition() );
+		}
+		if (map) map.fitBounds(bound);
+	}
 }
 
 //--- loadUserStories method ---//
