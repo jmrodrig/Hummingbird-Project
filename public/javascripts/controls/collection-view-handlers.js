@@ -62,7 +62,9 @@ function readCollection() {
     initializeCollectionDetails();
     loadCollectionStories(col.id,function() {
       collectionStoriesMarkerList = drawCollectionMarkersOnMap(collectionStories,markerIcon);
+			fitStoryOnView(collectionStoriesMarkerList.values());
       drawLayout();
+			$('#stories-container').css('opacity','1');
     });
   }, function() {});
 }
@@ -632,15 +634,15 @@ function removeArticleContainer() {
   $('#open-story-view .article-container').remove();
 }
 
-function buildArticleContainer(art,addToContainer,sizeOptions) {
+function buildArticleContainer(art,addToContainer,options) {
   var articleContainer = $('<div class="article-container"/>').appendTo(addToContainer);
 
   if (getHostFromUrl(art.url) == "vine.co") {
-    buildVineContainer(art.url,articleContainer,sizeOptions);
+    buildVineContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "www.youtube.com") {
-    buildYouTubeContainer(art.url,articleContainer,sizeOptions);
+    buildYouTubeContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "vimeo.com") {
-    buildVimeoContainer(art.url,articleContainer,sizeOptions);
+    buildVimeoContainer(art.url,articleContainer,options);
   } else {
     articleContainer.click(function() {window.open(art.url);});
 
@@ -650,8 +652,13 @@ function buildArticleContainer(art,addToContainer,sizeOptions) {
     }
 
     var articleContentContainer = $('<div class="article-content-container"/>').appendTo(articleContainer)
-          .append('<h4 class="article-title" >' + art.title + '</h4>')
-          .append('<p class="article-description">' + art.description + '</p>');
+    var articleTitle = $('<h4 class="article-title" >' + art.title + '</h4>').appendTo(articleContentContainer);
+    var articleDescriptionContainer = $('<div class="article-description-container collapsed">').appendTo(articleContentContainer);
+    var articleDescription = $('<p class="article-description">' + art.description + '</p>').appendTo(articleDescriptionContainer);
+    if (!options.colapsedescription)
+      articleDescriptionContainer.removeClass('collapsed');
+    else
+      $('<div class="article-description-overlay"/>').appendTo(articleDescriptionContainer);
 
     if (art.author) {
       $('<p class="article-host-author">' + art.author + ' | ' + formatArticleSource(art) + '</p>').appendTo(articleContentContainer);
@@ -926,7 +933,6 @@ function lookForUser() {
 	});
 }
 
-
 //--- initiateMap method ---//
 function initiateStoryMap() {
 	var mapOptions = {
@@ -1082,6 +1088,27 @@ function selectStoryLocation() {
     draggable : false
   });
   $('#open-story-view .location').text(locationName);
+}
+
+//--- fitStoryOnView ---//
+function fitStoryOnView(markers) {
+	//if (!story) return;
+	var bound = new google.maps.LatLngBounds();
+	if (markers.length == 0) {
+		return;
+	}
+	else if (markers.length == 1) {
+		if (map)
+			map.setOptions({
+				center: markers[0].getPosition(),
+				zoom : 16
+			});
+	} else {
+		for (var i = 0; i < markers.length; i++) {
+				bound.extend( markers[i].getPosition() );
+		}
+		if (map) map.fitBounds(bound);
+	}
 }
 
 //--- loadUserStories method ---//
@@ -1275,11 +1302,12 @@ function getStoryText(element) {
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
     return element[0].innerHTML.replace(/<br>/g,'\n')
                                     .replace(/&nbsp;/g,' ')
-                                    .replace(/[^\x00-\x7F]/g, "")
-                                    .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+                                    // .replace(/[^\x00-\x7F]/g, "")
+                                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
   }
-  return element[0].innerText.replace(/[^\x00-\x7F]/g, "")
-                                  .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+  return element[0].innerText
+										// .replace(/[^\x00-\x7F]/g, "")
+                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
 function editStory() {

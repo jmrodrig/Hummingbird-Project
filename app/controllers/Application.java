@@ -7,6 +7,7 @@ import play.mvc.Controller;
 import play.mvc.Result;
 import models.User;
 import models.Story;
+import models.StoryCollection;
 
 import com.google.gson.Gson;
 import com.typesafe.plugin.*;
@@ -61,6 +62,12 @@ public class Application extends Controller {
 		return ok(views.html.scraper.render());
 	}
 
+	public static Result story(Long storyId) {
+		models.Story story = models.Story.findById(storyId);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+		return ok(views.html.story.render(jsonStory));
+	}
+
 	@SecureSocial.SecuredAction
 	public static Result library() {
 		return ok(views.html.library.render());
@@ -88,11 +95,9 @@ public class Application extends Controller {
 	}
 
 	public static Result openCollectionView(Long collectionId) {
-		return ok(views.html.collection.render());
-	}
-
-	public static Result openStoryView(Long storyId) {
-		return ok(views.html.story.render());
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		return ok(views.html.collection.render(jsonCollection));
 	}
 
 	@SecuredAction

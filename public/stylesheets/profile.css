@@ -1,6 +1,6 @@
 
 body {
-	overflow:hidden;
+	/*overflow:hidden;*/
 }
 
 section{
@@ -47,6 +47,7 @@ h1, h2, h3, h4, p, a {
 #profile-details-container {
 	margin-top: 10px;
 	text-align: center;
+	margin-bottom: 15px;
 }
 
 #profile-container {
@@ -141,6 +142,7 @@ h1, h2, h3, h4, p, a {
 	clear: both;
 	margin-top: 40px;
 	padding-bottom: 40px;
+	opacity: 0;
 }
 
 #change-stories-view-btn-group {
@@ -817,9 +819,9 @@ h1, h2, h3, h4, p, a {
 	height:420px;
 	border-radius:0px;
 	overflow:hidden;
-	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
-	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
-	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	-moz-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
 }
 
 @media (min-width: 768px) {

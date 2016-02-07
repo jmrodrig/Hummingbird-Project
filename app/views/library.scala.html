@@ -1,6 +1,8 @@
 @()
 
-@main("LIR | Stories") {
+@main("") {
+	<title>LIR | Stories</title>
+
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/library.css")">
 
 	<script src="/assets/javascripts/controls/library-view-handlers.js" type="text/javascript"></script>
@@ -83,10 +85,10 @@
 					<a id="story-publish-button" class="btn btn-primary ga-event-map-publish" onclick="createStory()">Post</a>
 				</div>
 			</div>
-		</div>
-		<div id="no-stories-message">
-			<p>There are no stories here.</p>
-			<p>Drag the map to look for stories or publish a story on the location the map points to.</p>
+			<div id="no-stories-message">
+				<p>There are no stories here.</p>
+				<p>Drag the map to look for stories or publish a story on the location the map points to.</p>
+			</div>
 		</div>
 	</div>
 
@@ -99,7 +101,7 @@
 
 <div id="open-story-view" class="modal fade">
 	<div class="modal-dialog">
-		<div id="open-story-view-container" class="modal-content">
+		<div id="open-story-view-container" class="modal-content lg-container">
 			<div class="story-container-header">
 				<div class="author-container">
 					<div id="user-thumbnail" class='story-author-thumbnail'></div>

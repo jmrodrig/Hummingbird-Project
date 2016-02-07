@@ -12,6 +12,8 @@ GET 		/profile							controllers.Application.profile()
 GET 		/profile/:numberId  	controllers.Application.publicProfile(numberId: Long)
 GET     /scraper              controllers.Application.scraper()
 GET	    /collection/:collectionId											controllers.Application.openCollectionView(collectionId: Long)
+GET		/story/:storyId												controllers.Application.story(storyId: Long)
+
 
 
 #GET		Read
@@ -47,7 +49,7 @@ GET		/listuserstories														controllers.Stories.listCurrentUserStories()
 GET		/listusersavedstories														controllers.Stories.listCurrentUserSavedStories()
 GET		/listuserstories/:numberId														controllers.Stories.listUserStories(numberId: Long)
 GET		/listusersavedstories/:numberId														controllers.Stories.listUserSavedStories(numberId: Long)
-GET		/story/:storyId												controllers.Stories.readStory(storyId: Long)
+GET		/story/read/:storyId												controllers.Stories.readStory(storyId: Long)
 DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
 POST	/story														controllers.Stories.createStory()
 PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)

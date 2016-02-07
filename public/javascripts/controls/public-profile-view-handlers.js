@@ -87,7 +87,8 @@ function readProfile() {
     loadUserStories(function() {
       userStoriesMarkerList = drawPublishedStoryMarkersOnMap(userStories,markerIcon);
       userSavedStoriesMarkerList = drawPublishedStoryMarkersOnMap(userSavedStories,markerIcon);
-      drawStoryGridLayout()
+      drawStoryGridLayout();
+      $('#stories-container').css('opacity','1');
     });
   }, function() {alert('user not found')})
 }

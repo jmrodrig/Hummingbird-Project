@@ -1,8 +1,8 @@
 @(user: controllers.json.User)
 
-@main("LIR | @user.fullName 's profile") {
+@main("") {
 
-	<title>LIR | @user.fullName 's profile</title>
+	<title>LIR | @user.fullName's profile</title>
 
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/public-profile.css")">
 
@@ -65,7 +65,7 @@
 	<!--  Profile Stories   -->
 	<!------------------------>
 
-	<div id="stories-container">
+	<div id="stories-container" class="animate-transition">
 		<div id="change-stories-view-btn-group" class="btn-group">
 			<button id="stories-list-view-btn" class="btn active btn-default">List</button>
 			<button id="stories-map-view-btn" class="btn btn-default">Map</button>

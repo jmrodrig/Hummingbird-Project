@@ -1,6 +1,6 @@
 
 body {
-	overflow:hidden;
+	/*overflow:hidden;*/
 }
 
 section{
@@ -328,6 +328,7 @@ h1, h2, h3, h4, p, a {
 	clear: both;
 	margin-top: 40px;
 	padding-bottom: 40px;
+	opacity: 0;
 }
 
 #change-stories-view-btn-group {
@@ -587,7 +588,7 @@ h1, h2, h3, h4, p, a {
 
 .lg-container.story-container {
 	width: 100%;
-	max-width:500px;
+	max-width:600px;
 	text-align: inherit;
 	background-color: white;
 	border-radius: 0px;
@@ -846,7 +847,7 @@ h1, h2, h3, h4, p, a {
 ******************************************************************/
 
 #open-story-view {
-
+	
 }
 
 #open-story-view .modal-dialog {
@@ -939,7 +940,7 @@ h1, h2, h3, h4, p, a {
 }
 
 #open-story-view #story-text {
-	max-width: 500px;
+	max-width: 600px;
 	margin: auto;
 	margin-bottom:10px;
 	line-height: 25px;
@@ -972,7 +973,7 @@ h1, h2, h3, h4, p, a {
 	position: relative;
 	padding: 10px;
 	display:none;
-	max-width: 450px;
+	max-width: 600px;
 	margin: auto;
 }
 
@@ -1012,7 +1013,7 @@ h1, h2, h3, h4, p, a {
 #open-story-view #story-insert-article {
 	display:none;
 	width: 100%;
-	max-width: 500px;
+	max-width: 600px;
   margin: auto;
 	margin-top: 15px;
 	margin-bottom: 55px;
@@ -1049,7 +1050,7 @@ h1, h2, h3, h4, p, a {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 	overflow:hidden;
 	clear: both;
-	max-width: 450px;
+	max-width: 600px;
 	margin: auto;
 	z-index: 0;
 }
@@ -1219,9 +1220,9 @@ h1, h2, h3, h4, p, a {
 	height:420px;
 	border-radius:0px;
 	overflow:hidden;
-	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
-	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
-	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	-moz-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
+	box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
 }
 
 @media (min-width: 768px) {

@@ -48,22 +48,18 @@ function initialize() {
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
+    intializeEvents();
     initializeUser();
+    loadPublishedStories(function() {
+      initiateMap();
+      drawPublishedStoryMarkersOnMap(publishedStories,markerIcon);
+      $('#library-body').css('opacity','1');
+    });
 	},
 	function (){
 		user = null
 		$('#login-link, #stories-link').css('display' , 'block' );
 	});
-
-	initiateMap();
-
-	intializeEvents();
-
-	loadPublishedStories(function() {
-    initiateMap();
-    intializeEvents();
-		drawPublishedStoryMarkersOnMap(publishedStories,markerIcon)
-  });
 }
 
 function intializeEvents() {
@@ -72,6 +68,11 @@ function intializeEvents() {
 
 	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
+
+  //adjust container sizes
+  var availableWidth = $('#library-body').innerWidth(),
+  storyListContainerWidth = 500;
+  $('#stories-list-view-left-container').width((availableWidth - storyListContainerWidth)/2);
 
   //--- Google Analytics track event ----//
 	$(".ga-event-map-publish").click( function() {
@@ -95,7 +96,7 @@ function intializeEvents() {
 	// Retract Location Banner
 	$('#content-wrapper').scroll(function() {
 		var currentScrollTop = $('#content-wrapper').scrollTop();
-		if (currentScrollTop < 350)
+		if (currentScrollTop < 420)
       $('#location-banner').removeClass('animate-transition collapsed-navbar');
     else
 			$('#location-banner').addClass('collapsed-navbar animate-transition');
@@ -763,6 +764,7 @@ function initiateMap() {
 	var mapOptions = {
 		zoom : 2,
 		streetViewControl: true,
+    scrollwheel: false,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
     scaleControl : true,
 		zoomControl : true,
@@ -992,7 +994,8 @@ function drawPublishedStoryMarkerOnMap(story,icon) {
       position : new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
       icon: icon,
       map : map,
-      draggable : false
+      draggable : false,
+      story: story
     });
     //add to marker cluster
     markercluster.addMarker(marker);
@@ -1342,11 +1345,12 @@ function getStoryText(element) {
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
     return element[0].innerHTML.replace(/<br>/g,'\n')
                                     .replace(/&nbsp;/g,' ')
-                                    .replace(/[^\x00-\x7F]/g, "")
-                                    .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+                                    // .replace(/[^\x00-\x7F]/g, "")
+                                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
   }
-  return element[0].innerText.replace(/[^\x00-\x7F]/g, "")
-                                  .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+  return element[0].innerText
+                    // .replace(/[^\x00-\x7F]/g, "")
+                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
 function highlightTagsInText(text) {

@@ -189,21 +189,13 @@ public class Stories extends Controller {
 	}
 
 	public static Result readStory(Long storyId) {
-
+		models.User user = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
 			return badRequest("Invalid story id");
 		}
-
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, true);
-
-		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser(),false);
-
-		jsonStory.noOfLikes = Like.findByStoryId(storyId).size();
-		jsonStory.noOfSaves = SavedStory.findByStoryId(storyId).size();
-
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, true);
 		String json = new Gson().toJson(jsonStory);
-
 		return ok(json);
 	}
 
@@ -336,6 +328,9 @@ public class Stories extends Controller {
 
 	private static User getCurrentUser() {
 		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		if (identity==null) {
+			return null;
+		}
 		User user = User.findByIdentityId(identity.identityId());
 		return user;
 	}

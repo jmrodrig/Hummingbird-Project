@@ -1,6 +1,9 @@
 @(user: controllers.json.User)
 
-@main("LIR | @user.fullName's profile") {
+@main("") {
+
+	<title>LIR | @user.fullName's profile</title>
+
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
 
 	<script src="/assets/javascripts/controls/profile-view-handlers.js" type="text/javascript"></script>
@@ -62,7 +65,7 @@
 	<!--  Profile Stories   -->
 	<!------------------------>
 
-	<div id="stories-container">
+	<div id="stories-container" class="animate-transition">
 		<div id="change-stories-view-btn-group" class="btn-group">
 			<button id="stories-list-view-btn" class="btn active btn-default">List</button>
 			<button id="stories-map-view-btn" class="btn btn-default">Map</button>
@@ -99,7 +102,7 @@
 				</div>
 			</div>
 			<div class="story-container-body">
-				<div id="story-text" class="editable" contenteditable="true" placeholder="write your story" ></div>
+				<div id="story-text" class="editable empty" contenteditable="true" placeholder="write your story" ></div>
 				<div id="story-image-container">
 					<button id="remove-story-image" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
 					<img id="story-image">

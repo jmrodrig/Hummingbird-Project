@@ -1,6 +1,22 @@
-
+@(collection: controllers.json.StoryCollection)
 
 @main("") {
+	<title>LIR | @collection.name</title>
+	<meta name="description" content="@collection.description" />
+
+	<!-- Twitter Card data -->
+	<meta name="twitter:site" content="lostinreality.net">
+	<meta name="twitter:title" content="@collection.name - Lost in Reality">
+	<meta name="twitter:description" content="@collection.description">
+	<meta name="twitter:image" content="@collection.imageUrl">
+
+	<!-- Open Graph data -->
+	<meta property="og:title" content="@collection.name - Lost in Reality" />
+	<meta property="og:type" content="article" />
+	<meta property="og:url" content="lostinreality.net"/>
+	<meta property="og:image" content="@collection.imageUrl" />
+	<meta property="og:description" content="@collection.description" />
+
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/collection.css")">
 
 	<script src="/assets/javascripts/controls/collection-view-handlers.js" type="text/javascript"></script>
@@ -71,7 +87,7 @@
 	<!--  Collection Stories   -->
 	<!--------------------------->
 
-	<div id="stories-container">
+	<div id="stories-container" class="animate-transition">
 		<div id="change-stories-view-btn-group" class="btn-group">
 			<button id="stories-list-view-btn" class="btn active btn-default">List</button>
 			<button id="stories-map-view-btn" class="btn btn-default">Map</button>

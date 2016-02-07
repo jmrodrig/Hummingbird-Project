@@ -83,10 +83,11 @@ public class Story {
 	}
 
 	public static Story getStory(models.Story story, models.User currentUser, boolean forceReadDomainStory){
-		if (story == null || currentUser == null)
+		if (story == null)
 			return null;
-
 		Story result = getStory(story,forceReadDomainStory);
+		if (currentUser == null)
+			return result;
 		result.currentUserLikesStory = (models.Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 		result.currentUserSavedStory = (models.SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 		return result;

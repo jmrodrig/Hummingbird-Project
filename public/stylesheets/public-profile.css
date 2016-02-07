@@ -1,6 +1,6 @@
 
 body {
-	overflow:hidden;
+	/*overflow:hidden;*/
 }
 
 section{
@@ -108,6 +108,7 @@ h1, h2, h3, h4, p, a {
 	clear: both;
 	margin-top: 40px;
 	padding-bottom: 40px;
+	opacity: 0;
 }
 
 #change-stories-view-btn-group {
