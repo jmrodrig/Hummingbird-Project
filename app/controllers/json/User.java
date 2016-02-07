@@ -6,6 +6,7 @@ import java.util.List;
 public class User {
 
 	public String id;
+	public Long numberId;
 	public String firstName;
 	public String lastName;
 	public String fullName;
@@ -20,18 +21,21 @@ public class User {
 
 	public static User getUser(models.User domainUser, Boolean fetchAll) {
 		User user = new User();
-		user.id = domainUser.getId();
-		user.firstName = domainUser.getFirstName();
-		user.lastName = domainUser.getLastName();
+		//user.id = domainUser.getId();
+		user.numberId = domainUser.getNumberId();
 		user.fullName = domainUser.getFullName();
-		user.email = domainUser.getEmail();
 		user.avatarUrl = domainUser.getAvatarUrl();
+		user.noOfSaved = models.SavedStory.findByUserId(domainUser.getId()).size();
+		user.noOfStories = models.UserStory.findByUserId(domainUser.getId()).size();
 		if (fetchAll)
 			user.storyCollections = getStoryCollections(domainUser);
+			user.email = domainUser.getEmail();
+			user.firstName = domainUser.getFirstName();
+			user.lastName = domainUser.getLastName();
 		return user;
 	}
 
-	private static List<StoryCollection> getStoryCollections(models.User domainUser) {
+	public static List<StoryCollection> getStoryCollections(models.User domainUser) {
 		List<StoryCollection> storyCollectionList = new ArrayList<StoryCollection>();
 		for (models.StoryCollection sc : domainUser.getStoryCollections()) {
 			storyCollectionList.add(StoryCollection.getStoryCollection(sc));

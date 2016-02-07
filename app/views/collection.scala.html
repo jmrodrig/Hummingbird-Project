@@ -14,7 +14,7 @@
 <section id="content-wrapper">
 
 	<!----------------------->
-	<!--  Profile Details  -->
+	<!--  Collection Details  -->
 	<!----------------------->
 
 	<div id="collection-details-img-container">
@@ -30,7 +30,7 @@
 			</div>
 			<input id="collection-name" readonly type="text">
 			<div id="collection-description" class="editable empty" contenteditable="false" placeholder="write a description"></div>
-			<a id="collection-edit-picture-btn" class="btn btn-default hidden">Edit image
+			<a id="collection-edit-picture-btn" class="btn btn-default">Edit image
 				<form enctype="multipart/form-data" id="image-upload-form">
 					<input id="collection-edit-picture" name="profileImg[]" type="file" />
 				</form>
@@ -96,7 +96,7 @@
 			<div class="story-container-header">
 				<div class="author-container">
 					<div id="user-thumbnail" class='story-author-thumbnail'></div>
-					<span id="story-username" class='story-author-name'></span>
+					<a id="story-username" class='story-author-name'></a>
 				</div>
 				<div class="location-container pull-right" onclick="showStoryMap()"/>
 					<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>
@@ -148,12 +148,8 @@
 <div id="create-story-collection-modal" class="modal fade">
   <div class="modal-dialog">
     <div class="modal-content">
-      <div class="modal-header">
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-        <h4 class="modal-title">Create Story Collection</h4>
-      </div>
       <div class="modal-body">
-        <p>Title:</p>
+				<h4 class="modal-title">Create Story Collection</h4>
 				<input id="story-collection-title-input" type="text" placeholder="Collection title">
       </div>
       <div class="modal-footer">
@@ -171,6 +167,24 @@
 			<div class="modal-body"></div>
 			<div class="modal-footer">
         <button type="button" class="btn btn-default" onclick="closeChooseCollectionView()">Close</button>
+      </div>
+		</div>
+  </div>
+</div>
+
+<!-- Add Users to Collections modal -->
+<div id="add-user-collection-modal" class="modal fade">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+			<div class="modal-body">
+				<h4 class="modal-title">Find user</h4>
+				<input id="user-email-input" type="text" placeholder="place user email">
+				<button type="button" class="btn btn-default" onclick="lookForUser()">Search</button>
+				<div class="list-group"></div>
+				<p class="label">No user was found</p>
+			</div>
+			<div class="modal-footer">
+        <button type="button" class="btn btn-default" onclick="closeAddUserCollectionView()">Close</button>
       </div>
 		</div>
   </div>

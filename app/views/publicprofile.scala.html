@@ -1,9 +1,12 @@
 @(user: controllers.json.User)
 
-@main("LIR | @user.fullName's profile") {
-	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/profile.css")">
+@main("LIR | @user.fullName 's profile") {
 
-	<script src="/assets/javascripts/controls/profile-view-handlers.js" type="text/javascript"></script>
+	<title>LIR | @user.fullName 's profile</title>
+
+	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/public-profile.css")">
+
+	<script src="/assets/javascripts/controls/public-profile-view-handlers.js" type="text/javascript"></script>
 
 	<script>
 		var userNumberId = @user.numberId;
@@ -28,7 +31,7 @@
 			</div>
 			<div id="profile-name-container" >
 				<h1 id="profile-name"></h1>
-				<button id="profile-edit-details-btn" class="btn btn-default" onclick="openProfileSettingsView()">EDIT PROFILE</button>
+				<button id="profile-follow-btn" class="btn btn-default">FOLLOW</button>
 			</div>
 			<div id="profile-stats-container" >
 				<p id="profile-stat-user-created"><span id="value"></span> Created</p>
@@ -71,7 +74,6 @@
 			<div id="stories-list-view-left-container" >
 				<p>Story Collections</p>
 				<ul id="story-collections-list"></ul>
-				<a id="create-story-collection-btn" onclick="openCreateCollectionView()">+ new collection</a>
 			</div>
 			<div id="stories-list" ></div>
 			<div id="no-stories-message">
@@ -85,7 +87,7 @@
 <!--  Create/Edit/Open Story view   -->
 <!------------------------------------->
 
-<div id="create-edit-open-story-view" class="modal fade">
+<div id="open-story-view" class="modal fade">
 	<div class="modal-dialog">
 		<div id="create-story-container" class="modal-content">
 			<div class="story-container-header">
@@ -162,31 +164,6 @@
 			<div class="modal-body"></div>
 			<div class="modal-footer">
         <button type="button" class="btn btn-default" onclick="closeChooseCollectionView()">Close</button>
-      </div>
-		</div>
-  </div>
-</div>
-
-<!-- Profile settings modal -->
-<div id="profile-settings-view" class="modal fade">
-  <div class="modal-dialog modal-sm">
-    <div class="modal-content">
-			<div class="modal-body">
-				<div id="profile-image-container" >
-					<img id="profile-image"/>
-				</div>
-				<div id="profile-name-container" >
-					<input id="profile-name" type="text">
-					<button id="profile-change-picture-button" class="btn btn-default">Change image
-						<form enctype="multipart/form-data" id="image-upload-form">
-							<input id="f" name="profileImg[]" type="file" />
-						</form>
-					</button>
-				</div>
-			</div>
-			<div class="modal-footer">
-        <button type="button" class="btn btn-default" onclick="closeProfileSettingsView()">Close</button>
-				<button type="button" class="btn btn-primary" onclick="saveProfileSettings()">Save</button>
       </div>
 		</div>
   </div>

@@ -187,6 +187,17 @@ function stud_readLoggedUser(success, error){
 	});
 }
 
+function stud_readUserDetails(numberId, success, error){
+	$.ajax({
+		url: "/user/" + numberId,
+		type: "GET",
+		dataType: "json",
+		contentType:"application/json",
+		success: success,
+		error: error
+	});
+}
+
 function stud_readUserStories(success, error){
 	$.ajax({
 		url: "/story",

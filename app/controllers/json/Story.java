@@ -64,6 +64,9 @@ public class Story {
 		result.articleSource = story.getArticleSource();
 		result.articleAuthor = story.getArticleAuthor();
 		result.articleLanguage = story.getArticleLanguage();
+		result.author = controllers.json.User.getUser(models.UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
+		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
+		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
 
 
 		if (forceReadDomainStory || story.isDomainStoryLoaded()){
@@ -79,4 +82,13 @@ public class Story {
 		return result;
 	}
 
+	public static Story getStory(models.Story story, models.User currentUser, boolean forceReadDomainStory){
+		if (story == null || currentUser == null)
+			return null;
+
+		Story result = getStory(story,forceReadDomainStory);
+		result.currentUserLikesStory = (models.Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+		result.currentUserSavedStory = (models.SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+		return result;
+	}
 }

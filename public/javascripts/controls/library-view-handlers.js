@@ -45,39 +45,25 @@ function initialize() {
 
 	//$('#blog-link').css('display' , 'block' );
 
-  defaultLocation = new google.maps.LatLng(37, -20);
-
-  markerIcon = {
-    url: "/assets/images/marker_icon.png",
-    origin: new google.maps.Point(0, 0),
-    anchor: new google.maps.Point(13, 13)
-  };
-
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
-			if (user.getAvatarUrl())
-				avatarUrl = user.getAvatarUrl();
-			else
-				avatarUrl = defaultAvatarPic
-			$('#stories-link').css('display' , 'block' );
-			$('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
-							.css('display' , 'block' );
-
-			$('#user-link div,#create-story-view-container #user-thumbnail').css('background-image','url(' + avatarUrl + ')');
-			$('#story-username').html(user.getFullName())
-		},
-		function (){
-			user = null
-			$('#login-link, #stories-link').css('display' , 'block' );
-		}
-	);
+    initializeUser();
+	},
+	function (){
+		user = null
+		$('#login-link, #stories-link').css('display' , 'block' );
+	});
 
 	initiateMap();
 
 	intializeEvents();
 
-	readPublishedStories();
+	loadPublishedStories(function() {
+    initiateMap();
+    intializeEvents();
+		drawPublishedStoryMarkersOnMap(publishedStories,markerIcon)
+  });
 }
 
 function intializeEvents() {
@@ -147,6 +133,8 @@ function intializeEvents() {
     removeArticleContainer();
   });
 
+  loadStoryTextBehaviours($('#story-text'));
+
 	//STORY TEXT AREA: LOOK FOR URL AND SET ARTICLE
 	$('#article-link').keyup(function() {
 		txt = $(this).val();
@@ -166,123 +154,273 @@ function intializeEvents() {
 		}
 
 		fileReader.onload = function(ev2) {
-			console.dir(ev2);
 			$('#story-image').attr('src', ev2.target.result);
 		};
 		fileReader.readAsDataURL(saveimagefile);
 		fr = fileReader;
 	});
-
 }
 
-function buildLibraryBody(stories) {
+function initializeUser() {
+  if (user.getAvatarUrl())
+    avatarUrl = user.getAvatarUrl();
+  else
+    avatarUrl = defaultAvatarPic
+  $('#stories-link').css('display' , 'block' );
+  $('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
+          .css('display' , 'block' );
 
-	$('.story-container').remove();
-	var libraryBody = $("#library-body");
+  $('#user-link div,#create-story-view-container #user-thumbnail').css('background-image','url(' + avatarUrl + ')');
+  $('#story-username').html(user.getFullName())
 
-	if(!stories || !stories[0]) {
+  // STORY COLLECTIONS LIST
+  var collectionList = $('#story-collections-list')
+  user.domainUser.storyCollections.forEach(function(collection) {
+    $('<li><a href="/collection/' + collection.id + '">' + collection.name + '</a></li>').appendTo(collectionList);
+  });
+}
+
+function drawStoryListLayout() {
+  var stories = publishedStories;
+
+  $('.story-container').remove();
+	var libraryBody = $("#stories-list-view-center-container");
+
+  if(!stories || stories.length == 0) {
 		$('#no-stories-message').show();
 		return;
 	} else
 		$('#no-stories-message').hide();
 
-	stories.forEach(function(story) {
-		var storyContainer = $('<div/>').attr('id', 'story-' + story.id)
-							.addClass('story-container')
+  // Sort stories
+  var stories = getStoriesWithinMapBounds(stories);
+  var stories = sortStoriesWithDate(stories);
 
-		//Story container header
-		var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
-		//Story container body
-		var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
-                                                                      .click(function() {
-                                                                        openStoryView({readonly:true, story:story});
-                                                                      });
-		//Story container footer
-		var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
+  stories.forEach(function(story) {
+    var storyContainer = buildStoryLargeContainer(story);
+    storyContainer.appendTo(libraryBody);
+  });
+}
 
-		//Story author container
-		var authorContainer = $('<div class="author-container"/>').appendTo(storyContainerHeader);
-		//Story author thumbnail
-		if (story.author.avatarUrl)
-			avatarUrl = story.author.avatarUrl;
-		else
-			avatarUrl = defaultAvatarPic
-		var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
-								.css('background-image','url(' + avatarUrl + ')')
-								.appendTo(authorContainer)
+function buildStorySmallContainer(story) {
+  var storyContainer = $('<div/>').attr('id', 'story-' + story.id).attr('storyId', story.id)
+            .addClass('story-container')
+            .addClass('sm-container');
 
-		//Story author name
-		var authorName = story.author.fullName;
-		authorContainer.append("<span class='story-author-name'>" + authorName +  "</span>");
+  //Story container header
+  var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
+  //Story container body
+  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
+                                                                  .click(function() {
+                                                                    openStoryView({readonly:true, story:story});
+                                                                  });
+  //Story container footer
+  var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
+
+  //--- HEADER ---//
+
+  //Story author container
+  var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
+
+  //Story author thumbnail
+  if (story.author.avatarUrl)
+    avatarUrl = story.author.avatarUrl;
+  else
+    avatarUrl = defaultAvatarPic
+  var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
+              .css('background-image','url(' + avatarUrl + ')')
+              .appendTo(authorContainer)
+
+  //Story author name
+  var authorName = story.author.fullName;
+  authorContainer.append('<a class="story-author-name" href="/profile/' + story.author.numberId + '">' + authorName +  '</a>');
+
+  //Story Options Button container
+  var optionsBtnContainer = $('<div class="story-options-btn-container pull-right dropdown"/>').appendTo(storyContainerHeader);
+  var optionsBtn = $('<div class="story-options-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown"/>').appendTo(optionsBtnContainer);
+  $('<div/>').appendTo(optionsBtn);
+  $('<div/>').appendTo(optionsBtn);
+  $('<div/>').appendTo(optionsBtn);
+
+  //Story Options Dropdown container
+  var optionsList = $('<ul class="options-list dropdown-menu" aria-labelledby="dropdownMenu1"/>').appendTo(optionsBtnContainer);
+
+  $('<li class="option-open"><a href="#">Open</a></li>').appendTo(optionsList)
+                                    .click(function() {
+                                      openStoryView({readonly:true, story:story});
+                                    });
+  $('<li class="option-remove"><a href="#">Remove Story</a></li>').appendTo(optionsList)
+                                            .click(function() {
+                                              stud_removeStoryFromStoryCollection(story.id,collection.id, function(coll) {
+                                                $('#collection-stat-stories #value').html(coll.noStories);
+                                                removeStoryFromCollectionStoriesList(story);
+                                                drawLayout();
+                                              });
+                                            });
+
+  $('<li class="divider"></li>').appendTo(optionsList);
+  $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
+                                        .click(function() {
+                                          openChooseCollectionView(story);
+                                        });
 
 
-		//Story location container
-		var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerHeader)
-		var location = "";
-    if (story.locationName && story.locationName.length > 0)
-			location = story.locationName;
-		$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>').appendTo(locationContainer);
-		$('<p class="location">' + location + '</p>').appendTo(locationContainer);
+  //--- BODY ---//
+
+  //Story location container
+  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody);
+
+  var location = "";
+  if (story.locationName && story.locationName.length > 0)
+    location = story.locationName;
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-facebook30"></div>').appendTo(locationContainer);
+  $('<p class="location">' + location + '</p>').appendTo(locationContainer);
+
+  //Thumbnail: article image or story image
+  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
+
+  var thumbnailLink;
+  if (!story.articleLink) {
+    thumbnailLink = story.thumbnail;
+  } else {
+    thumbnailLink = story.articleImage;
+  }
+
+  if (thumbnailLink && thumbnailLink.length > 0) {
+    $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
+                                                  .attr('src',thumbnailLink);
+  }
 
 
-		// Summary container
-		if (story.summary && story.summary.length > 0) {
-			var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
-			var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer)
-                                                      .text(story.summary);
-      $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
-		}
+  if (!story.articleLink) {
+    // Summary container
+    if (story.summary && story.summary.length > 0) {
+      var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+      var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+      setStoryText(story.summary,summary);
+      var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
+    }
+  } else {
+    var articleDetailsContainer = $('<div class="article-details-container"/>').appendTo(storyContainerBody)
+          .append('<p class="article-title" >' + story.articleTitle + '</p>')
+          .append('<a class="article-host" href="' + story.articleLink + '">' + getHostFromUrl(story.articleLink) + '</a>');
+  }
 
-		//Thumbnail
-		if (story.thumbnail && story.thumbnail.length > 0) {
-			var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id)
-								.append('<img atl="image for ' + story.title + '">');
-			imageContainer.find('img').attr('src',story.thumbnail)
-			imageContainer.appendTo(storyContainerBody);
-		}
+  //--- FOOTER ---//
+
+  // Stats: Likes and Saves
+  var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyContainerFooter);
+  $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
+  $('<div class="story-stats-saves">' + story.noOfSaves + ' saves</div>').appendTo(storyStatsContainer);
+
+  return storyContainer;
+}
+
+function buildStoryLargeContainer(story) {
+  var storyContainer = $('<div/>').attr('id', 'story-' + story.id)
+            .addClass('story-container')
+            .addClass('lg-container');
+
+  //Story container header
+  var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
+  //Story container body
+  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
+                                                                    .click(function() {
+                                                                      openStoryView({readonly:true, story:story});
+                                                                    });
+  //Story container footer
+  var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
+
+  //Story author container
+  var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
+  //Story author thumbnail
+  if (story.author.avatarUrl)
+    avatarUrl = story.author.avatarUrl;
+  else
+    avatarUrl = defaultAvatarPic
+  var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
+              .css('background-image','url(' + avatarUrl + ')')
+              .appendTo(authorContainer)
+
+  //Story author name
+  var authorName = story.author.fullName;
+  authorContainer.append('<a class="story-author-name" href="/profile/' + story.author.numberId + '">' + authorName +  '</a>');
+
+	//Story Options Button container
+  var optionsBtnContainer = $('<div class="story-options-btn-container pull-right dropdown"/>').appendTo(storyContainerHeader);
+  var optionsBtn = $('<div class="story-options-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown"/>').appendTo(optionsBtnContainer);
+  $('<div/>').appendTo(optionsBtn);
+  $('<div/>').appendTo(optionsBtn);
+  $('<div/>').appendTo(optionsBtn);
+
+  //Story Options Dropdown container
+  var optionsList = $('<ul class="options-list dropdown-menu" aria-labelledby="dropdownMenu1"/>').appendTo(optionsBtnContainer);
+
+	$('<li class="option-open"><a href="#">Open</a></li>').appendTo(optionsList)
+                                    .click(function() {
+                                      openStoryView({readonly:true, story:story});
+                                    });
+  $('<li class="option-remove"><a href="#">Remove Story</a></li>').appendTo(optionsList)
+                                            .click(function() {
+                                              stud_removeStoryFromStoryCollection(story.id,collection.id, function(coll) {
+                                                $('#collection-stat-stories #value').html(coll.noStories);
+                                                removeStoryFromCollectionStoriesList(story);
+                                                drawLayout();
+                                              });
+                                            });
+  $('<li class="divider"></li>').appendTo(optionsList);
+  $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
+                                        .click(function() {
+                                          openChooseCollectionView(story);
+                                        });
 
 
-		// ARTICLE CONTAINER
-		if (story.articleLink) {
-      buildArticleContainer({
-        title: story.articleTitle,
-        description: story.articleDescription,
-        author: story.articleAuthor,
-        imageUrl: story.articleImage,
-        source: story.articleSource,
-        url: story.articleLink
-      },storyContainerBody,{colapsedescription:true});
-		}
+  //Story location container
+  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerHeader)
+  var location = "";
+  if (story.locationName && story.locationName.length > 0)
+    location = story.locationName;
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>').appendTo(locationContainer);
+  $('<p class="location">' + location + '</p>').appendTo(locationContainer);
 
 
-		// //UNPUBLISH BUTTON
-		// var id = story.id;
-		// if (story.author.email == user.getEmail() || user.getEmail().indexOf("@lostinreality.net") > -1) {
-		// 	var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" storyId= ' + id + ' >Unpublish</a>')
-		// 							.appendTo(storyContainerFooter)
-		// 							.click(function() {
-		// 								var storyId = $(this).attr('storyId');
-		// 								unpublish(storyId, function() {
-		// 									clearAllMarkers();
-		// 									readPublishedStories();
-		// 								});
-		// 							});
-    //
-		// }
+  // Summary container
+  if (story.summary && story.summary.length > 0) {
+    var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
+    var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer)
+                                                    .text(story.summary);
+    $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
+  }
 
-		// LIKE BUTTON
-    storyContainerFooter.append(buildLikeButton(story));
+  //Thumbnail
+  if (story.thumbnail && story.thumbnail.length > 0) {
+    var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id)
+              .append('<img atl="image for ' + story.title + '">');
+    imageContainer.find('img').attr('src',story.thumbnail)
+    imageContainer.appendTo(storyContainerBody);
+  }
 
-    // SAVE BUTTON
-    storyContainerFooter.append(buildSaveStoryButton(story));
 
-		//add to Library Body
-		storyContainer.appendTo(libraryBody);
-	});
+  // ARTICLE CONTAINER
+  if (story.articleLink) {
+    buildArticleContainer({
+      title: story.articleTitle,
+      description: story.articleDescription,
+      author: story.articleAuthor,
+      imageUrl: story.articleImage,
+      source: story.articleSource,
+      url: story.articleLink
+    },storyContainerBody,{colapsedescription:true});
+  }
 
-	loadStoryTextBehaviours();
+  // LIKE BUTTON
+  storyContainerFooter.append(buildLikeButton(story));
 
-};
+  // SAVE BUTTON
+  storyContainerFooter.append(buildSaveStoryButton(story));
+
+  return storyContainer;
+}
 
 function addArticleContainer(art) {
   removeArticleContainer();
@@ -443,6 +581,7 @@ function openStoryView(option) {
   var s = option.story;
   // Author Details
   $('#open-story-view .story-author-name').text(s.author.fullName)
+                                          .attr("href","/profile/" + s.author.numberId);
   //Story author thumbnail
   var avatarUrl = (s.author.avatarUrl) ? s.author.avatarUrl : defaultAvatarPic;
   $('#open-story-view .story-author-thumbnail').css('background-image','url(' + avatarUrl + ')');
@@ -613,6 +752,14 @@ function initiateStoryEmbedMap() {
 
 //--- initiateMap method ---//
 function initiateMap() {
+  defaultLocation = new google.maps.LatLng(37, -20);
+
+  markerIcon = {
+    url: "/assets/images/marker_icon.png",
+    origin: new google.maps.Point(0, 0),
+    anchor: new google.maps.Point(13, 13)
+  };
+
 	var mapOptions = {
 		zoom : 2,
 		streetViewControl: true,
@@ -622,7 +769,7 @@ function initiateMap() {
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
 		mapTypeId : google.maps.MapTypeId.HYBRID,
 		mapTypeControl : true,
-		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
+		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.RIGHT_BOTTOM},
 		center : defaultLocation
 	}
 
@@ -656,10 +803,10 @@ function initiateMap() {
 
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-    buildStoryContainersForStoriesWithinBounds();
-		// google.maps.event.addListener(map, 'bounds_changed', buildStoryContainersForStoriesWithinBounds);
-    google.maps.event.addListener(map, 'dragend', buildStoryContainersForStoriesWithinBounds);
-    google.maps.event.addListener(map, 'zoom_changed', buildStoryContainersForStoriesWithinBounds);
+    drawStoryListLayout();
+    google.maps.event.addListener(map, 'click', clearHighlightedStoryFromMapView);
+    google.maps.event.addListener(map, 'dragend', drawStoryListLayout);
+    google.maps.event.addListener(map, 'zoom_changed', drawStoryListLayout);
 		google.maps.event.removeListener(listener);
 	});
 
@@ -762,33 +909,14 @@ function centerOnUserLocation() {
 }
 
 //--- readPublishedStories method ---//
-function readPublishedStories() {
+function loadPublishedStories(onFinished) {
 	var lirmanager = newLirManagerObj();
 	lirmanager.readPublishedStories(function(lirmanager){
 		publishedStories = lirmanager.getStories();
-		drawPublishedStoryMarkersOnMap(publishedStories)
-		//selectedStories = selectPublishStoriesWithinRadiusAndPivot(publishedStories,map.getCenter(),computeRadarRadius());
-		//sortedStories = sortStoriesWithDistance(selectedStories,map.getCenter())
-    // var storiesinbounds = getStoriesWithinMapBounds(publishedStories)
-		// buildLibraryBody(storiesinbounds);
-    buildStoryContainersForStoriesWithinBounds();
+    if (onFinished)
+      onFinished();
 	});
 }
-
-function getPublishedStoryById(storyId) {
-	publishedStories.forEach(function(st) {
-		if (st.id==storyId)
-			return st;
-	})
-	return null;
-}
-
-function removePublishedStoryById(storyId) {
-	story = getPublishedStoryById(storyId)
-	index = publishedStories.indexOf();
-	publishedStories.splice(index,1);
-}
-
 
 function selectPublishStoriesWithinRadiusAndPivot(publishedStories,pivot,radius) {
 	selected = [];
@@ -824,8 +952,6 @@ function sortStoriesWithDistance(stories,pivot) {
 	return sortedList;
 }
 
-
-
 function computeStoryDistance(pivotLatLng,story) {
 	storyLatLng = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
 	distance = google.maps.geometry.spherical.computeDistanceBetween(pivotLatLng, storyLatLng);
@@ -833,40 +959,61 @@ function computeStoryDistance(pivotLatLng,story) {
 }
 
 //--- drawPublishedStoryMarkersOnMap method ---//
-function drawPublishedStoryMarkersOnMap(publishedStories) {
-	storyMarkerList  = new Hashtable();
-	for ( var i = 0; i < publishedStories.length; i++) {
-		publishedStory = publishedStories[i];
-		if (publishedStory.location != null) {
+function drawPublishedStoryMarkersOnMap(stories,icon) {
+  storyMarkerList  = new Hashtable();
+  var st_
+	for ( var i = 0; i < stories.length; i++) {
+		st_ = stories[i];
+		if (st_.location != null) {
 			var marker = new google.maps.Marker({
-				position : new google.maps.LatLng(publishedStory.location.latitude, publishedStory.location.longitude, true),
-				icon: markerIcon,
+				position : new google.maps.LatLng(st_.location.latitude, st_.location.longitude, true),
+				icon: icon,
 				map : map,
-				draggable : false
+				draggable : false,
+        story: st_
 			});
       //add to marker cluster
       markercluster.addMarker(marker);
-			// google.maps.event.addListener(marker, 'click', function() {});
-			storyMarkerList.put(publishedStory.id,marker);
+			marker.addListener('click', function() {
+        // map.setZoom(14);
+        map.setCenter(new google.maps.LatLng(this.story.location.latitude, this.story.location.longitude, true) )
+        drawStoryItemOnMapView(this.story);
+      });
+			storyMarkerList.put(st_.id,marker);
 		}
 	//fitStoryOnView(storyMarkerList);
 	}
+  return storyMarkerList;
 }
 
-function drawPublishedStoryMarkerOnMap(story) {
+function drawPublishedStoryMarkerOnMap(story,icon) {
   if (story.location != null) {
     var marker = new google.maps.Marker({
       position : new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
-      icon: markerIcon,
+      icon: icon,
       map : map,
       draggable : false
     });
     //add to marker cluster
     markercluster.addMarker(marker);
-    // google.maps.event.addListener(marker, 'click', function() {
-    // });
+    marker.addListener('click', function() {
+      // map.setZoom(14);
+      map.setCenter(new google.maps.LatLng(this.story.location.latitude, this.story.location.longitude, true) )
+      drawStoryItemOnMapView(this.story);
+    });
     storyMarkerList.put(story.id,marker);
   }
+}
+
+function drawStoryItemOnMapView(story) {
+  var mapViewStoryContainer = $('#library-map-cover-left');
+  mapViewStoryContainer.empty()
+  var storyContainer = buildStorySmallContainer(story);
+  storyContainer.appendTo(mapViewStoryContainer);
+}
+
+function clearHighlightedStoryFromMapView() {
+  $('#library-map-cover-left').empty();
 }
 
 //--- Convert latLng in readable address ---//
@@ -910,7 +1057,60 @@ function getMapCenter() {
 	return map.getCenter();
 }
 
+// Open collection creation modal
+function openCreateCollectionView(story) {
+  $('#create-collection-btn').click(function() {
+    createStoryCollection(story);
+    closeCreateCollectionView();
+  });
+  $('#create-story-collection-modal').modal('show');
+}
 
+// close collection creation modal
+function closeCreateCollectionView() {
+  $('#create-story-collection-modal').modal('hide');
+  $('#create-collection-btn').unbind();
+  $('#story-collection-title-input').val('');
+}
+
+function openChooseCollectionView(story) {
+  $('#choose-story-collection-modal .modal-body').empty();
+  var storyCollectionListContainer = $('<div class="list-group"/>').appendTo($('#choose-story-collection-modal .modal-body'));
+  user.domainUser.storyCollections.forEach(function(sc) {
+    $('<a href="#" class="list-group-item">' + sc.name + '</a>').appendTo(storyCollectionListContainer)
+                                                                .click(function() {
+                                                                  addStoryToCollection(story.id,sc.id);
+                                                                  closeChooseCollectionView();
+                                                                });
+  });
+  $('<a href="#" class="list-group-item active">+ new collection</a>').appendTo(storyCollectionListContainer)
+                                                .click(function() {
+                                                  openCreateCollectionView(story);
+                                                  closeChooseCollectionView();
+                                                });
+  $('#choose-story-collection-modal').modal('show');
+}
+
+function closeChooseCollectionView() {
+  $('#choose-story-collection-modal').modal('hide');
+  $('#choose-story-collection-modal .modal-body').empty();
+}
+
+function createStoryCollection(story) {
+  var title = $('#story-collection-title-input').val();
+  stud_createStoryCollection(title,function(collection_) {
+      if (story)
+        addStoryToCollection(story.id,collection_.id);
+      user.domainUser.storyCollections.push(collection_);
+      $('<li><a href="/collection/' + collection_.id + '">' + collection_.name + '</a></li>').appendTo($('#story-collections-list'));
+    },
+    function() {alert('failed during collection creation')
+  })
+}
+
+function addStoryToCollection(storyId,collectionId) {
+  stud_addStoryToStoryCollection(storyId,collectionId, function() {}, function() {alert('failed: Couldn\'t add story to collection')})
+}
 
 //--- createStory method ---//
 function createStory() {
@@ -929,7 +1129,7 @@ function createStory() {
 
 	story = newStoryObj(map);
 	//set new story title
-	story.setTitle("story_" + user.getEmail() + "_" + new Date().getTime());
+	story.setTitle("story_" + user.domainUser.numberId + "_" + new Date().getTime());
 	story.setLocation(location.lat,location.lng);
 	story.setSummary(getStoryText($('#story-text')));
   //setArticle
@@ -970,19 +1170,6 @@ function createStory() {
   function() {
     postingError();
   });
-}
-
-function uploadStoryImage(storyId,onFinished) {
-	url = '/story/'+storyId+'/uploadimage';
-	var uploadImageForm = new FormData($('#image-upload-form')[0]);
-	$.ajax( {
-	  url: url,
-	  type: 'POST',
-	  data:  uploadImageForm,
-	  processData: false,
-	  contentType: false,
-	  success: onFinished
-	} );
 }
 
 function getUrlFromText(text) {
@@ -1045,8 +1232,8 @@ function postingFinished(story) {
   $('#story-publish-button').text('Post').removeAttr('disabled');
   cleanStoryCreationElements();
   publishedStories.push(story);
-  drawPublishedStoryMarkerOnMap(story);
-  buildStoryContainersForStoriesWithinBounds();
+  drawPublishedStoryMarkerOnMap(story,markerIcon);
+  drawStoryListLayout();
 }
 
 function postingError() {
@@ -1059,7 +1246,7 @@ function cleanStoryCreationElements() {
 	saveimagefile = null;
 	webUrl = null;
 
-	$('#story-text').val("");
+	setStoryText("",$('#create-story-view-container #story-text'));
 	$('#story-image-container').hide();
   $('#story-image').attr('src','');
 
@@ -1083,37 +1270,6 @@ function clearAllMarkers() {
 	});
 }
 
-function unpublish(storyId, onFinished){
-	$.ajax({
-		url: "/story/" + storyId + "/publish/0",
-		type: "POST",
-		dataType: "json",
-		// contentType:"application/json",
-		success: onFinished,
-		error: function() {console.log("Couln't unpublish story");}
-	});
-}
-
-function likeStory(storyId, onFinished){
-	$.ajax({
-		url: "/story/" + storyId + "/like",
-		type: "POST",
-		dataType: "json",
-		success: onFinished,
-		error: function() {console.log("Couln't like story");}
-	});
-}
-
-function saveStory(storyId, onFinished){
-	$.ajax({
-		url: "/story/" + storyId + "/save",
-		type: "POST",
-		dataType: "json",
-		success: onFinished,
-		error: function() {console.log("Couln't save story");}
-	});
-}
-
 function computeRadarRadius() {
 	zoom=map.getZoom()
 	radius = 3*Math.pow(2,21-zoom);
@@ -1130,53 +1286,66 @@ function formatArticleSource(art) {
     return s;
 }
 
-function loadStoryTextBehaviours() {
-  // elestic behaviour
-  var storyTextElem = $('#story-text');
+function loadStoryTextBehaviours(element) {
+  var storyTextElem = element;
+  element.attr('contenteditable', 'true')
 
+  // elastic behaviour
   storyTextElem.elastic();
 
   //placeholder
   var placeholder = storyTextElem.attr('placeholder');
 
+  if (element.hasClass('empty') || storyTextElem.html() == '' || storyTextElem.html()== '<br>') {
+    storyTextElem.html('<span class="placeholder">' + placeholder + '</span>')
+                  .addClass('empty')
+  }
+
   //event listeners
-  storyTextElem.html('<span class="placeholder">' + placeholder + '</span>')
-                .addClass('empty')
-                .focusin(function() {
-                  $('#story-text.empty').html('').removeClass('empty');
+  storyTextElem.focusin(function() {
+                  if (element.hasClass('empty'))
+                    element.html("").removeClass('empty');
                 })
                 .focusout(function() {
-                  if (storyTextElem.html() == '' || storyTextElem.html()== '<br>' )
+                  if (storyTextElem.html() == '' || storyTextElem.html()== '<br>')
                     storyTextElem.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
-                })
-                .keypress(function() {
-                  // var text = storyTextElem[0].innerText;
-                  // //text = storyTextElem.html();
-                  // console.log(text);
-                  // element = document.getElementById('story-text')
-                  // console.log(getCaretCharacterOffsetWithin(element));
-                });
+                  });
 }
 
-function setStoryText(text,jqTextElement) {
-  jqTextElement.removeClass('empty');
-  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    jqTextElement[0].innerHTML = text.replace(/\n/g,'<br>');
-  } else {
-    jqTextElement[0].innerText = text;
+function unloadStoryTextBehaviours(element) {
+  element.unbind('focusin').unbind('focusout');
+  element.attr('contenteditable', 'false')
+  if (element.hasClass('empty')) {
+    element[0].innerText = '';
+    element.removeClass('empty');
   }
 }
 
-function getStoryText(jqTextElement) {
-  if (jqTextElement.find('.placeholder')[0])
-    jqTextElement.find('.placeholder')[0].remove();
+function setStoryText(text,element) {
+  element.removeClass('empty');
+  if (!text) {
+    var placeholder = element.attr('placeholder');
+    element.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
+    return;
+  }
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    return jqTextElement[0].innerHTML.replace(/<br>/g,'\n')
+    element[0].innerHTML = text.replace(/\n/g,'<br>');
+  } else {
+    element[0].innerText = text;
+  }
+}
+
+function getStoryText(element) {
+  if (element.hasClass('empty'))
+    return "";
+  //element.find('.placeholder')[0].remove();
+  if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
+    return element[0].innerHTML.replace(/<br>/g,'\n')
                                     .replace(/&nbsp;/g,' ')
                                     .replace(/[^\x00-\x7F]/g, "")
                                     .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
   }
-  return jqTextElement[0].innerText.replace(/[^\x00-\x7F]/g, "")
+  return element[0].innerText.replace(/[^\x00-\x7F]/g, "")
                                   .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
@@ -1227,4 +1396,68 @@ function setCaretCharacterOffsetWithin(element,offset) {
   range.collapse(true);
   sel.removeAllRanges();
   sel.addRange(range);
+}
+
+function unpublish(storyId, onFinished){
+	$.ajax({
+		url: "/story/" + storyId + "/publish/0",
+		type: "POST",
+		dataType: "json",
+		// contentType:"application/json",
+		success: onFinished,
+		error: function() {console.log("Couln't unpublish story");}
+	});
+}
+
+function likeStory(storyId, onFinished){
+	$.ajax({
+		url: "/story/" + storyId + "/like",
+		type: "POST",
+		dataType: "json",
+		success: onFinished,
+		error: function() {console.log("Couln't like story");}
+	});
+}
+
+function saveStory(storyId, onFinished){
+	$.ajax({
+		url: "/story/" + storyId + "/save",
+		type: "POST",
+		dataType: "json",
+		success: onFinished,
+		error: function() {console.log("Couln't save story");}
+	});
+}
+
+function stud_createStoryCollection(name, success, error){
+	$.ajax({
+		url: "/collection/" + name,
+		type: "POST",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_addStoryToStoryCollection(storyId,collectionId, success, error){
+	$.ajax({
+		url: "/collection/" + collectionId + "/story/" + storyId,
+		type: "POST",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
+function uploadStoryImage(storyId,onFinished) {
+	url = '/story/'+storyId+'/uploadimage';
+	var uploadImageForm = new FormData($('#image-upload-form')[0]);
+	$.ajax( {
+	  url: url,
+	  type: 'POST',
+	  data:  uploadImageForm,
+	  processData: false,
+	  contentType: false,
+	  success: onFinished
+	} );
 }

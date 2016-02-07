@@ -52,12 +52,7 @@ public class Stories extends Controller {
 		User currentUser = getCurrentUser();
 
 		for (models.Story story : stories) {
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
-			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
-			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
-			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -71,12 +66,7 @@ public class Stories extends Controller {
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(currentUser,true);
-			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
-			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
-			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -90,12 +80,37 @@ public class Stories extends Controller {
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : savedstories) {
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
-			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
-			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
-			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result listUserStories(Long numberId) {
+		User currentUser = getCurrentUser();
+		User user = User.findByUserNumberId(numberId);
+		List<models.Story> stories = models.Story.findAllUserStories(user);
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result listUserSavedStories(Long numberId) {
+		User currentUser = getCurrentUser();
+		User user = User.findByUserNumberId(numberId);
+		List<models.Story> stories = models.Story.findAllUserSavedStories(user);
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -141,12 +156,7 @@ public class Stories extends Controller {
 
 		story.setDomainStory(domainStory);
 
-		jsonStory = controllers.json.Story.getStory(story, true);
-		jsonStory.author = controllers.json.User.getUser(user,true);
-		jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-		jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(user.getId(), story.getId()) != null) ? true : false;
-		jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
-		jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(user.getId(), story.getId()) != null) ? true : false;
+		jsonStory = controllers.json.Story.getStory(story, user, true);
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
@@ -171,7 +181,7 @@ public class Stories extends Controller {
 		story.save(DBConstants.lir_backoffice);
 
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
+		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
 		jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 		jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
 		String json = new Gson().toJson(jsonStory);
@@ -187,7 +197,7 @@ public class Stories extends Controller {
 
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, true);
 
-		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser(),true);
+		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(storyId, true).getUser(),false);
 
 		jsonStory.noOfLikes = Like.findByStoryId(storyId).size();
 		jsonStory.noOfSaves = SavedStory.findByStoryId(storyId).size();
@@ -369,6 +379,7 @@ public class Stories extends Controller {
 
 	}
 
+	@SecureSocial.SecuredAction
 	public static Result uploadImage(Long storyId) throws IOException {
 
 		models.Story story = models.Story.findById(storyId);
@@ -422,7 +433,7 @@ public class Stories extends Controller {
 		return badRequest("Missing file");
 	}
 
-
+	@SecureSocial.SecuredAction
 	public static Result uploadCollectionImage(Long collectionId) throws IOException {
 		models.StoryCollection collection = models.StoryCollection.findCollectionById(collectionId);
 		if (collection == null) {
@@ -616,12 +627,7 @@ public class Stories extends Controller {
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : collectionstories) {
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
-			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			jsonStory.currentUserLikesStory = (Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
-			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
-			jsonStory.currentUserSavedStory = (SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -635,13 +641,22 @@ public class Stories extends Controller {
 
 		for (models.Story story : collectionstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),true);
-			jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			// jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
+			// jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
+			// jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
 		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result addUserToCollection(Long collectionId, Long numberId) throws IOException {
+		//TODO: only allow owner and a selected group of users, with premission of the owner, to add and remove stories
+		User user = User.findByUserNumberId(numberId);
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		storyCollection.addUserToCollection(user);
+		return ok();
 	}
 
 }

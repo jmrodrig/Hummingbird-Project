@@ -39,6 +39,10 @@ public class User extends Model {
 	@Column(name = "id")
 	private String id;
 
+	@GeneratedValue
+	@Column(name = "numberId")
+	private Long numberId;
+
 	@Column(name = "provider")
 	private String provider;
 
@@ -82,6 +86,14 @@ public class User extends Model {
 
 	public void setId(String id) {
 		this.id = id;
+	}
+
+	public Long getNumberId() {
+		return numberId;
+	}
+
+	public void setNumberId(Long numberId) {
+		this.numberId = numberId;
 	}
 
 	public String getProvider() {
@@ -177,6 +189,10 @@ public class User extends Model {
 
 	public static User findByUserId(String userId){
 		return finder.where().eq("id", userId).findUnique();
+	}
+
+	public static User findByUserNumberId(Long numberId){
+		return finder.where().eq("numberId", numberId).findUnique();
 	}
 
 	public static User findByEmail(String email) {
@@ -280,7 +296,9 @@ public class User extends Model {
 			Logger.error(e.getMessage());
 		}
 		try{
-			avatarUrl = identity.avatarUrl().get();
+			avatarUrl = getAvatarUrl();
+			if (avatarUrl == null)
+				avatarUrl = identity.avatarUrl().get();
 		} catch(Exception e){
 			Logger.error(e.getMessage());
 		}

@@ -21,6 +21,16 @@ h1, h2, h3, h4, p, a {
 	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
+.modal-footer {
+	margin-top: 0px;
+	margin-top: 0px;
+	padding: 10px;
+}
+
+.list-group {
+    margin-bottom: 0px;
+}
+
 /******************************************************************
 	Content Wrapper
 ******************************************************************/
@@ -56,6 +66,25 @@ h1, h2, h3, h4, p, a {
 	opacity:.4;
 }
 
+#stories-list-view-left-container {
+	float: left;
+	text-align: right;
+	padding-right: 10px;
+	border-right: 1px solid #000;
+	margin-top: 25px;
+}
+
+#stories-list-view-center-container {}
+
+#story-collections-list li {
+	display: block;
+	cursor: pointer;
+}
+
+#story-collections-list li a {
+  color: black;
+}
+
 @media (min-width: 768px) {
 	#library-body {
 		padding:15px;
@@ -71,8 +100,6 @@ h1, h2, h3, h4, p, a {
 	 font-size: 17px;
 	font-weight: 600;
 }
-
-
 
 /******************************************************************
 	Create Story Container
@@ -303,10 +330,193 @@ h1, h2, h3, h4, p, a {
 }
 
 /******************************************************************
+	Small Story Container
+******************************************************************/
+
+.story-container.sm-container {
+	width: 100%;
+	text-align: inherit;
+	background-color: white;
+	border-radius: 10px;
+	margin-top: 10px;
+	margin-bottom: 10px;
+	-moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+}
+
+.sm-container .story-container-header {
+	padding: 0px;
+}
+
+.sm-container .story-container-body {
+	clear:both;
+	padding: 0px 0px;
+	cursor: pointer;
+}
+
+.sm-container .story-container-footer {
+	border-bottom-left-radius: 10px;
+	border-bottom-right-radius: 10px;
+	overflow: hidden;
+}
+
+.sm-container .author-container {
+	margin-bottom:0px;
+	text-align: initial;
+	height: 50px;
+	width: 80%;
+	padding: 13px 6px;
+}
+
+.sm-container .story-author-thumbnail {
+	width:36px;
+	height:36px;
+	background-size: cover;
+	background-position: center;
+    background-repeat: no-repeat;
+	float:left;
+	margin-top: -6px;
+	border-radius:18px;
+	margin-right: 7px;
+}
+
+.sm-container .story-author-name {
+	font-size:16px;
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-align: initial;
+	overflow: hidden;
+	color: black;
+}
+
+.sm-container .story-options-btn-container {
+	width: 20%;
+	height: 50px;
+}
+
+.sm-container .story-options-btn {
+	padding: 10px;
+	text-align: -webkit-center;
+	border-left: 1px solid #EFEFEF;
+}
+
+.sm-container .story-options-btn:hover {
+	background-color: #EFEFEF;
+}
+
+.sm-container .story-options-btn div {
+	height: 6px;
+  width: 6px;
+  margin: 3px;
+  border: 1px solid #000;
+}
+
+.sm-container .location-container {
+	display: table;
+	width: 100%;
+	text-align: initial;
+	background-image: url(/assets/images/map-bk.jpg);
+	color: white;
+}
+
+.sm-container .location-container .glyph-icon {
+	padding: 3px 5px;
+}
+
+.sm-container .location-container .location {
+	display: table-cell;
+	/*white-space: nowrap;*/
+	padding: 0px 8px 0px 0px;
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	font-size: 12px;
+	font-weight: 400;
+	margin-bottom: 0px;
+	vertical-align: middle;
+	width:100%;
+}
+
+.sm-container .image-container img {
+	width:100%;
+}
+
+.sm-container .story-stats-container {
+	text-align: center;
+	padding: 5px;
+	font-size: 12px;
+	background-color: #0A89B1;
+  color: white;
+	2px 5px;
+}
+
+.sm-container .story-stats-likes {
+	display: inline-block;
+	padding-right: 10px;
+	border-right: 1px solid #000;
+}
+
+.sm-container .story-stats-saves {
+	display: inline-block;
+	padding-left: 10px;
+}
+
+.sm-container .summary-container {
+	position: relative;
+	padding: 2px 7px;
+	overflow: hidden;
+	width: 100%;
+}
+
+.sm-container .story-summary, .sm-container .story-summary:focus {
+	border:none;
+	box-shadow: none;
+	outline:none;
+	font-size:14px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	resize:none;
+	background-color: transparent;
+  line-height: 22px;
+	text-align: initial;
+	overflow:hidden;
+	margin: 8px 0px;
+	max-height: 100px;
+}
+
+.sm-container .summary-container-overlay {
+	height: 30px;
+	width: 100%;
+	position: absolute;
+	top: 80px;
+	left: 0px;
+	background: -webkit-linear-gradient(bottom, rgba(255,255,255,1), rgba(255,255,255,0.88));
+	background: -o-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
+	background: -moz-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
+	background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.88));
+}
+
+.sm-container .article-details-container {
+	padding: 2px 7px;
+}
+
+.sm-container .article-title {
+	font-size: 16px;
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	color: black;
+	margin-top: 0px;
+	font-weight: 400;
+	margin-bottom: 2px;
+}
+
+.sm-container .article-host {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	font-size: 12px;
+  color: black;
+}
+
+/******************************************************************
 	Story Container
 ******************************************************************/
 
-.story-container {
+.lg-container.story-container {
 	width: 100%;
 	max-width:500px;
 	text-align: inherit;
@@ -320,42 +530,42 @@ h1, h2, h3, h4, p, a {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
-.story-container-header {
+.lg-container .story-container-header {
 	padding: 0px;
 }
 
-.story-container-body {
+.lg-container .story-container-body {
 	padding: 20px 15px;
 	clear: both;
 	cursor: pointer;
 }
 
-.story-container-footer {
+.lg-container .story-container-footer {
 	padding: 0px 15px;
 	padding-bottom: 10px;
 	text-align: right;
 }
 
-.story-set-location-view-container {
+.lg-container .story-set-location-view-container {
 	display: none;
 	clear: both;
   padding: 20px;
 }
 
 @media (max-width: 768px) {
-	.story-container-body  {
+	.lg-container .story-container-body  {
 		padding: 0px;
 	}
 }
 
-.author-container {
+.lg-container .author-container {
 	text-align: initial;
 	height: 60px;
-	width: 100%;
+	width: 80%;
 	padding: 20px;
 }
 
-.story-author-thumbnail {
+.lg-container .story-author-thumbnail {
 	width:46px;
 	height:46px;
 	background-size: cover;
@@ -367,13 +577,41 @@ h1, h2, h3, h4, p, a {
 	margin-right: 10px;
 }
 
-.story-author-name {
+.lg-container .story-author-name {
 	font-size:16px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	text-align: initial;
+	color: black;
 }
 
-.location-container {
+.lg-container .story-options-btn-container {
+	width: 60px;
+	height: 60px;
+}
+
+.lg-container .story-options-btn {
+	padding: 10px;
+	height: 100%;
+	text-align: -webkit-center;
+	border-left: 1px solid #EFEFEF;
+}
+
+.lg-container .story-options-btn:hover {
+	background-color: #EFEFEF;
+}
+
+.lg-container .story-options-btn div {
+	height: 6px;
+  width: 6px;
+  margin: 3px;
+  border: 1px solid #000;
+}
+
+.story-container .option-remove {
+	display: none;
+}
+
+.lg-container .location-container {
 	display: table;
 	width: 100%;
 	text-align: initial;
@@ -386,12 +624,12 @@ h1, h2, h3, h4, p, a {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
-.location-container .glyph-icon {
+.lg-container .location-container .glyph-icon {
 	padding: 3px 5px;
 	margin-top: 7px;
 }
 
-.location-container .location {
+.lg-container .location-container .location {
 	display: table-cell;
 	padding: 0px 8px 0px 4px;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
@@ -403,22 +641,22 @@ h1, h2, h3, h4, p, a {
 	width: 100%;
 }
 
-.image-container {
+.lg-container .image-container {
 	margin-top: 15px;
 	margin-bottom:15px;
 }
 
-.image-container img {
+.lg-container .image-container img {
 	width:100%;
 }
 
-.summary-container.collapsed {
+.lg-container .summary-container.collapsed {
 	position: relative;
 	max-height: 100px;
 	overflow: hidden;
 }
 
-.summary-container-overlay {
+.lg-container .summary-container-overlay {
 	position: absolute;
 	top: 70px;
 	height: 30px;
@@ -430,7 +668,7 @@ h1, h2, h3, h4, p, a {
 }
 
 
-.story-summary, .story-summary:focus {
+.lg-container .story-summary, .lg-container .story-summary:focus {
 	border:none;
 	box-shadow: none;
 	outline:none;
@@ -443,20 +681,17 @@ h1, h2, h3, h4, p, a {
 	overflow:hidden;
 }
 
-.story-like-button {
+.lg-container .story-like-button {
 	margin-right: 10px;
 }
 
-.story-unpublish-button {
+.lg-container .story-unpublish-button {
 	margin-right: 10px;
 }
 
+/* Story Article */
 
-/******************************************************************
-	Story Article
-******************************************************************/
-
-.article-container {
+.lg-container .article-container {
 	position: relative;
 	width:100%;
 	display: block;
@@ -475,25 +710,29 @@ h1, h2, h3, h4, p, a {
 	padding:7px;
 }*/
 
-.article-image {
+.lg-container .article-image {
 	width:100%;
 	/*margin-bottom:10px;*/
 }
 
-.article-title {
+.lg-container .article-content-container {
+	padding: 10px 16px;
+}
+
+.lg-container .article-title {
 	font-size: 20px;
 	color: black;
 	margin-top: 0px;
 	font-weight: 400;
 }
 
-.article-description-container.collapsed {
+.lg-container .article-description-container.collapsed {
 	max-height: 100px;
 	position: relative;
 	overflow: hidden;
 }
 
-.article-description-overlay {
+.lg-container .article-description-overlay {
 	position: absolute;
 	top: 70px;
 	height: 30px;
@@ -504,7 +743,7 @@ h1, h2, h3, h4, p, a {
 	background: linear-gradient(to top, rgb(255, 255, 255), rgba(255, 255, 255, 0.32) 70%, rgba(255, 255, 255, 0));
 }
 
-.article-description {
+.lg-container .article-description {
 	border:none;
 	box-shadow: none;
 	outline:none;
@@ -517,7 +756,7 @@ h1, h2, h3, h4, p, a {
 	font-weight: 300;
 }
 
-.article-embebed-iframe-container {
+.lg-container .article-embebed-iframe-container {
 	display: none;
 	position: relative;
 	width:100%;
@@ -525,14 +764,13 @@ h1, h2, h3, h4, p, a {
   border-radius: 5px;
 }
 
-.article-embebed-iframe-container iframe {
+.lg-container .article-embebed-iframe-container iframe {
 	width:100%;
 }
 
-.article-host-author {
+.lg-container .article-host-author {
 	font-weight: 300;
 }
-
 /******************************************************************
 	Open Story Container
 ******************************************************************/
@@ -750,7 +988,7 @@ h1, h2, h3, h4, p, a {
 	margin-top: 0px;
 	width: 100%;
 	height: 45px;
-	background-color:#66d9ff;
+	background-color:#fff;
 	-webkit-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
 	-moz-box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
 	box-shadow: 0px 0px 30px 5px rgba(0,0,0,0.62);
@@ -811,12 +1049,56 @@ h1, h2, h3, h4, p, a {
 	width:100%;
 }
 
+#library-map-cover-left {
+	position: absolute;
+	top: 0px;
+	left: 0px;
+	height: 100%;
+	width: 30%;
+	max-width: 250px;
+	z-index: 1;
+	padding: 10px 0px 10px 10px;
+	background: -webkit-linear-gradient(left, rgba(0,0,0,.6), rgba(0,0,0,0));
+	background: -o-linear-gradient(right, rgba(0,0,0,.6), rgba(0,0,0,0));
+	background: -moz-linear-gradient(right, rgba(0,0,0,.6), rgba(0,0,0,0));
+	background: linear-gradient(to right, rgba(0,0,0,.6), rgba(0,0,0,0));
+}
+
+#library-map-cover-right {
+	top: 0px;
+	right: 0px;
+	height: 100%;
+	width: 0%;
+}
+
 .marker-cluster-baloon {
 	background-color: rgba(0, 0, 0, 0.4) !important;
 	border: 1px solid #fff !important;
 	border-radius: 100% !important;
 	font-weight: 500 !important;
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif !important;
+}
+
+/******************************************************************
+	Collection Creation View
+******************************************************************/
+
+#create-story-collection-modal #story-collection-title-input{
+	margin-top: 20px;
+	width: 100%;
+	font-size: 20px;
+	border: none;
+	border-left: 1px solid #000;
+	padding: 5px;
+	outline: none;
+}
+
+/******************************************************************
+	Collection Selection View
+******************************************************************/
+
+#choose-story-collection-modal .modal-dialog {
+	width: 350px;
 }
 
 /******************************************************************

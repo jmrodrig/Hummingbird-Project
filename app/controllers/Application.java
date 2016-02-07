@@ -14,6 +14,7 @@ import com.typesafe.plugin.*;
 import controllers.utils.HtmlFetcher;
 import controllers.utils.FeedsFetcher;
 import securesocial.core.java.SecureSocial;
+import securesocial.core.Identity;
 import securesocial.core.java.SecureSocial.SecuredAction;
 
 public class Application extends Controller {
@@ -47,8 +48,6 @@ public class Application extends Controller {
 		return ok(views.html.index.render());
 	}
 
-
-
 	public static Result dashboards() {
 		return ok(views.html.dashboard.dashboard.render());
 	}
@@ -67,9 +66,25 @@ public class Application extends Controller {
 		return ok(views.html.library.render());
 	}
 
-	@SecuredAction
+	@SecureSocial.SecuredAction
 	public static Result profile() {
-		return ok(views.html.profile.render());
+		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		User user = User.findByIdentityId(identity.identityId());
+		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
+		return ok(views.html.profile.render(jsonUser));
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result publicProfile(Long userNumberId) {
+		User user = User.findByUserNumberId(userNumberId);
+		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		User currentuser = User.findByIdentityId(identity.identityId());
+		if (currentuser.equals(user)) {
+			controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
+			return ok(views.html.profile.render(jsonUser));
+		}
+		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
+		return ok(views.html.publicprofile.render(jsonUser));
 	}
 
 	public static Result openCollectionView(Long collectionId) {

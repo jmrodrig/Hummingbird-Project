@@ -21,6 +21,16 @@ h1, h2, h3, h4, p, a {
 	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
+.modal-footer {
+	margin-top: 0px;
+	margin-top: 0px;
+	padding: 10px;
+}
+
+.list-group {
+    margin-bottom: 0px;
+}
+
 /******************************************************************
 	Content Wrapper
 ******************************************************************/
@@ -91,12 +101,46 @@ h1, h2, h3, h4, p, a {
 #profile-stat-user-folllowing {}
 
 /******************************************************************
+	Profile Settings View
+******************************************************************/
+
+#profile-settings-view #profile-name {
+	margin-bottom: 20px;
+	margin-top: 20px;
+	font-size: 30px;
+	border: none;
+	border-left: 1px solid #000;
+	padding: 5px;
+	width: 400px;
+	outline: none;
+}
+
+#profile-settings-view #profile-change-picture-button {
+	display: block;
+	position:relative;
+	overflow:hidden;
+}
+
+#profile-settings-view #image-upload-form {
+	opacity: 0;
+	top: 0px;
+	position: absolute;
+	height: 100%;
+}
+
+#profile-settings-view #image-upload-form  input{
+	height: 100%;
+	width: 100%;
+	cursor:pointer;
+}
+/******************************************************************
 	Profile Stories
 ******************************************************************/
 
 #stories-container {
 	clear: both;
 	margin-top: 40px;
+	padding-bottom: 40px;
 }
 
 #change-stories-view-btn-group {
@@ -168,6 +212,28 @@ h1, h2, h3, h4, p, a {
 }
 
 /******************************************************************
+	Collection Creation View
+******************************************************************/
+
+#create-story-collection-modal #story-collection-title-input{
+	margin-top: 20px;
+	width: 100%;
+	font-size: 20px;
+	border: none;
+	border-left: 1px solid #000;
+	padding: 5px;
+	outline: none;
+}
+
+/******************************************************************
+	Collection Selection View
+******************************************************************/
+
+#choose-story-collection-modal .modal-dialog {
+	width: 350px;
+}
+
+/******************************************************************
 	Story Container
 ******************************************************************/
 
@@ -224,6 +290,7 @@ h1, h2, h3, h4, p, a {
 	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
 	text-align: initial;
 	overflow: hidden;
+	color: black;
 }
 
 .story-options-btn-container {
