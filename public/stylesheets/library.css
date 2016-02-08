@@ -1081,6 +1081,11 @@ h1, h2, h3, h4, p, a {
 	width: 0%;
 }
 
+#library-map-cover-right .image-container {
+  max-height: 160px;
+  overflow: hidden;
+}
+
 .marker-cluster-baloon {
 	background-color: rgba(0, 0, 0, 0.4) !important;
 	border: 1px solid #fff !important;
