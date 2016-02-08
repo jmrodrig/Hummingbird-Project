@@ -6,7 +6,7 @@ section{
 }
 
 body {
-	//background-image: url(/assets/images/canvas-texture.jpg);
+	overflow-y: scroll;
 }
 
 h1, h2, h3, h4, p, a {
@@ -228,10 +228,10 @@ cursor: pointer;
 	top:500px;
 	margin-top:-150px;
 	width: 100%;
-	background: -webkit-linear-gradient(bottom, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
-	background: -o-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
-	background: -moz-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0));  
-	background: linear-gradient(to top, rgba(51,46,48,0.8), rgba(51,46,48,0)); 
+	background: -webkit-linear-gradient(bottom, rgba(51,46,48,0.8), rgba(51,46,48,0));
+	background: -o-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0));
+	background: -moz-linear-gradient(top, rgba(51,46,48,0.8), rgba(51,46,48,0));
+	background: linear-gradient(to top, rgba(51,46,48,0.8), rgba(51,46,48,0));
 }
 
 #map-canvas {
@@ -250,7 +250,7 @@ cursor: pointer;
 }
 
 #storylist{
-	
+
 }
 
 #accordion {
@@ -270,7 +270,7 @@ cursor: pointer;
 	width: 300px;
 	margin-left: -75px;
 	box-shadow: 10px 0px 5px rgba(1,1,1,.2);
-	
+
 }
 
 #story-details-container.nano {  }
@@ -375,7 +375,7 @@ cursor: pointer;
 }
 
 #hero2-play-button:hover {
-	
+
 }
 
 #player {
@@ -532,7 +532,7 @@ cursor: pointer;
 	#lir-soon-image {
 		display:block;
 	}
-	
+
 	#lir-soon {
 		text-align:left;
 	}
@@ -544,7 +544,7 @@ cursor: pointer;
 
 #footer {
 	height:40%;
-	background-color:rgba(34,34,34,1); 
+	background-color:rgba(34,34,34,1);
 	color:#FFF;
 	text-align:center;
 	height:360px;
@@ -554,10 +554,10 @@ cursor: pointer;
 	position:relative;
 	height:50px;
 	width: 100%;
-	background: -webkit-linear-gradient(top, rgba(1,1,1,1), rgba(34,34,34,1)); 
-	background: -o-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1)); 
-	background: -moz-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1));  
-	background: linear-gradient(to bottom, rgba(1,1,1,1), rgba(34,34,34,1)); 
+	background: -webkit-linear-gradient(top, rgba(1,1,1,1), rgba(34,34,34,1));
+	background: -o-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1));
+	background: -moz-linear-gradient(bottom, rgba(1,1,1,1), rgba(34,34,34,1));
+	background: linear-gradient(to bottom, rgba(1,1,1,1), rgba(34,34,34,1));
 }
 
 #footer-lir-logo {
@@ -565,7 +565,7 @@ cursor: pointer;
 }
 
 #footer-text-1 {
-	font-family:HarlowSolid; 
+	font-family:HarlowSolid;
 	font-size:40px;
 	margin-top:0px;
 }
@@ -582,7 +582,7 @@ cursor: pointer;
 	}
 
 	#footer-text-1 {
-		font-family:HarlowSolid; 
+		font-family:HarlowSolid;
 		font-size:50px;
 		margin-left:40px;
 		margin-top:0px;
@@ -637,5 +637,3 @@ a.social.facebook {
 a.social.twitter {
 	background-position: 0px -100px;
 }
-
-

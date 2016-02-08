@@ -1,6 +1,6 @@
 
 body {
-	/*overflow:hidden;*/
+  overflow-y: hidden;
 }
 
 section{
@@ -847,7 +847,7 @@ h1, h2, h3, h4, p, a {
 ******************************************************************/
 
 #open-story-view {
-	
+
 }
 
 #open-story-view .modal-dialog {

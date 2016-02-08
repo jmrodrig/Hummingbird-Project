@@ -304,7 +304,7 @@ public class User extends Model {
 		}
 		this.setFirstName(firstName);
 		this.setLastName(lastName);
-		this.setFullName(identity.fullName());
+		// this.setFullName(identity.fullName());
 		this.setEmail(email);
 		this.setAvatarUrl(avatarUrl);
 		this.setPassword(passwordInfo);
