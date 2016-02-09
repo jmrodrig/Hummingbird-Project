@@ -40,6 +40,8 @@ GET     /fetch/html/:url/:levels       controllers.utils.FeedsFetcher.fetchmoreA
 GET			/validateInvite/:invitationCode				controllers.Application.validInvite(invitationCode: String)
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
+GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
+
 
 
 #Stories

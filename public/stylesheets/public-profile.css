@@ -625,6 +625,10 @@ h1, h2, h3, h4, p, a {
 	max-height: 540px;
 }
 
+#open-story-view .article-container.large-view-instagram {
+	max-width: initial;
+}
+
 #open-story-view .article-img-container {
 	position: relative;
   padding: 0px;
@@ -810,13 +814,42 @@ h1, h2, h3, h4, p, a {
 	left: 0px;
 	height: 100%;
 	width: 30%;
-	max-width: 250px;
+	max-width: 300px;
 	z-index: 1;
-	padding: 10px 0px 10px 10px;
+	padding: 10px 0px 10px 20px;
 	background: -webkit-linear-gradient(left, rgba(0,0,0,.6), rgba(0,0,0,0));
 	background: -o-linear-gradient(right, rgba(0,0,0,.6), rgba(0,0,0,0));
 	background: -moz-linear-gradient(right, rgba(0,0,0,.6), rgba(0,0,0,0));
 	background: linear-gradient(to right, rgba(0,0,0,.6), rgba(0,0,0,0));
+  pointer-events: none;
+}
+
+#profile-map-cover-left * {
+  pointer-events: all;;
+}
+
+#profile-map-cover-left .image-container {
+  max-height: 190px;
+  overflow: hidden;
+}
+
+#profile-map-cover-left .article-details-container {
+  max-height: 76px;
+  overflow: hidden;
+}
+
+#profile-map-cover-left .summary-container {
+  max-height: 90px;
+  overflow: hidden;
+}
+
+#profile-map-cover-left .summary-container-overlay {
+  top: 55px;
+  height: 35px;
+  background: -webkit-linear-gradient(bottom, rgba(255,255,255,1), rgba(255,255,255,1) 40%,rgba(255,255,255,0));
+  background: -o-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,1) 40%,rgba(255,255,255,0));
+  background: -moz-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,1) 40%,rgba(255,255,255,0));
+  background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,1) 40%,rgba(255,255,255,0));
 }
 
 #profile-map-cover-right {
@@ -844,9 +877,4 @@ h1, h2, h3, h4, p, a {
 	margin-right: 20px;
 	margin-top: 20px;
 	font-size: 12px;
-}
-
-#profile-map-container .image-container {
-	max-height: 160px;
-	overflow: hidden;
 }

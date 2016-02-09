@@ -401,6 +401,30 @@ public class FeedsFetcher extends Controller {
 		return el;
 	}
 
+	public static Result fetchInstagramEmbedHTML(String link) throws Exception {
+		String url = "https://api.instagram.com/oembed?omitscript=true&url=" + URLEncoder.encode(link, "UTF-8");
+
+		HttpClient client = new DefaultHttpClient();
+		HttpGet request = new HttpGet(url);
+
+		// add request headers
+		request.addHeader("User-Agent", "Mozilla/5.0");
+
+		HttpResponse response = client.execute(request);
+
+		System.out.println("\nSending 'GET' request to URL : " + url);
+		System.out.println("Response Code : " + response.getStatusLine().getStatusCode());
+
+
+		BufferedReader streamReader = new BufferedReader(new InputStreamReader(response.getEntity().getContent(), "UTF-8"));
+		StringBuilder responseStrBuilder = new StringBuilder();
+
+		String inputStr;
+		while ((inputStr = streamReader.readLine()) != null)
+		    responseStrBuilder.append(inputStr);
+		String responseString = responseStrBuilder.toString();
+		return ok(responseString);
+	}
 
 
 }

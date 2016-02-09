@@ -441,7 +441,9 @@ function buildArticleContainer(art,addToContainer,options) {
     buildYouTubeContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "vimeo.com") {
     buildVimeoContainer(art.url,articleContainer,options);
-  } else {
+  } else if (getHostFromUrl(art.url) == "www.instagram.com") {
+		buildInstagramContainer(art.url,articleContainer,options);
+	} else {
     articleContainer.click(function() {window.open(art.url);});
 
     if (art.imageUrl != "") {
@@ -532,6 +534,25 @@ function buildVimeoContainer(link,addToContainer,options) {
                                           })
                                           .attr('src',src);
   return iframeContainer;
+}
+
+function buildInstagramContainer(link,addToContainer,options) {
+	var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
+	fetchInstagramEmbedIframe(link, function(data) {
+		var iframe = $(data.html).appendTo(iframeContainer);
+		if (options.size == "large") {
+			addToContainer.addClass('large-view-instagram');
+			var iframeWidth = 540;
+			addToContainer.width(iframeWidth);
+		} else {
+			var iframeWidth = addToContainer.width();
+		}
+		iframe.attr("width",iframeWidth);
+		iframeContainer.innerWidth(iframeWidth)
+									 .show();
+		instgrm.Embeds.process();
+		return iframeContainer;
+	});
 }
 
 function buildLikeButton(story) {
@@ -1484,6 +1505,15 @@ function uploadStoryImage(storyId,onFinished) {
 	  data:  uploadImageForm,
 	  processData: false,
 	  contentType: false,
+	  success: onFinished
+	} );
+}
+
+function fetchInstagramEmbedIframe(link,onFinished) {
+	$.ajax( {
+	  url: '/fetchinstagram/' + encodeURIComponent(link),
+	  type: 'GET',
+	  dataType: "json",
 	  success: onFinished
 	} );
 }
