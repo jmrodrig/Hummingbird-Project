@@ -325,24 +325,24 @@ function buildStoryContainer(story) {
 
 function addArticleContainer(art) {
   removeArticleContainer();
-  buildArticleContainer(art,$('#open-story-view .story-container-body'),"large")
+  buildArticleContainer(art,$('#open-story-view .story-container-body'),{size:"large",autoplay:true})
 }
 
 function removeArticleContainer() {
   $('#open-story-view .article-container').remove();
 }
 
-function buildArticleContainer(art,addToContainer,sizeOptions) {
+function buildArticleContainer(art,addToContainer,options) {
   var articleContainer = $('<div class="article-container"/>').appendTo(addToContainer);
 
   if (getHostFromUrl(art.url) == "vine.co") {
-    buildVineContainer(art.url,articleContainer,sizeOptions);
-  } else if (getHostFromUrl(art.url) == "www.youtube.com") {
-    buildYouTubeContainer(art.url,articleContainer,sizeOptions);
+    buildVineContainer(art.url,articleContainer,options);
+  } else if (getHostFromUrl(art.url) == "www.youtube.com" || getHostFromUrl(art.url) == "youtu.be") {
+    buildYouTubeContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "vimeo.com") {
-    buildVimeoContainer(art.url,articleContainer,sizeOptions);
+    buildVimeoContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "www.instagram.com") {
-		buildInstagramContainer(art.url,articleContainer,sizeOptions);
+		buildInstagramContainer(art.url,articleContainer,options);
 	} else {
     articleContainer.click(function() {window.open(art.url);});
 
@@ -364,11 +364,11 @@ function buildArticleContainer(art,addToContainer,sizeOptions) {
   return articleContainer;
 }
 
-function buildVineContainer(link,addToContainer,sizeOptions) {
+function buildVineContainer(link,addToContainer,options) {
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="vines-iframe" frameborder="0"></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") {
+                                            if (options.size == "large") {
                                               addToContainer.addClass('large-view');
                                               iframesize = 540;
                                               addToContainer.width(iframesize);
@@ -389,12 +389,16 @@ function buildVineContainer(link,addToContainer,sizeOptions) {
 
 function buildYouTubeContainer(link,addToContainer,sizeOptions) {
   var VIDEO_RATIO = 16/9;
-  var videoId = link.split('https://www.youtube.com/watch?v=')[1];
-  var src = "https://www.youtube.com/embed/" + videoId + "?rel=0&amp;controls=0&amp;showinfo=0"
+  if (getHostFromUrl(link) == "www.youtube.com")
+		var videoId = link.split('https://www.youtube.com/watch?v=')[1];
+	else if (getHostFromUrl(link) == "youtu.be")
+  	var videoId = link.split('https://youtu.be/')[1];
+  var autoplay = (options.autoplay) ? 1 : 0;
+  var src = "https://www.youtube.com/embed/" + videoId + "?rel=0&amp;showinfo=0&amp;autoplay=" + autoplay;
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="youtube-iframe" frameborder="0" allowfullscreen></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") addToContainer.addClass('large-view');
+                                            if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
                                             iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
@@ -409,14 +413,20 @@ function buildYouTubeContainer(link,addToContainer,sizeOptions) {
   return iframeContainer;
 }
 
-function buildVimeoContainer(link,addToContainer,sizeOptions) {
+function buildVimeoContainer(link,addToContainer,options) {
   var VIDEO_RATIO = 16/9;
   var videoId = link.split('https://vimeo.com/')[1];
-  var src = "https://player.vimeo.com/video/" + videoId + "?color=ff0179&title=0&byline=0&portrait=0"
+	if (options.autoplay) {
+		var autoplay = 1;
+	} else {
+		videoId = videoId.split('#',1)[0];
+		var autoplay = 0;
+	}
+  var src = "https://player.vimeo.com/video/" + videoId + "?autoplay=" + autoplay + "&color=ff0179&title=0&byline=0&portrait=0"
   var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
   var iframe = $('<iframe class="vimeo-iframe" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>').appendTo(iframeContainer)
                                           .load(function() {
-                                            if (sizeOptions == "large") addToContainer.addClass('large-view');
+                                            if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
                                             iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
@@ -528,6 +538,10 @@ function openStoryView(option) {
 
   //open view
   $('#open-story-view').modal('show');
+  $('#open-story-view').on('hidden.bs.modal',function() {
+    resetStoryView();
+    $('#open-story-view').unbind('hidden.bs.modal');
+  });
 }
 
 function resetStoryView() {
