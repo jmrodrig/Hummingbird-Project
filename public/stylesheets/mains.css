@@ -79,7 +79,15 @@ section {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
-.icon-30px.glyph-icon:before, .icon-medium.glyph:before {
+.icon-50px.glyph-icon:before, .icon-xxlarge.glyph:before {
+	font-size: 50px;
+}
+
+.icon-40px.glyph-icon:before, .icon-xlarge.glyph:before {
+	font-size: 40px;
+}
+
+.icon-30px.glyph-icon:before, .icon-large.glyph:before {
 	font-size: 30px;
 }
 
@@ -93,6 +101,10 @@ section {
 
 .icon-10px.glyph-icon:before, .icon-xsmall.glyph:before {
 	font-size: 10px;
+}
+
+.icon-8px.glyph-icon:before {
+	font-size: 8px;
 }
 
 .animate-transition {

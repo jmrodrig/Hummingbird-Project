@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
 import java.util.List;
+import java.util.ArrayList;
 
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
@@ -16,6 +17,7 @@ import javax.persistence.JoinColumn;
 import javax.persistence.JoinTable;
 import javax.persistence.ManyToMany;
 import javax.persistence.OneToMany;
+import javax.persistence.ManyToOne;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
@@ -115,20 +117,20 @@ public class Story extends Model {
 	@Column(name = "article_language")
 	private String articleLanguage;
 
-	@ManyToMany(cascade = CascadeType.ALL)
+	@ManyToMany
 	@JoinTable(name = "stories_labels", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "label_id", referencedColumnName = "id") })
 	private List<Label> labels;
-
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "stories_story_collections", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "collection_id", referencedColumnName = "id") })
-	private List<StoryCollection> storyCollections;
 
 	@Transient
 	private com.lir.library.domain.Story domainStory;
 
-	@OneToOne(fetch = FetchType.LAZY)
+	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name = "location_id")
 	private Location location;
+
+	@OneToOne(fetch = FetchType.LAZY)
+	@JoinColumn(name = "place_id")
+	private Place place;
 
 	public long getId() {
 		return id;
@@ -152,9 +154,9 @@ public class Story extends Model {
 
 	public void setTitle(String title) {
 		this.title = title;
-		com.lir.library.domain.Story story = getDomainStory();
-		if (story != null)
-			story.setTitle(title);
+		// com.lir.library.domain.Story story = getDomainStory();
+		// if (story != null)
+		// 	story.setTitle(title);
 	}
 
 	public String getSummary() {
@@ -163,9 +165,9 @@ public class Story extends Model {
 
 	public void setSummary(String summary) {
 		this.summary = summary;
-		com.lir.library.domain.Story story = getDomainStory();
-		if (story != null)
-			story.setSummary(summary);
+		// com.lir.library.domain.Story story = getDomainStory();
+		// if (story != null)
+		// 	story.setSummary(summary);
 	}
 
 	public String getContent() {
@@ -190,6 +192,13 @@ public class Story extends Model {
 
 	public void setUserStories(List<UserStory> userStories) {
 		this.userStories = userStories;
+	}
+
+	public Boolean storyIsOwnedByUser(User user) {
+		UserStory userStory = UserStory.fingByUserIdAndStoryId(user.getId(),this.id);
+		if (userStory != null)
+			return true;
+		return false;
 	}
 
 	public List<Like> getLikes() {
@@ -224,9 +233,9 @@ public class Story extends Model {
 		this.published = published;
 	}
 
-	public boolean isDomainStoryLoaded() {
-		return domainStory != null;
-	}
+	// public boolean isDomainStoryLoaded() {
+	// 	return domainStory != null;
+	// }
 
 	public Location getLocation() {
 		return location;
@@ -234,6 +243,14 @@ public class Story extends Model {
 
 	public void setLocation(Location location) {
 		this.location = location;
+	}
+
+	public Place getPlace() {
+		return place;
+	}
+
+	public void setPlace(Place place) {
+		this.place = place;
 	}
 
 	public String getArticleTitle() { return articleTitle; }
@@ -367,8 +384,25 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static List<models.Story> findAllByPublished(boolean published) {
-		List<Story> stories = finder.where().eq("published", published).findList();
+	public static List<Story> findAll() {
+		List<Story> stories = finder.all();
+		return stories;
+	}
+
+	public static List<models.Story> findAllByPublished() {
+		List<Story> stories = finder.where().eq("published", true).findList();
+		return stories;
+	}
+
+	public static List<Story> findPublicStoriesWithinBounds(Double w, Double n, Double e, Double s){
+		System.out.println("Location : " + w + ", " + n + ", " + e + ", " + s);
+		List<Story> stories = new ArrayList<Story>();
+		for (Location location : Location.findLocationsWithinBounds(w,n,e,s)) {
+			Story story = location.getStory();
+			if (story != null && story.isPublished()) {
+				stories.add(story);
+			}
+		}
 		return stories;
 	}
 
@@ -376,7 +410,7 @@ public class Story extends Model {
 		return json;
 	}
 
-	public static Story create(User user, String title, String summary, String content, double cost, String filePath,
+	public static Story create(User user, String title, String summary, String content, double cost, Boolean published, String filePath,
 								String locationName,
 								String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage,
 								controllers.json.Location location)
@@ -384,7 +418,7 @@ public class Story extends Model {
 
 		Story story = Story.findByUserAndTitle(user, title); //search for a story with the same title. If found, updates that story
 		if (story != null) {
-			return Story.update(story.getId(), title, summary, content, cost, filePath, locationName,
+			return Story.update(story.getId(), title, summary, content, cost, published, filePath, locationName,
 																				articleTitle,
 																				articleDescription,
 																				articleImage,
@@ -401,6 +435,7 @@ public class Story extends Model {
 				summary,
 				content,
 				cost,
+				published,
 				filePath,
 				locationName,
 				articleTitle,
@@ -412,19 +447,19 @@ public class Story extends Model {
 				articleAuthor,
 				articleLanguage,
 				location);
-		System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
+		// System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String content, Double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String content, Double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
 
-		setStory(story, title, summary, content, cost, filePath, locationName, articleTitle,
+		setStory(story, title, summary, content, cost, published, filePath, locationName, articleTitle,
 				articleDescription,
 				articleImage,
 				articleLink,
@@ -437,11 +472,12 @@ public class Story extends Model {
 		return story;
 	}
 
-	private static void setStory(Story story, String title, String summary, String content, double cost, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
+	private static void setStory(Story story, String title, String summary, String content, double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(content);
 		story.setCost(cost);
+		story.setPublished(published);
 		story.setPath(filePath);
 		story.setLocationName(locationName);
 		story.setArticle(articleTitle,articleDescription,articleImage,articleLink,articleDate,articleSource,articleAuthor,articleLanguage);

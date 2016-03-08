@@ -5,6 +5,7 @@ import java.util.List;
 import javax.persistence.CascadeType;
 import javax.persistence.Column;
 import javax.persistence.Entity;
+import javax.persistence.EntityManager;
 import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
@@ -14,6 +15,8 @@ import javax.persistence.ManyToOne;
 import javax.persistence.ManyToMany;
 import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
+import javax.persistence.FetchType;
+
 
 
 import models.exceptions.ModelAlreadyExistsException;
@@ -24,6 +27,7 @@ import securesocial.core.Identity;
 import securesocial.core.IdentityId;
 
 import com.avaje.ebean.Expr;
+import com.avaje.ebean.Ebean;
 
 @Entity
 @Table(name = "users")
@@ -76,9 +80,19 @@ public class User extends Model {
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<Invitation> invitations;
 
-	@ManyToMany(cascade = CascadeType.ALL)
-	@JoinTable(name = "users_story_collections", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "collection_id", referencedColumnName = "id") })
+	@ManyToMany(fetch=FetchType.LAZY, mappedBy="users")
 	private List<StoryCollection> storyCollections;
+
+	@ManyToMany
+	@JoinTable(name = "collections_followers", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "collection_id", referencedColumnName = "id") })
+	private List<StoryCollection> followingCollections;
+
+	@ManyToMany
+	@JoinTable(name = "users_followers", joinColumns = { @JoinColumn(name = "user_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "following_user_id", referencedColumnName = "id") })
+	private List<User> followingUsers;
+
+	@ManyToMany(fetch=FetchType.LAZY, mappedBy="followingUsers")
+	private List<User> followers;
 
 	public String getId() {
 		return id;
@@ -179,6 +193,38 @@ public class User extends Model {
 
 	public void setStoryCollections(List<StoryCollection> storyCollections) {
 		this.storyCollections = storyCollections;
+	}
+
+	public List<StoryCollection> getFollowingCollections() {
+		return this.followingCollections;
+	}
+
+	public List<User> getFollowingUsers() {
+		return this.followingUsers;
+	}
+
+	public List<User> getFollowers() {
+		return this.followers;
+	}
+
+	public void addFollowingCollection(StoryCollection storyCollection) {
+		this.followingCollections.add(storyCollection);
+		this.saveManyToManyAssociations("followingCollections");
+	}
+
+	public void removeFollowingCollection(StoryCollection storyCollection) {
+		this.followingCollections.remove(storyCollection);
+		this.deleteManyToManyAssociations("followingCollections");
+	}
+
+	public void addFollowingUser(User user) {
+		this.followingUsers.add(user);
+		this.saveManyToManyAssociations("followingUsers");
+	}
+
+	public void removeFollowingUser(User user) {
+		this.followingUsers.remove(user);
+		this.deleteManyToManyAssociations("followingUsers");
 	}
 
 	private static Finder<Long, User> finder = new Finder<Long, User>(Long.class, User.class);

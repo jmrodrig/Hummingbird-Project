@@ -1,4 +1,4 @@
 
 play.Project.playScalaSettings
 
-play.Project.playDefaultPort := 8080
+play.Project.playDefaultPort := 9000

@@ -23,235 +23,188 @@
 	<script src="/assets/javascripts/controls/index-view-handlers.js" type="text/javascript"></script>
 
 }{
+	<!----------------->
+	<!--   Content   -->
+	<!----------------->
+
+	<section id="content-wrapper">
+
+		<div id="index-heros">
+			<div id="heros-container">
+				<div id="hero-1" class="hero-container" tab="1">
+					<h1>Pick one place</h1>
+					<div class="input-group">
+			      <div class="input-group-btn">
+			        <button class="btn btn-default" type="button"><span class="glyph icon-no-margins icon-15px flaticon-tool-1"></button>
+			      </div>
+						<input id="hero1-search-input" class="form-control" placeholder="Search for a place...">
+			    </div>
+				</div>
 
 
-<!---------------->
-<!--   NavBar   -->
-<!---------------->
+				<div id="hero-2" class="hero-container" tab="2">
+					<h1>Stories here, Stories there...</h1>
+					<h4>
+						Build a map with your favorite stories, your pictures and videos, and share them with friends.
+						Check the stories and maps we picked for you.
+					</h4>
+					<div id="featured-stories-container" >
+						<!-- <div class="lg-arrow-left"></div>
+						<div class="lg-arrow-right"></div> -->
+					</div>
+				</div>
 
 
-
-<!-- <img id="lir-logo" src="/assets/images/lir-logo-banner-dark.png" alt="lir-logo"></img>
-
-<div id="navbar-buttons">
-	<div id="user-dropdown-button" class="btn-group pull-right">
-		<button id="user-button" type="button" class="btn btn-primary navbar-btn dropdown-toggle ga-event-general-login" onclick=location.href="/login">Log in</button>
-		<ul id="user-dropdown" class="dropdown-menu pull-right" role="menu">
-			<li><a class="ga-event-general-maker" href="/map">Story Maker</a></li>
-			<li id="story-dropdown-options-divider" class="divider"></li>
-			<li><a href="/logout">Log out</a></li>
-		</ul>
-	</div>
-		<button class="btn btn-danger navbar-btn pull-right ga-event-general-maker" type="button" onclick=location.href="/map">Create Story</button>
-		<button class="btn btn-info navbar-btn pull-right ga-event-general-signup" id="sign-up-button" type="button" onclick=location.href="/read/1">Sign up</button>
-	<!-- <a id="about-link" class="pull-right" href="#">About</a>
-	<a id="contacts-link" class="pull-right" href="#">Contacts</a>
-</div> -->
+				<div id="hero-3" class="hero-container" tab="3">
+					<h1>Tell stories as you surf the web.</h1>
+					<h4>
+						Save articles from the web directly from your browser with our clipper Chrome extension.
+						You can clip youtube, vimeo and vine videos, instagrams and all the rest.
+						You can download it here.
+					</h4>
+				</div>
 
 
+				<div id="hero-4" class="hero-container" tab="4">
+					<h1>Sign up and spread the word.</h1>
+					<div id="sign-up">
+						<button id="sign-up-btn" type="button" class="btn btn-success btn-lg">Sign up</button>
+					</div>
+					<div id="social">
+						<button id="share-facebook-btn" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-social-3"></button>
+						<button id="share-twitter-btn" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-social-2"></button>
+						<button id="share-email-btn" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-internet"></button>
+					</div>
+				</div>
 
-<!-------------------->
-<!--   Video Hero   -->
-<!-------------------->
 
-<!-- <section id="hero-1">
-	<div id="container-video-hero-1">
-		<div id="video-hero-1"></div>
-	</div>
-	<div id="overlay-video-hero-1">
-		<a onclick="$('#hero-2').animatescroll({scrollSpeed:1000,easing:'easeOutCubic',padding:0});" class="btn btn-default scroll-down-button"><span class="glyph flaticon-drawing4"></a>
-	</div>
-</section> -->
+				<div id="hero-5" class="hero-container" tab="5">
+					<h1>Ready? Pick one place.</h1>
+					<div class="input-group">
+			      <div class="input-group-btn">
+			        <button class="btn btn-default" type="button"><span class="glyph icon-no-margins icon-15px flaticon-tool-1"></button>
+			      </div>
+						<input id="hero5-search-input" class="form-control" placeholder="Search for a place...">
+			    </div>
+					<div id="logo-hero"></div>
+				</div>
 
-<!------------------>
-<!--   Carousel   -->
-<!------------------>
-
-<div id="hero-carousel-wrapper">
-	<div id="hero-carousel" class="carousel slide" data-ride="carousel">
-	  <!-- Indicators -->
-	  <ol class="carousel-indicators">
-		<li data-target="#hero-carousel" data-slide-to="0" class="active"></li>
-		<li data-target="#hero-carousel" data-slide-to="1"></li>
-		<!-- <li data-target="#hero-carousel" data-slide-to="2"></li> -->
-	  </ol>
-
-	  <!-- Wrapper for slides -->
-	  <div class="carousel-inner">
-		<div class="item active">
-		  <img src="/assets/images/LIR_lisboa.jpg" alt="...">
-		  <div class="carousel-caption">
-		  </div>
+			</div>
 		</div>
-		<div class="item">
-		  <img src="/assets/images/LIR_porto.jpg" alt="...">
-		  <div class="carousel-caption">
-		  </div>
+
+		<!-------------------------------->
+		<!--  Index Map & Stories  -->
+		<!-------------------------------->
+
+		<div id="index-map-and-stories-container">
+
+			<!----------------------->
+			<!--  Index Map   -->
+			<!----------------------->
+
+			<div id="index-map-container" >
+				<div id="map-canvas"></div>
+				<div id="map-viewport">
+					<div id="map-sight"></div>
+					<div id="map-region"></div>
+				</div>
+			</div>
+
+			<!------------------------------->
+			<!--  Index Map Details   -->
+			<!------------------------------->
+
+			<div id="index-map-details-container">
+				<div id="index-thumbnail-container">
+					<span class="glyph-icon icon-no-margins icon-20px flaticon-nature">
+				</div>
+				<p id="index-details-name"></p>
+			</div>
+
+			<!----------------------------->
+			<!--  Search & Controls Bar  -->
+			<!----------------------------->
+
+			<div id="search-and-controls-bar">
+				<div class="input-group">
+					<input id="search-input" class="form-control" placeholder="Search for a place...">
+					<div class="input-group-btn">
+						<!-- <button id="search-btn" type="button" class="btn btn-success" onclick="searchBoxGetPlaces()"><span class="glyph icon-no-margins icon-15px flaticon-search"></button> -->
+						<button id="zoom-in" type="button" class="btn btn-default" onclick="zoomInMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom in"><span class="glyph icon-no-margins icon-15px flaticon-circle"></button>
+						<button id="zoom-out" type="button" class="btn btn-default" onclick="zoomOutMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom out"><span class="glyph icon-no-margins icon-15px flaticon-circle-1"></button>
+					</div>
+				</div>
+				<button id="create-story" type="button" class="btn btn-default" onclick="openCreateStoryView()" data-toggle="tooltip" data-placement="left" title="Create a new story."><span class="glyph icon-no-margins icon-15px flaticon-draw"></button>
+				<button id="connect-stories" type="button" class="btn btn-default" onclick="startConnectingStories()" data-toggle="tooltip" data-placement="left" title="Create a path, connecting stories."><span class="glyph icon-no-margins icon-15px flaticon-road-1"></button>
+			</div>
+
+			<!--------------->
+			<!--  Stories  -->
+			<!--------------->
+
+			<div id="story-containers-wrapper">
+				<div id="story-grid-layout"></div>
+				<div id="story-large-layout">
+					<div id="story-large-layout-controllers">
+						<div class="lg-arrow-left"></div>
+						<div class="lg-arrow-right"></div>
+					</div>
+					<div id="story-large-layout-container"></div>
+				</div>
+
+			</div>
+
 		</div>
+	</section>
+
+	<!-------------------------------------------------->
+	<!--  Create Collections /Add Stories/Add Users   -->
+	<!-------------------------------------------------->
+
+	<!-- Create Story Collections modal -->
+	<div id="create-story-collection-modal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-body">
+					<h4 class="modal-title">Create Story Collection</h4>
+					<input id="story-collection-title-input" type="text" placeholder="Collection title">
+	      </div>
+	      <div class="modal-footer">
+	        <button type="button" class="btn btn-default" onclick="closeCreateCollectionView()">Close</button>
+	        <button id="create-collection-btn" type="button" class="btn btn-primary">Create</button>
+	      </div>
+	    </div>
 	  </div>
-
-	  <!-- Controls -->
-	<!--   <a class="left carousel-control" href="#hero-carousel" role="button" data-slide="prev">
-		<span class="glyphicon glyphicon-chevron-left"></span>
-	  </a>
-	  <a class="right carousel-control" href="#hero-carousel" role="button" data-slide="next">
-		<span class="glyphicon glyphicon-chevron-right"></span>
-	  </a> -->
-	</div>
-</div>
-
-
-<!------------->
-<!--  HERO1  -->
-<!------------->
-
-<div id="hero1-text">
-	<h1 style="font-family:HarlowSolid; font-size:60px; line-height: 75px;">Lost in Reality</h1>
-	<h1>location-based storytelling</h1>
-	<h2>Explore the places around you with a map of stories.</h2>
-		<!--<h2>Visit places with Storytelling.</h2>
-		<h2>Explore the tales of your cities. </h2>
-		<h2>Show your city to your friends and tourists with storytelling.</h2>-->
-	<div id="hero-button-wrapper">
-		<!-- <a class="btn btn-primary btn-lg" onclick="browseStories()" >Browse Stories</a>
-		<h3>Download the app from the app store.</h3>-->
-		<a class="btn btn-danger btn-lg ga-event-index-signup" href="/signup">Sign up now!</a>
-		<a id="androidStore-btn" class="ga-event-index-download" href="https://play.google.com/store/apps/details?id=com.lostinreality.app">
-			<img alt="Android app on Google Play" src="/assets/images/en_app_rgb_wo_60.png" />
-		</a>
-		<!--<a href="#"><img alt="Android app on Google Play" src="/assets/images/Download_on_the_App_Store_Badge_US-UK_135x40.svg" /></a> -->
-	</div>
-</div>
-
-<!------------->
-<!--  Quote  -->
-<!------------->
-
-<div id="quote-wrapper">
- 	<img src="/assets/images/quote-picture.jpg" alt="quote-picture">
-	<p>
-		<em>We leave something of ourselves behind when we leave a place.<br>
-		We stay there, even though we go away.<br>
-		And there are things in us that we can find again only by going back there.<br>
-		We travel to ourselves when we go to a place.</em><br>
-		<span id="quote-name">Pascal Mercier <em>in Night Train to Lisbon</em></span>
-	</p>
-</div>
-
-<!---------------->
-<!--  Features  -->
-<!---------------->
-
-<!-- <div id="features-wrapper">
-	<div class="feature">
-		<div class="feature-icon glyph flaticon-distance1"></div>
-		<h3 class="harlowFont" style="font-size:40px">Follow</h3>
-		<p>
-			Each NARRATIVE will drive you through the places of a city and bring out a
-			completely new meaning and dimension to these places.
-		</p>
-	</div>
-	<div class="feature">
-		<div class="feature-icon glyph flaticon-drawing4"></div>
-		<h3 class="harlowFont" style="font-size:40px">Create</h3>
-		<p>
-			Tell an engaging story about a city, its streets, buildings and people,
-			enhancing the <em>immersiveness</em> of your narratives.
-		</p>
-	</div>
-	<div class="feature">
-		<div class="feature-icon glyph flaticon-heart13"></div>
-		<h3 class="harlowFont" style="font-size:40px">the Stories</h3>
-		<p>
-			Tales of a city, stories of the tradition and culture of a city,
-			documentaries, narrative-driven tours, etc.
-		</p>
-	</div>
-</div>
- -->
-<!------------->
-<!--  HERO2  -->
-<!------------->
-
-<!-- <div id="hero2-main">
-	<div id="hero2-picture">
-		<h2 id="hero2-header1" class="pull-left">What are location-based Stories?</h2>
-		<div id="player"></div>
-	</div>
-</div> -->
-
-<!------------->
-<!--  ABOUT  -->
-<!------------->
-
-<div id="about">
-	<img id="about-img" alt="About Image" src="/assets/images/LIR_front_drawings.jpg" />
-	<div id="about-text-1">
-		<h3 class="harlowFont" >Follow</h3>
-		<p>Each narrative will drive you through the places of a city, bringing out a
-		completely new meaning and dimension. </p>
 	</div>
 
-	<div id="about-text-2">
-		<h3 class="harlowFont" >Create</h3>
-		<p>Tell an engaging story about a city, its streets, buildings and people,
-		enhancing the <em>immersiveness</em> of your narratives.  </p>
+	<!-- Choose Story Collections modal -->
+	<div id="choose-story-collection-modal" class="modal fade">
+	  <div class="modal-dialog modal-sm">
+	    <div class="modal-content">
+				<div class="modal-body"></div>
+				<div class="modal-footer">
+	        <button type="button" class="btn btn-default" onclick="closeChooseCollectionView()">Close</button>
+	      </div>
+			</div>
+	  </div>
 	</div>
 
-	<div id="about-text-3">
-		<h3 class="harlowFont" >Stories</h3>
-		<p>Tales of a city, stories of the tradition and culture of a city,
-		documentaries, narrative-driven tours, etc. </p>
+	<!-- Add Users to Collections modal -->
+	<div id="add-user-collection-modal" class="modal fade">
+	  <div class="modal-dialog modal-sm">
+	    <div class="modal-content">
+				<div class="modal-body">
+					<h4 class="modal-title">Find user</h4>
+					<input id="user-email-input" type="text" placeholder="place user email">
+					<button type="button" class="btn btn-default" onclick="lookForUser()">Search</button>
+					<div class="list-group"></div>
+					<p class="label">No user was found</p>
+				</div>
+				<div class="modal-footer">
+	        <button type="button" class="btn btn-default" onclick="closeAddUserCollectionView()">Close</button>
+	      </div>
+			</div>
+	  </div>
 	</div>
-</div>
-
-<!----------------->
-<!--  LIR Soon   -->
-<!----------------->
-
-<div id="lir-soon-wrapper">
-	<a id="lir-soon-ref"></a>
-	<div id="lir-soon">
-		<h2 id="lir-soon-text-1">Download the App!</h2>
-		<h4 id="lir-soon-text-2">And start exploring stories around you.</h4>
-		<!--<a class="btn btn-success btn-lg ga-event-index-signup" href="/signup">Sign Up</a>-->
-		<a id="androidStore-btn" class="ga-event-index-download" href="https://play.google.com/store/apps/details?id=com.lostinreality.app">
-			<img alt="Android app on Google Play" src="/assets/images/en_app_rgb_wo_60.png" />
-		</a>
-		<img id="lir-soon-image" src="/assets/images/lir-soon.png" alt="lir-soon">
-	</div>
-</div>
-
-
-
-<!--------------->
-<!--  GALLERY  -->
-<!--------------->
-
-<!-- <section id="gallery"></section> -->
-
-<!--------------->
-<!--  AUTHORS  -->
-<!--------------->
-
-<!-- <section id="authors"></section> -->
-
-<!---------------->
-<!--  FOOTER  -->
-<!---------------->
-
-<div class="grad-bar"></div>
-<div id="footer">
-	<div id="shadow-footer"></div>
-	<div class="social-wrapper">
-		<a class="social mail" href="mailto:feedback@@lostinreality.pt?Subject=Feedback" target="_blank"></a>
-		<a class="social facebook" href="https://www.facebook.com/pages/Lost-in-Reality-LiR/387253791289181"  target="_blank"></a>
-		<a class="social twitter" href="https://twitter.com/LstnReality" target="_blank"></a>
-	</div>
-	<img id="footer-lir-logo" src="/assets/images/lir-logo.png" alt="lir-logo"></img>
-	<h2 id="footer-text-1">Lost in Reality</h2>
-	<h4 id="footer-text-2">LISBOA | ZURICH</h4>
-</div>
-
 
 }

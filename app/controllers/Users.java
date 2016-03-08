@@ -2,6 +2,7 @@ package controllers;
 
 import models.Tosca;
 import models.User;
+import models.StoryCollection;
 import models.UserStory;
 import models.SavedStory;
 import play.mvc.Controller;
@@ -26,6 +27,15 @@ import models.utils.Constants;
 import com.google.gson.Gson;
 
 public class Users extends Controller {
+
+	private static User getCurrentUser() {
+		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		if (identity==null) {
+			return null;
+		}
+		User user = User.findByIdentityId(identity.identityId());
+		return user;
+	}
 
 	@SecureSocial.SecuredAction(ajaxCall=true)
 	public static Result getLoggedInUser() {
@@ -131,6 +141,27 @@ public class Users extends Controller {
 		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
 		String json = new Gson().toJson(jsonUser);
 		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result followCollection(Long collectionId, Boolean unfollow) {
+		User currentuser = getCurrentUser();
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		if (unfollow)
+			// storyCollection.removeFollower(currentuser);
+			currentuser.removeFollowingCollection(storyCollection);
+		currentuser.addFollowingCollection(storyCollection);
+		return ok();
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result followUser(Long numberId, Boolean unfollow) {
+		User currentuser = getCurrentUser();
+		User user = User.findByUserNumberId(numberId);
+		if (unfollow)
+			currentuser.removeFollowingUser(user);
+		currentuser.addFollowingUser(user);
+		return ok();
 	}
 
 }

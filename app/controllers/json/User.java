@@ -27,6 +27,8 @@ public class User {
 		user.avatarUrl = domainUser.getAvatarUrl();
 		user.noOfSaved = models.SavedStory.findByUserId(domainUser.getId()).size();
 		user.noOfStories = models.UserStory.findByUserId(domainUser.getId()).size();
+		user.noOfFollowers = domainUser.getFollowers().size();
+		user.noOfFollowing = domainUser.getFollowingUsers().size();
 		if (fetchAll)
 			user.storyCollections = getStoryCollections(domainUser);
 			user.email = domainUser.getEmail();
@@ -38,7 +40,7 @@ public class User {
 	public static List<StoryCollection> getStoryCollections(models.User domainUser) {
 		List<StoryCollection> storyCollectionList = new ArrayList<StoryCollection>();
 		for (models.StoryCollection sc : domainUser.getStoryCollections()) {
-			storyCollectionList.add(StoryCollection.getStoryCollection(sc));
+			storyCollectionList.add(StoryCollection.getStoryCollection(sc,false));
 		}
 		return storyCollectionList;
 	}

@@ -1200,27 +1200,20 @@ function createStory() {
 	}
   //set location name
   story.setLocationName(locationName);
-
+	story.setPublished(true);
   //save story on server
 	stud_createStory(story.domainStory,function(st){
 		//upload story pics
 		if (saveimagefile) {
 			uploadStoryImage(st.id,function() {
-				stud_publishStory(st.id,1,function(pubsStory) {
-          postingFinished(pubsStory);
-        },
-        function() {
-          postingError();
-        });
+        postingFinished(pubsStory);
+			},
+      function() {
+        postingError();
 			});
 		} else {
 			//publish
-      stud_publishStory(st.id,1,function(pubsStory) {
-        postingFinished(pubsStory);
-      },
-      function() {
-        postingError();
-      });
+      postingFinished(pubsStory);
 		}
 	},
   function() {

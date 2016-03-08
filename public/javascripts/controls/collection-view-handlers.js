@@ -1,20 +1,29 @@
 
-//--- initialize global variables ---//
+/******************************************************************
+	GLOBAL VARIABLES
+******************************************************************/
 
 var map;
-var markercluster;
+var searchBox;
 
-var storymap;
 var article;
 var saveimagefile = null;
 var fr;
 
+var defaultLocation = new google.maps.LatLng(37, -20);
+
 var collection;
 var collectionStories;
 var collectionStoriesMarkerList;
+var collectionStoryConnectionsList;
+var collectionStoryPathsList;
+var collectionCenter = defaultLocation;
+var collectionZoom = 2;
 
-var defaultLocation;
-var fitZoom;
+var softArrow;
+var connectStoryList = [];
+var connectStoriesEnabled = false;
+var cursor;
 
 var user = null;
 
@@ -22,15 +31,36 @@ var defaultAvatarPic = "/assets/images/user-avatar.jpg"
 
 var markerIcon;
 
+var colors = ['#FF702C','#2C80FF','#9A2CFF','#FF2CC8','#2C9EFF','#60A933'];
+var defaultMarkerColor = '#FF2C2C';
+
 var editingMode = false;
 var editingstory;
+var article;
+var locationName;
+var storylocation;
+var storyLocationMarker;
 
-//--- initialize method ---//
+var isgrabWebsiteMetadataBusy = false;
+
+var animationBusy = false;
+
+var locationSetMode = 'pinpoint';
+
+var contentheight,
+contentwidth,
+storyContainersWrapperWidth,
+storyContainersWrapperHeight,
+storiesGridListContainerWidth,
+noColumns;
+
+/******************************************************************
+	INITIALIZATION
+******************************************************************/
+
 function initialize() {
 
 	//$('#blog-link').css('display' , 'block' );
-
-  //TODO: set title in the server
 
 	user = newUserObj();
 	user.constructor();
@@ -57,14 +87,19 @@ function readCollection() {
   var collectionId = document.URL.split("/collection/")[1];
   stud_readCollection(collectionId,function(col) {
     collection = col;
+		if (collection.published == 0) {
+			if (!collectionBelongsToCurrentUser()) location = "/";
+		}
     initiateMap();
     intializeEvents();
     initializeCollectionDetails();
     loadCollectionStories(col.id,function() {
       collectionStoriesMarkerList = drawCollectionMarkersOnMap(collectionStories,markerIcon);
-			fitStoryOnView(collectionStoriesMarkerList.values(),map);
-      drawLayout();
-			$('#stories-container').css('opacity','1');
+			collectionStoryPathsList = sortCollectionStoryPaths(collectionStories);
+			collectionStoryConnectionsList = drawAllConectionLines(collectionStoryPathsList,collectionStories);
+			setLayoutDimensions(collectionStories);
+			fitCollectionOnView(collectionStoriesMarkerList.values(),map);
+			drawLayout(collectionStories);
     });
   }, function() {});
 }
@@ -73,87 +108,82 @@ function readCollection() {
 google.maps.event.addDomListener(window, 'load', initialize);
 
 function intializeEvents() {
+	contentheight = $(window).innerHeight() - $('nav.navbar').height();
+	contentwidth = $('#content-wrapper').innerWidth();
+	$('#content-wrapper').css({ height: contentheight });
+
 	//----------------
-	$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
+	storyContainersWrapperHeight = contentheight - $('#story-containers-wrapper').css('margin-top').replace("px", "");
+	storyContainersWrapperWidth = contentwidth - $('#story-containers-wrapper').css('margin-left').replace("px", "");
+
+	$('#story-containers-wrapper').css({
+		height: storyContainersWrapperHeight,
+		width: storyContainersWrapperWidth
+	});
 
 	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
 
-  // Retract Location Banner
-  $('#content-wrapper').scroll(function() {
-    var currentScrollTop = $('#content-wrapper').scrollTop();
-    if (currentScrollTop < 552)
-      $('#collection-location-banner').removeClass('animate-transition collapsed-navbar');
-    else
-      $('#collection-location-banner').addClass('collapsed-navbar animate-transition');
+	//Map Sight
+	$('#map-viewport').css({
+		height: contentheight,
+	});
+
+	$('#map-region').resizable({
+		resize: function( event, ui ) {
+			var width = ui.size.width;
+			ui.element.css({
+				marginTop: -width/2,
+				marginLeft: -width/2,
+				width: width,
+				height: width
+			});
+			$('#map-region').removeClass('selected');
+		}
   });
 
-  $('#collection-location-banner').keypress(function(e) {
-    if(e.which == 13) {
-        $("#content-wrapper").animate({ scrollTop: 0 }, "slow");
-    }
+  // COVER OPEN AND CLOSE
+  $("#content-wrapper").bind("wheel", function(event) {
+		if (animationBusy || $("#content-wrapper").hasClass('showing-map')) return;
+		if (event.originalEvent.deltaY >= 1) {
+			animationBusy = true;
+			$('#collection-details-img-container').animate({top: 0 - contentheight}, 300,"easeOutQuart", function() {
+				animationBusy = false;
+				$('#story-grid-layout').scrollTop(0).animate({top: 0}, 300, "easeOutQuart");
+				$("#collection-map-details-container").addClass('sensible');
+				$("#content-wrapper").addClass('showing-map');
+			});
+		}
   });
+
+	$("#collection-map-details-container").hover(function() {
+		$('#collection-details-img-container').animate({top: 20 - contentheight}, 300, "easeOutBounce", function() {});
+	}, function (e) {
+		if (!$(e.relatedTarget).is('#collection-details-container'))
+			$('#collection-details-img-container').animate({top: 0 - contentheight}, 200, function() {});
+	});
+
+	$('#collection-details-img-container, #collection-map-details-container').click(function() {
+		$('#collection-details-img-container').animate({top: 0}, 300, "easeOutQuart", function() {
+			closeStoryView(true);
+			$('#story-grid-layout, #story-large-layout').css('top','100%');
+			$("#content-wrapper").removeClass('showing-map');
+		});
+	});
 
   //--- Google Analytics track event ----//
 	$(".ga-event-map-publish").click( function() {
 		ga('send','event','map', 'publish') //Google Analytics track event
 	});
 
-	//----------------
+	// RESIZE
 	$(window).resize(function() {
-		$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
+		updateLayoutDimensions();
 
     //resize of Vine's iframe
-    iframesize = $('#open-story-view .article-container').height();
-    $('#open-story-view  .vines-iframe').attr("width",iframesize)
+    iframesize = $('.article-container').height();
+    $('.vines-iframe').attr("width",iframesize)
                       .attr("height",iframesize);
-	});
-
-  //remove STORY IMAGE
-  $('#open-story-view #remove-story-image').click(function() {
-    $('#open-story-view #story-image-container').hide();
-    $('#open-story-view #story-image').attr('src','');
-    saveimagefile = null;
-  });
-
-  //add ARTICLE LINK
-  $('#open-story-view #story-add-link-button').click(function() {
-    $('#open-story-view #story-insert-article').show();
-  });
-
-  //remove ARTICLE LINK
-  $('#open-story-view #close-article-link').click(function() {
-    $('#open-story-view #story-insert-article').hide();
-    $('#open-story-view #article-link').val('');
-    article = null;
-    removeArticleContainer();
-  });
-
-  //STORY TEXT AREA: LOOK FOR URL AND SET ARTICLE
-	$('#open-story-view #article-link').keyup(function() {
-		txt = $(this).val();
-		webUrl = getUrlFromText(txt);
-		grabWebsiteMetadata(webUrl)
-	});
-
-  // ADD IMAGE FILE FOR STORY
-	$('#f').change(function(ev) {
-		saveimagefile = ev.target.files[0];
-		var fileReader = new FileReader();
-
-		if (saveimagefile) {
-			$('#story-image-container').show();
-		} else {
-			$('#story-image-container').hide();
-		}
-
-		fileReader.onload = function(ev2) {
-			console.dir(ev2);
-			$('#story-image').attr('src', ev2.target.result);
-		};
-
-		fileReader.readAsDataURL(saveimagefile);
-		fr = fileReader;
 	});
 
   // COLLECTION IMAGE FILE
@@ -166,21 +196,72 @@ function intializeEvents() {
       //$('#collection-details-container').css('background-image','url(' + ev2.target.result + ')');
       uploadCollectionImage(collection.id, function(url) {
         $('#collection-details-img-container').css('background-image','url(' + url + ')');
+				$('#collection-thumbnail-container').css('background-image','url(' + url + ')').html('');
       });
 		};
 
 		fileReader.readAsDataURL(saveimagefile);
 		// fr = fileReader;
 	});
+
+	// Next/previous story controllers
+	$('#story-large-layout-controllers .lg-arrow-left').click(function() {
+		var storyId = $('#story-large-layout-container .story-container').attr('storyId'),
+		previousstory = getPreviousStoryFromCollectionStoriesList(storyId);
+		if (!previousstory) return;
+		var largeStoryContainer = buildStoryLargeContainer(previousstory);
+		$('#story-large-layout').animate({left: -contentwidth}, 300, "easeOutQuart", function() {
+			$('#story-large-layout').hide().css('left', contentwidth + 'px').show();
+			$('#story-large-layout-container').html(largeStoryContainer);
+			$('#story-large-layout').animate({left: 0}, 300, "easeOutQuart");
+			fitStoryOnView(previousstory,map);
+		});
+	});
+
+	$('#story-large-layout-controllers .lg-arrow-right').click(function() {
+		var storyId = $('#story-large-layout-container .story-container').attr('storyId'),
+		nextstory = getNextStoryFromCollectionStoriesList(storyId);
+		if (!nextstory) return;
+		var largeStoryContainer = buildStoryLargeContainer(nextstory);
+		$('#story-large-layout').animate({left: contentwidth}, 300, "easeOutQuart", function() {
+			$('#story-large-layout').hide().css('left', -contentwidth + 'px').show();
+			$('#story-large-layout-container').html(largeStoryContainer);
+			$('#story-large-layout').animate({left: 0}, 300, "easeOutQuart");
+			fitStoryOnView(nextstory,map);
+		});
+	});
+
+	//--- initializeSoftArrow method ---//
+	softArrow = new google.maps.Polyline({
+		strokeColor : '#444444',
+		strokeOpacity : 0.6,
+		strokeWeight : 2
+	});
+	softArrow.setMap(map);
+	//--- cancel transition creation
+	// google.maps.event.addListener(softArrow, 'click', function() { finishConnectStories(); });
+
+	// PRESS ESCAPE
+	document.onkeydown = function(event) {
+		if (event.keyCode == 27) {
+			finishConnectStories();
+		}
+	}
+
+  $('[data-toggle="tooltip"]').tooltip({delay: { "show": 1500, "hide": 100 }})
+
 }
 
 function  initializeCollectionDetails() {
-  if (collection.imageUrl)
-    $('#collection-details-img-container').css('background-image','url(' + collection.imageUrl + ')');
+  if (collection.imageUrl) {
+		$('#collection-details-img-container').css('background-image','url(' + collection.imageUrl + ')');
+		$('#collection-thumbnail-container').css('background-image','url(' + collection.imageUrl + ')').html('');
+	}
   $('#collection-details-img-container').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
 
   // Collection name and description
   $('#collection-name').val(collection.name);
+	$('#collection-details-name').text(collection.name);
   setStoryText(collection.description,$('#collection-description'));
 
   //Authors
@@ -198,6 +279,15 @@ function  initializeCollectionDetails() {
   $('#collection-stat-stories #value').html(collection.noStories);
   $('#collection-stat-followers #value').html(collection.noFollowers);
 
+	if (collection.published == 0) {
+		$('#private-status-btn').addClass('btn-danger  active');
+		$('#public-status-btn').removeClass('btn-danger active');
+	}
+
+	if (collection.currentUserFollows) {
+		$('#follow-collection-btn').addClass('following').text('Following');
+	}
+
   if (collectionBelongsToCurrentUser()) {
     $('#editing-opt-buttons').show();
   } else {
@@ -205,136 +295,142 @@ function  initializeCollectionDetails() {
   }
 }
 
-function enableEditingMode() {
-  editingMode = true;
+/******************************************************************
+	DRAW AND CONTROL LAYOUTS
+******************************************************************/
 
-  $('#editing-mode-off-btn').removeClass('btn-primary active');
-  $('#editing-mode-on-btn').addClass('btn-primary active');
-  $('#add-collection-authors-btn').show();
-  $('#collection-name').removeAttr('readonly');
-  $('#collection-description').attr('contenteditable', 'true');
-	$('#collection-edit-picture-btn').addClass('enabled');
-	loadStoryTextBehaviours($('#collection-description'));
-
-  $('.story-container .option-remove').show();
-
-  //Update events
-  // COLLECTION NAME and DESCRIPTION UPDDATE
-  $('#collection-name, #collection-description').focusout(function() {
-    if (editingMode && collectionBelongsToCurrentUser()) {
-      var name = $('#collection-name').val();
-      var description = getStoryText($('#collection-description'));
-      if (name != collection.name || description != collection.description) {
-        collection.name = name;
-        collection.description = description;
-        stud_updateStoryCollection(collection,function() {},function() {alert('failed collection update')});
-      }
-    }
-  });
+function drawLayout(stories) {
+	setLayoutDimensions(stories);
+  drawStoryGridLayout(stories);
 }
 
-function disableEditingMode() {
-  editingMode = false;
-  $('#editing-mode-on-btn').removeClass('btn-primary active');
-  $('#editing-mode-off-btn').addClass('btn-primary active');
-  $('.story-container .option-remove').hide();
-  $('#collection-name').attr('readonly','readonly');
-  unloadStoryTextBehaviours($('#collection-description'));
-  $('#collection-name, #collection-description').unbind();
-  $('#add-collection-authors-btn').hide();
-	$('#collection-edit-picture-btn').removeClass('enabled');
-}
-
-function drawStoryItemOnMapView(story) {
-  var mapViewStoryContainer = $('#collection-map-cover-left');
-  mapViewStoryContainer.empty()
-  var storyContainer = buildStorySmallContainer(story);
-  storyContainer.appendTo(mapViewStoryContainer);
-}
-
-function clearHighlightedStoryFromMapView() {
-  $('#collection-map-cover-left').empty();
-}
-
-function drawLayout() {
-  drawStoryListLayout();
-  // Initialize tooltips (helper popups)
-  $('[data-toggle="tooltip"]').tooltip()
-}
-
-function drawStoryGridLayout() {
-  var stories = collectionStories;
+function drawStoryGridLayout(stories) {
 
   $('.story-container').remove();
-	var storiesListContainer = $("#stories-list");
+	var storiesGridLayoutContainer = $("#story-grid-layout");
 
-  // Set layout
-  var noColumns = 1,
-  columnWidth = 300,
-  columnMargin = 10,
-  listMinMargin = 100,
-  availableWidth = $('#content-wrapper').innerWidth(),
-  requestedWidth = noColumns*(columnWidth + 2*columnMargin) + 2*listMinMargin;
-  // while (requestedWidth <  availableWidth) {
-  //   noColumns++
-  //   requestedWidth = noColumns*(columnWidth + 2*columnMargin) + 2*listMinMargin;
-  // }
-  //
-  // noColumns = noColumns - 1;
+	if(!stories || stories.length == 0) {
+		$('#no-stories-message').show();
+		return;
+	} else
+		$('#no-stories-message').hide();
 
-  noColumns = 2;
-  storiesListContainer.width(noColumns*(columnWidth + 2*columnMargin));
-  $('#stories-list-view-left-container').width((availableWidth - noColumns*(columnWidth + 2*columnMargin))/2);
+	var stories = sortStoriesByDate(stories);
+
   for ( var i = 1; i <= noColumns; i++) {
-    $('<div id="column-' + i + '" class="layout-column"/>').appendTo(storiesListContainer)
+    $('<div id="column-' + i + '" class="layout-column"/>').appendTo(storiesGridLayoutContainer)
   }
+
 
   var columnCommuter;
   counter = 0;
 
   // Add remaining Story Containers
   // var storiesinbounds = getStoriesWithinMapBounds(stories);
-  // var storiesSortedByDate = sortStoriesWithDate(storiesinbounds);
-
-  if(!stories || stories.length == 0) {
-		$('#no-stories-message').show();
-		return;
-	} else
-		$('#no-stories-message').hide();
+  // var storiesSortedByDate = sortStoriesByDate(storiesinbounds);
 
   stories.forEach(function(story) {
     var storyContainer = buildStorySmallContainer(story);
     columnCommuter = (counter++ % noColumns) + 1;
     storyContainer.appendTo($('#column-' + columnCommuter));
   });
+	storiesGridLayoutContainer.addClass('infocus')
 }
 
-function drawStoryListLayout() {
-  var stories = collectionStories;
+function drawStoryLargeLayout(story,options) {
+	var largeStoryContainer = buildStoryLargeContainer(story,options);
+	$('#story-large-layout-container').html(largeStoryContainer);
+	$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+	$('#story-large-layout-controllers').show();
+	//Zoom in on the story location
+	fitStoryOnView(story,map);
 
-  $('.story-container').remove();
-	var storiesListContainer = $("#stories-list");
-
-  if(!stories[0]) {
-		$('#no-stories-message').show();
-		return;
-	} else
-		$('#no-stories-message').hide();
-
-  // Sort stories
-  //var stories = getStoriesWithinMapBounds(stories);
-  //var stories = sortStoriesWithDate(stories);
-
-  stories.forEach(function(story) {
-    var storyContainer = buildStoryLargeContainer(story);
-    storyContainer.appendTo(storiesListContainer);
-  });
+	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
+	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart");
 }
+
+function openCreateStoryView() {
+	var story = new Object();
+	story.author = {fullName:user.getFullName(),avatarUrl:user.getAvatarUrl()}
+	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
+	$('#story-large-layout').animate({top: '100%'}, 150, "easeOutQuart", function() {
+		$('#story-large-layout-container').html(largeStoryContainer);
+		$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+		$('#story-large-layout-controllers').hide();
+		$('#story-large-layout').animate({top: 0}, 150, "easeOutQuart");
+	});
+	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
+}
+
+function openEditStoryView(story) {
+	editingstory = story;
+	if (story.articleLink)
+		article = {
+			title: story.articleTitle,
+			description: story.articleDescription,
+			author: story.articleAuthor,
+			imageUrl: story.articleImage,
+			source: story.articleSource,
+			url: story.articleLink
+		}
+	locationName = story.locationName
+	storylocation = story.location;
+	$('.location.editable').val(locationName);
+	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
+	$('#story-large-layout-container').html(largeStoryContainer);
+	$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+	//Zoom in on the story location
+	fitStoryOnView(story,map);
+	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
+	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart");
+}
+
+function closeStoryView(keephidden) {
+	$('#map-viewport').innerWidth(contentwidth - storiesGridListContainerWidth);
+	if (!keephidden) $('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart");
+	$('#story-large-layout').animate({top: '100%'}, 300, "easeOutQuart");
+	$('#story-large-layout-container').html('');
+	$('#map-viewport *').hide();
+	$('#map-region').removeClass('selected');
+	$('#story-large-layout-controllers').hide();
+	$('.marker-div').removeClass('highlighted');
+	map.panTo(collectionCenter);
+	map.setZoom(collectionZoom);
+	editingstory = null;
+	article = null;
+	locationName = null;
+	storylocation = null;
+	if (storyLocationMarker) {
+		storyLocationMarker.setMap(null);
+		storyLocationMarker = null;
+	}
+}
+
+/******************************************************************
+	BUILD SMALL CONTAINER
+******************************************************************/
 
 function buildStorySmallContainer(story) {
   var storyContainer = $('<div/>').attr('id', 'story-' + story.id).attr('storyId', story.id)
-            .addClass('story-container')
-            .addClass('sm-container');
+            .addClass('story-container sm-container');
+
+	storyContainer.hover(function() {
+		$('#story-' + story.id + '.story-container.sm-container').addClass('highlighted');
+		if (story.location && story.location.showpin)
+			collectionStoriesMarkerList.get(story.id).addClass('highlighted')
+	} , function() {
+		$('#story-' + story.id + '.story-container.sm-container').removeClass('highlighted');
+		if (story.location && story.location.showpin)
+			collectionStoriesMarkerList.get(story.id).removeClass('highlighted')
+	});
+
+	if (storypath = getPathOfStory(story)) {
+		storyContainer.css('border', '3px solid ' + storypath.color);
+		collectionStoriesMarkerList.get(story.id).setColor(storypath.color);
+	} else if (story.location.showpin) {
+		collectionStoriesMarkerList.get(story.id).setColor(defaultMarkerColor);
+	}
+
 
   //Story container header
   var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
@@ -342,9 +438,9 @@ function buildStorySmallContainer(story) {
   var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
                                                                   .click(function() {
                                                                     if (storyBelongsToCurrentUser(story) && editingMode)
-                                                                      openStoryView({edit:true, story:story});
+                                                                      drawStoryLargeLayout(story);
                                                                     else
-                                                                      openStoryView({readonly:true, story:story});
+                                                                      drawStoryLargeLayout(story);
                                                                   });
   //Story container footer
   var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
@@ -380,18 +476,24 @@ function buildStorySmallContainer(story) {
   $('<li class="option-open"><a href="#">Open</a></li>').appendTo(optionsList)
                                     .click(function() {
                                       if (storyBelongsToCurrentUser(story) && editingMode)
-                                        openStoryView({edit:true, story:story});
+                                        drawStoryLargeLayout(story);
                                       else
-                                        openStoryView({readonly:true, story:story});
+                                        drawStoryLargeLayout(story);
                                     });
-  $('<li class="option-remove"><a href="#">Remove Story</a></li>').appendTo(optionsList)
+  var removeFromCollectionBtn = $('<li class="option-remove"><a href="#">Remove Story</a></li>').appendTo(optionsList)
                                             .click(function() {
                                               stud_removeStoryFromStoryCollection(story.id,collection.id, function(coll) {
                                                 $('#collection-stat-stories #value').html(coll.noStories);
                                                 removeStoryFromCollectionStoriesList(story);
-                                                drawLayout();
                                               });
                                             });
+	if (editingMode) removeFromCollectionBtn.css('display','block');
+
+	var editStoryBtn = $('<li class="option-edit"><a href="#">Edit Story</a></li>').appendTo(optionsList)
+                                            .click(function() {
+																							openEditStoryView(story);
+                                            });
+	if (editingMode && storyBelongsToCurrentUser(story)) editStoryBtn.css('display','block');
 
   $('<li class="divider"></li>').appendTo(optionsList);
   $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
@@ -408,7 +510,7 @@ function buildStorySmallContainer(story) {
   var location = "";
   if (story.locationName && story.locationName.length > 0)
     location = story.locationName;
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-facebook30"></div>').appendTo(locationContainer);
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-location"></div>').appendTo(locationContainer);
   $('<p class="location">' + location + '</p>').appendTo(locationContainer);
 
   //Thumbnail: article image or story image
@@ -451,21 +553,28 @@ function buildStorySmallContainer(story) {
   return storyContainer;
 }
 
-function buildStoryLargeContainer(story) {
-  var storyContainer = $('<div/>').attr('id', 'story-' + story.id)
-            .addClass('story-container')
-            .addClass('lg-container');
+/******************************************************************
+	BUILD LARGE CONTAINER
+******************************************************************/
+
+function buildStoryLargeContainer(story,options) {
+  var storyContainer = $('<div class="story-container lg-container"></div>');
+
+	if (story.id)
+		storyContainer.attr('id', 'story-' + story.id).attr('storyId', story.id);
+		if (story.location && story.location.showpin)
+			storyContainer.hover(function() {
+				collectionStoriesMarkerList.get(story.id).addClass('highlighted')
+			} , function() {
+				collectionStoriesMarkerList.get(story.id).removeClass('highlighted')
+			});
 
   //Story container header
   var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
   //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
-                                                                    .click(function() {
-                                                                      if (storyBelongsToCurrentUser(story) && editingMode)
-                                                                        openStoryView({edit:true, story:story});
-                                                                      else
-                                                                        openStoryView({readonly:true, story:story});
-                                                                    });
+  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer).innerHeight(storyContainersWrapperHeight - 110)
+	if (options && options.editable)
+		storyContainerBody.addClass('edit');
   //Story container footer
   var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
 
@@ -484,63 +593,96 @@ function buildStoryLargeContainer(story) {
   var authorName = story.author.fullName;
   authorContainer.append('<a class="story-author-name" href="/profile/' + story.author.numberId + '">' + authorName +  '</a>');
 
-	//Story Options Button container
-  var optionsBtnContainer = $('<div class="story-options-btn-container pull-right dropdown"/>').appendTo(storyContainerHeader);
-  var optionsBtn = $('<div class="story-options-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown"/>').appendTo(optionsBtnContainer);
-  $('<div/>').appendTo(optionsBtn);
-  $('<div/>').appendTo(optionsBtn);
-  $('<div/>').appendTo(optionsBtn);
-
-  //Story Options Dropdown container
-  var optionsList = $('<ul class="options-list dropdown-menu" aria-labelledby="dropdownMenu1"/>').appendTo(optionsBtnContainer);
-
-	$('<li class="option-open"><a href="#">Open</a></li>').appendTo(optionsList)
-                                    .click(function() {
-                                      if (storyBelongsToCurrentUser(story) && editingMode)
-                                        openStoryView({edit:true, story:story});
-                                      else
-                                        openStoryView({readonly:true, story:story});
-                                    });
-  $('<li class="option-remove"><a href="#">Remove Story</a></li>').appendTo(optionsList)
-                                            .click(function() {
-                                              stud_removeStoryFromStoryCollection(story.id,collection.id, function(coll) {
-                                                $('#collection-stat-stories #value').html(coll.noStories);
-                                                removeStoryFromCollectionStoriesList(story);
-                                                drawLayout();
-                                              });
-                                            });
-  $('<li class="divider"></li>').appendTo(optionsList);
-  $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
-                                        .click(function() {
-                                          openChooseCollectionView(story);
-                                        });
-
+	//Story Options Container
+	var optionsBtnContainer = $('<div class="story-options-container pull-right dropdown"/>').appendTo(storyContainerHeader);
+	if (!options || !options.editable) {
+		// LIKE BUTTON
+	  optionsBtnContainer.append(buildLikeButton(story));
+	  // SAVE BUTTON
+	  optionsBtnContainer.append(buildSaveStoryButton(story));
+		// Close/Gridview
+		$('<button type="button" class="close-button btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-arrows"></button>').appendTo(optionsBtnContainer)
+																																				.click(function() {
+																																					closeStoryView();
+																																				});
+	} else if (options && options.editable) {
+		optionsBtnContainer.addClass('editing-options')
+		$('<button id="cancel-publish-button" type="button" onclick="closeStoryView()" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-arrows"></button>').appendTo(optionsBtnContainer);
+		buildAddPictureBtn().appendTo(optionsBtnContainer)
+		$('<button id="story-add-link-button" type="button" class="btn btn-icon" data-toggle="tooltip" data-placement="bottom" title="Add an article from the internet."><span class="glyph-icon icon-no-margins icon-30px flaticon-internet"></button>').appendTo(optionsBtnContainer).tooltip({delay: { "show": 1500, "hide": 100 }})
+																																																		.click(function() {
+																																																			$('#story-insert-article').show();
+																																																		});
+		var postBtn = $('<button id="story-publish-button" type="button" class="btn btn-default">post</button>').appendTo(optionsBtnContainer)
+		if (story.id)
+			postBtn.html('save').click(function() {editStory()})
+		else
+			postBtn.click(function() {createStory()})
+	}
 
   //Story location container
   var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerHeader)
   var location = "";
-  if (story.locationName && story.locationName.length > 0)
+	if (story.locationName && story.locationName.length > 0)
     location = story.locationName;
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>').appendTo(locationContainer);
-  $('<p class="location">' + location + '</p>').appendTo(locationContainer);
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-location"></div>').appendTo(locationContainer);
+  var locationInput = $('<input readonly class="location" placeholder="Story location..." />').appendTo(locationContainer).val(location);
 
+	if (options && options.editable) {
+		locationInput.removeAttr('readonly').addClass('editable');
+		locationSetMode='pinpoint';
+		$('#map-sight').show();
+		$('#map-region').hide();
+		$('<button id="switch-story-location-mode" type="button" onclick="swithStoryLocationSelectionMode()" class="btn btn-icon pull-right" data-toggle="tooltip" data-placement="bottom" title="Switch between pinpoint location or region."><span class="glyph-icon icon-no-margins icon-20px flaticon-location-2"></button>').appendTo(locationContainer).tooltip({delay: { "show": 1500, "hide": 100 }});
+		$('<button id="set-story-location" type="button" onclick="setStoryLocation()" class="btn btn-default pull-right">set</button>').appendTo(locationContainer);
+	}
 
   // Summary container
-  if (story.summary && story.summary.length > 0) {
-    var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
-    var summary = $('<p class="story-summary"></p>').appendTo(summaryContainer)
-                                                    .text(story.summary);
-    $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
-  }
+  var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
+  var summary = $('<div class="story-summary" placeholder="write your story"></div>').appendTo(summaryContainer);
+	setStoryText(story.summary,summary);
+  // $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
+
+	if (options &&options.editable) {
+		summary.attr('contenteditable', 'true').addClass('editable');
+		loadStoryTextBehaviours(summary);
+	}
 
   //Thumbnail
-  if (story.thumbnail && story.thumbnail.length > 0) {
-    var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id)
-              .append('<img atl="image for ' + story.title + '">');
-    imageContainer.find('img').attr('src',story.thumbnail)
-    imageContainer.appendTo(storyContainerBody);
+	var imageContainer = $('<div class="image-container"/>').appendTo(storyContainerBody);
+	if (options && options.editable) {
+		$('<button id="remove-story-image" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+			.appendTo(imageContainer)
+			.click(function() {
+				$('.lg-container .image-container').hide();
+				$('.lg-container .story-image').attr('src','');
+				saveimagefile = null;
+			});
+	}
+  var img = $('<img class="story-image">').appendTo(imageContainer);
+	if (story.thumbnail && story.thumbnail.length > 0) {
+		img.attr('src',story.thumbnail);
+		imageContainer.css('display','block');
   }
 
+
+	if (options && options.editable) {
+		var insertArticleContainer = $('<div id="story-insert-article">').appendTo(storyContainerBody)
+		var insertArticleInput = $('<input id="article-link" placeholder="article link">').appendTo(insertArticleContainer)
+																															.keyup(function() {
+																																txt = $(this).val();
+																																webUrl = getUrlFromText(txt);
+																																grabWebsiteMetadata(webUrl)
+																															});
+		$('<button id="close-article-link" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>').appendTo(insertArticleContainer)
+																															.click(function() {
+																														    $('#story-insert-article').hide();
+																														    $('#article-link').val('');
+																														    article = null;
+																														    removeArticleContainer();
+																														  });
+		if (story.articleLink) insertArticleInput.val(story.articleLink);
+	}
 
   // ARTICLE CONTAINER
   if (story.articleLink) {
@@ -551,51 +693,62 @@ function buildStoryLargeContainer(story) {
       imageUrl: story.articleImage,
       source: story.articleSource,
       url: story.articleLink
-    },storyContainerBody,{colapsedescription:true});
+    },storyContainerBody,{colapsedescription:false});
   }
-
-
-  // //UNPUBLISH BUTTON
-  // var id = story.id;
-  // if (story.author.email == user.getEmail() || user.getEmail().indexOf("@lostinreality.net") > -1) {
-  // 	var unpublishButton = $('<a class="story-unpublish-button btn btn-warning" storyId= ' + id + ' >Unpublish</a>')
-  // 							.appendTo(storyContainerFooter)
-  // 							.click(function() {
-  // 								var storyId = $(this).attr('storyId');
-  // 								unpublish(storyId, function() {
-  // 									clearAllMarkers();
-  // 									readPublishedStories();
-  // 								});
-  // 							});
-  //
-  // }
-
-  // LIKE BUTTON
-  storyContainerFooter.append(buildLikeButton(story));
-
-  // SAVE BUTTON
-  storyContainerFooter.append(buildSaveStoryButton(story));
 
   return storyContainer;
 }
 
+function buildAddPictureBtn() {
+	var addPictureBtn = $('<a id="story-add-picture-button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-art"></a>'),
+	form = $('<form enctype="multipart/form-data" id="image-upload-form">').appendTo(addPictureBtn);
+	input = $('<input id="f" name="profileImg[]" type="file" /></form>').appendTo(form)
+		.change(function(ev) {
+			saveimagefile = ev.target.files[0];
+			var fileReader = new FileReader();
+
+			if (saveimagefile) {
+				$('.image-container').show();
+			} else {
+				$('.image-container').hide();
+			}
+
+			fileReader.onload = function(ev2) {
+				console.dir(ev2);
+				$('.story-image').attr('src', ev2.target.result);
+			};
+
+			fileReader.readAsDataURL(saveimagefile);
+			fr = fileReader;
+		});
+	return addPictureBtn;
+}
+
+/******************************************************************
+	BUILD OTHER LAYOUT PARTS AND HELPERS
+******************************************************************/
+
 function buildLikeButton(story) {
+	var icon = '<span class="glyph-icon icon-no-margins icon-30px flaticon-favorite-1">'
   if (!user)
-    return $('<button type="button" class="story-like-button btn btn-success" data-toggle="tooltip" data-placement="left" title="You need to login.">Like</button>')
+    return $('<button type="button" class="story-like-button btn btn-icon">' + icon + '</button>')
+							.click(function() {
+								displayAlertMessage('You need to login.', $('#content-wrapper'),1500);
+							});
   var id = story.id;
-  var likeButtonText = (story.currentUserLikesStory) ? 'Liked' : 'Like';
-  var likeButtonClass = (story.currentUserLikesStory) ? 'btn-primary' : 'btn-success';
-  var likeButton = $('<a storyId= ' + id + ' class="story-like-button btn ' + likeButtonClass + '" >' + likeButtonText + '  <span class="badge">' + story.noOfLikes + '</span></a>')
+  var likeButtonClass = (story.currentUserLikesStory) ? 'liked' : '';
+  var likeButton = $('<button storyId= ' + id + ' class="story-like-button btn btn-icon ' + likeButtonClass + '" >' + icon + '  <span class="badge">' + story.noOfLikes + '</span></button>')
               .click(function() {
                 var storyId = $(this).attr('storyId');
                 likeStory(storyId, function(result) {
                   $('#story-' + storyId + ' .story-like-button span').html(result.noOfLikes);
+									$('#story-' + storyId + ' .story-stats-likes').html(result.noOfLikes + ' likes');
                   if (result.currentUserLikesStory) {
-                    $('#story-' + storyId + ' .story-like-button').removeClass('btn-success').addClass('btn-primary')
-                                                                  .html('Liked  <span class="badge">' + result.noOfLikes + '</span>');
+                    $('#story-' + storyId + ' .story-like-button').addClass('liked')
+                                                                  .html(icon + '  <span class="badge">' + result.noOfLikes + '</span>');
                   } else {
-                    $('#story-' + storyId + ' .story-like-button').addClass('btn-success').removeClass('btn-primary')
-                                                                  .html('Like  <span class="badge">' + result.noOfLikes + '</span>');
+                    $('#story-' + storyId + ' .story-like-button').removeClass('liked')
+                                                                  .html(icon + '  <span class="badge">' + result.noOfLikes + '</span>');
                   }
                 });
               });
@@ -603,22 +756,36 @@ function buildLikeButton(story) {
 }
 
 function buildSaveStoryButton(story) {
+	var icon = '<span class="glyph-icon icon-no-margins icon-30px flaticon-favorite">'
   if (!user)
-    return $('<a class="story-save-button btn btn-success" data-toggle="tooltip" data-placement="left" title="You need to login.">Save</a>')
+    return $('<a class="story-save-button btn btn-icon">' + icon + '</a>')
+							.click(function() {
+								displayAlertMessage('You need to login.', $('#content-wrapper'),1500);
+							});
   var id = story.id;
-  var saveStoryButtonText = (story.currentUserSavedStory) ? 'Saved' : 'Save';
-  var saveStoryButtonClass = (story.currentUserSavedStory) ? 'btn-primary' : 'btn-success';
-  var saveStoryButton = $('<a storyId= ' + id + ' class="story-save-button btn ' + saveStoryButtonClass + '" >' + saveStoryButtonText + '  <span class="badge">' + story.noOfSaves + '</span></a>')
+  var saveStoryButtonClass = (story.currentUserSavedStory) ? 'saved' : '';
+	var list = buildChooseCollectionDropdownList(story);
+  var saveStoryButton = $('<a storyId= ' + id + ' role="button" data-toggle="popover" tabindex="0" class="story-save-button btn btn-icon ' + saveStoryButtonClass + '" >' + icon + '  <span class="badge">' + story.noOfSaves + '</span></a>')
+							.popover({
+								html: true,
+								content: list,
+								placement: 'bottom',
+								animation: true,
+								trigger: 'focus'
+							})
               .click(function() {
-                var storyId = $(this).attr('storyId');
+								var storyId = $(this).attr('storyId');
                 saveStory(storyId, function(result) {
                   $('#story-' + storyId + ' .story-save-button span').html(result.noOfSaves);
+									var story = getStoryById(result.storyId,collectionStories);
+									story.noOfSaves = result.noOfSaves;
+									$('#story-' + storyId + ' .story-stats-saves').html(story.noOfSaves + ' saves');
                   if (result.currentUserSavedStory) {
-                    $('#story-' + storyId + ' .story-save-button').removeClass('btn-success').addClass('btn-primary')
-                                                                  .html('Saved  <span class="badge">' + result.noOfSaves + '</span>');
+                    $('#story-' + storyId + ' .story-save-button').addClass('saved')
+                                                                  .html(icon + '  <span class="badge">' + result.noOfSaves + '</span>');
                   } else {
-                    $('#story-' + storyId + ' .story-save-button').addClass('btn-success').removeClass('btn-primary')
-                                                                  .html('Save  <span class="badge">' + result.noOfSaves + '</span>');
+                    $('#story-' + storyId + ' .story-save-button').removeClass('saved')
+                                                                  .html(icon + '  <span class="badge">' + result.noOfSaves + '</span>');
                   }
                 });
               });
@@ -627,11 +794,11 @@ function buildSaveStoryButton(story) {
 
 function addArticleContainer(art) {
   removeArticleContainer();
-  buildArticleContainer(art,$('#open-story-view .story-container-body'),{size:"large",autoplay:true})
+  buildArticleContainer(art,$('.lg-container .story-container-body'),{size:"large",autoplay:true})
 }
 
 function removeArticleContainer() {
-  $('#open-story-view .article-container').remove();
+  $('.article-container').remove();
 }
 
 function buildArticleContainer(art,addToContainer,options) {
@@ -767,123 +934,230 @@ function buildInstagramContainer(link,addToContainer,options) {
 	});
 }
 
-function openStoryView(option) {
-  resetStoryView();
-  s = option.story;
-  // Author Details
-  if (option.edit == true | option.new == true) {
-    var avatarUrl = (user.getAvatarUrl()) ? user.getAvatarUrl() : defaultAvatarPic;
-    $('#open-story-view .story-author-name').text(user.getFullName())
-    $('#open-story-view .story-author-thumbnail').css('background-image','url(' + avatarUrl + ')');
-    loadStoryTextBehaviours($('#story-text'));
-  } else if (option.readonly == true) {
-    $('#open-story-view .story-author-name').text(s.author.fullName)
-																						.attr("href","/profile/" + s.author.numberId);
-    //Story author thumbnail
-    var avatarUrl = (s.author.avatarUrl) ? s.author.avatarUrl : defaultAvatarPic;
-    $('#open-story-view .story-author-thumbnail').css('background-image','url(' + avatarUrl + ')');
-  }
+/******************************************************************
+	DRAW AND CONTROL CONNECTION LINES
+******************************************************************/
 
-  // Load Story details
-  if (option.edit == true || option.readonly == true) {
-    setStoryText(s.summary,$('#open-story-view #story-text'));
-    if (s.thumbnail) {
-      $('#open-story-view #story-image').attr('src',s.thumbnail);
-      $('#open-story-view #story-image-container').show();
-    }
-    var locationElement = $('#open-story-view .location').text(s.locationName);
-    if (locationElement.innerHeight() > 22)
-      locationElement.addClass('wrapped-text');
-    $('#open-story-view #story-map-location-input').val(s.locationName);
-    storylocation = s.location;
-    locationName = s.locationName;
-    var loc = new google.maps.LatLng(s.location.latitude, s.location.longitude, true);
-    if (storyLocationMarker)
-      storyLocationMarker.setPosition(loc);
-    else {
-      storyLocationMarker = new google.maps.Marker({
-        position : loc,
-        draggable : false
-      });
-    }
-    // ARTICLE CONTAINER
-		if (s.articleLink) {
-      article = {
-        title: s.articleTitle,
-        description: s.articleDescription,
-        author: s.articleAuthor,
-        imageUrl: s.articleImage,
-        source: s.articleSource,
-        url: s.articleLink
-      };
-      addArticleContainer(article);
+function startConnectingStories() {
+	connectStoriesEnabled = true;
+	connectStoryList = [];
+}
+
+function clickedOnStory(story) {
+	connectStoryList.push(story);
+	if (connectStoryList.length == 2) {
+		if (connectStoryList[0].nextStoryId > 0 || connectStoryList[1].previousStoryId > 0) {
+			finishConnectStories();
+			displayAlertMessage('You are trying to connect to a ending story the a path. Try inverting the direction of the connection.', $('#content-wrapper'));
+			return;
 		}
-  }
+		connectStories(connectStoryList[0],connectStoryList[1],function() {
+			updateCollectionPaths();
+			drawLayout(collectionStories);
+			finishConnectStories();
+		});
+	}
+}
 
-  // Buttons and Controls Edits
-  if (option.edit == true && s.articleLink) {
-    $('#open-story-view #story-insert-article').show();
-    $('#open-story-view #article-link').val(s.articleLink);
-  }
+function drawConnectingline(story1,story2,connectionlist,color) {
+	var position1 = new google.maps.LatLng(story1.location.latitude,story1.location.longitude),
+	position2 = new google.maps.LatLng(story2.location.latitude,story2.location.longitude),
+	connection = new google.maps.Polyline({
+		strokeColor : color,
+		strokeOpacity : 0.8,
+		strokeWeight : 2,
+		geodesic:true,
+		path: [position1,position2],
+	});
+	connection.story1 = story1;
+	connection.story2 = story2;
+	connection.color = color;
+	var deleteConnectionBtnDiv = $('<div class="delete-connection-btn glyph-icon icon-no-margins icon-8px flaticon-delete"></div>')[0];
+	offset = new Object({x:0, y:0 })
+	connection.deleteConnectionBtnDiv = new SimpleMapOverlay(null,null,offset,deleteConnectionBtnDiv,map,false);
+	connection.deleteConnectionBtnDiv.addListener('mouseleave', function() {
+		this.hide();
+	});
+	connection.deleteConnectionBtnDiv.addListener('click', function() {
+		deleteStoryConnection(connection);
+	});
+	connection.addListener('mouseover', function() {
+		this.setOptions({strokeOpacity : 1,strokeWeight : 4});
+		collectionStoriesMarkerList.get(connection.story1.id).addClass('highlighted');
+		collectionStoriesMarkerList.get(connection.story2.id).addClass('highlighted');
+	});
+	connection.addListener('mouseout', function() {
+		this.setOptions({strokeOpacity : 0.8,strokeWeight : 2});
+		collectionStoriesMarkerList.get(connection.story1.id).removeClass('highlighted');
+		collectionStoriesMarkerList.get(connection.story2.id).removeClass('highlighted');
+	});
+	connection.addListener('click', function(cursor) {
+		if (editingMode) this.deleteConnectionBtnDiv.setPosition(cursor.latLng,cursor.latLng,true)
+	});
+	connection.setMap(map);
+	connectionlist.put(story1.id,connection);
+	return connection;
+}
 
-  if (option.readonly == true) {
-    $('#open-story-view #remove-story-image').hide();
-    $('#open-story-view #set-location-btn').hide();
-    $('#open-story-view #story-map-location-input').hide()
-    $('#open-story-view #story-map-sight').hide();
-    $('#open-story-view #story-text').attr('contenteditable', 'false')
-                                                 .removeClass('editable');
-    $('#open-story-view #story-add-picture-button').hide();
-    $('#open-story-view #story-add-link-button').hide();
-    $('#open-story-view #story-publish-button').hide();
-    $('#open-story-view #story-cancel-create-button').hide();
-    $('#open-story-view #close-story-view').show();
-  }
+function deleteStoryConnection(connection) {
+	disconnectStories(connection.story1,connection.story2,function() {
+		updateCollectionPaths();
+		drawLayout(collectionStories);
+		finishConnectStories();
+	});
+}
 
-  if (option.edit == true)
-    editingstory = s;
+function connectStories(st1,st2,onFinished) {
+	stud_connectStories(collection.id,st1.id,st2.id,function() {
+		if (onFinished) {
+			st1.nextStoryId = st2.id;
+			st2.previousStoryId = st1.id;
+			onFinished();
+		}
+	})
+}
 
-  //open view
-  $('#open-story-view').modal('show');
-	$('#open-story-view').on('hidden.bs.modal',function() {
-    resetStoryView();
-    $('#open-story-view').unbind('hidden.bs.modal');
+function disconnectStories(st1,st2,onFinished) {
+	stud_disconnectStories(collection.id,st1.id,st2.id,function() {
+		if (onFinished) {
+			st1.nextStoryId = -1;
+			st2.previousStoryId = -1;
+			onFinished();
+		}
+	})
+}
+
+function finishConnectStories() {
+	connectStoriesEnabled = false;
+	connectStoryList = [];
+	softArrow.setPath([]);
+}
+
+//--- updateSoftArrow method ---//
+function updateSoftArrow(cursor) {
+	if (connectStoriesEnabled && connectStoryList.length > 0) {
+		var storyPath = new google.maps.MVCArray();
+		connectStoryList.forEach(function(story) { storyPath.push(new google.maps.LatLng(story.location.latitude,story.location.longitude)) });
+		storyPath.push(cursor.latLng)
+		softArrow.setPath( storyPath );
+	}
+}
+
+/******************************************************************
+	COLLECTION CONTROLS
+******************************************************************/
+
+function publishCollection() {
+	if (collection.published == 1) return;
+  collection.published = 1;
+  $('#private-status-btn').removeClass('btn-danger active');
+  $('#public-status-btn').addClass('btn-danger active');
+	stud_publishCollection(collection.id,1,function() {
+		displayAlertMessage('Story was published successfully!');
+	}, function(error) {
+		console.log(error);;
+	});
+}
+
+function unPublishCollection() {
+	if (collection.published == 0) return;
+  collection.published = false;
+  $('#private-status-btn').addClass('btn-danger active');
+  $('#public-status-btn').removeClass('btn-danger active');
+	stud_publishCollection(collection.id,0,function() {
+		displayAlertMessage('Story was unpublished successfully!');
+	});
+}
+
+function enableEditingMode() {
+  editingMode = true;
+
+  $('#editing-mode-off-btn').removeClass('btn-danger active');
+  $('#editing-mode-on-btn').addClass('btn-danger active');
+  $('#add-collection-authors-btn').show();
+  $('#collection-name').removeAttr('readonly');
+  $('#collection-description').attr('contenteditable', 'true');
+	$('#collection-edit-picture-btn').addClass('enabled');
+	$('#create-story, #connect-stories').show();
+	loadStoryTextBehaviours($('#collection-description'));
+
+  $('.story-container .option-remove').show();
+	enableStoryEditingMode();
+
+  //Update events
+  // COLLECTION NAME and DESCRIPTION UPDDATE
+  $('#collection-name, #collection-description').focusout(function() {
+    if (editingMode && collectionBelongsToCurrentUser()) {
+      var name = $('#collection-name').val();
+			$('#collection-details-name').text(name);
+      var description = getStoryText($('#collection-description'));
+      if (name != collection.name || description != collection.description) {
+        collection.name = name;
+        collection.description = description;
+        stud_updateStoryCollection(collection,function() {},function() {displayAlertMessage('failed collection update')});
+      }
+    }
   });
 }
 
-function resetStoryView() {
-  $('#open-story-view #story-image-container').hide();
-  $('#open-story-view #story-image').attr('src','');
-  $('#open-story-view #story-text').text('');
-  $('#open-story-view #article-link').val('');
-  $('#open-story-view #story-insert-article').hide();
-  $('#open-story-view .location').text('Select location');
-  $('#open-story-view #story-map-location-input').val('');
-  $('#open-story-view #set-location-btn').show();
-  $('#open-story-view #remove-story-image').show();
-  $('#open-story-view #story-text').attr('contenteditable', 'true')
-                                               .addClass('editable');
-  $('#open-story-view #story-map-location-input').show();
-  $('#open-story-view #story-map-sight').show();
-  $('#open-story-view #story-add-picture-button').show();
-  $('#open-story-view #story-add-link-button').show();
-  $('#open-story-view #story-publish-button').show();
-  $('#open-story-view #story-cancel-create-button').show();
-  $('#open-story-view #close-story-view').hide();
-  $('#open-story-view #story-article').unbind();
-  removeArticleContainer();
-  article = null;
-  storylocation = null;
-  locationName = null;
-  storyLocationMarker = null;
-  editingstory = null;
-  saveimagefile = null;
-  hideStoryMap();
+function enableStoryEditingMode() {
+	collectionStories.forEach(function(st) {
+		if (storyBelongsToCurrentUser(st))
+			$('.story-container[storyId=' + st.id + '] .option-edit').show();
+	})
 }
 
-function closeStoryView() {
-  $('#open-story-view').modal('hide');
+function disableEditingMode() {
+  editingMode = false;
+  $('#editing-mode-on-btn').removeClass('btn-danger active');
+  $('#editing-mode-off-btn').addClass('btn-danger active');
+	$('.story-container .option-remove').hide();
+	$('.story-container .option-edit').hide();
+  $('#collection-name').attr('readonly','readonly');
+  unloadStoryTextBehaviours($('#collection-description'));
+  $('#collection-name, #collection-description').unbind();
+  $('#add-collection-authors-btn').hide();
+	$('#collection-edit-picture-btn').removeClass('enabled');
+	$('#create-story, #connect-stories').hide();
 }
+
+//--- loadUserStories method ---//
+function loadCollectionStories(collectionId,onFinished) {
+  if (!user) {
+    stud_readPublicCollectionStories(collectionId,function(s) {
+      collectionStories = s;
+      if (onFinished)
+        onFinished();
+    });
+  } else {
+    stud_readCollectionStories(collectionId,function(s) {
+      collectionStories = s;
+      if (onFinished)
+        onFinished();
+    });
+  }
+}
+
+function followCollection() {
+	if (!user)
+		displayAlertMessage('You need to login',$('#content-wrapper'),1500);
+	if (collection.currentUserFollows)
+		stud_followCollection(collection.id,true,function() {
+			collection.currentUserFollows = false;
+			$('#collection-stat-followers #value').html(--collection.noFollowers)
+			$('#follow-collection-btn').text('Follow').removeClass('following')
+		});
+	else
+		stud_followCollection(collection.id,false,function() {
+			collection.currentUserFollows = true;
+			$('#collection-stat-followers #value').html(++collection.noFollowers);
+			$('#follow-collection-btn').text('Following').addClass('following');
+		});
+}
+
+/******************************************************************
+	CREATE AND ADD TO COLLECTION DIALOGS
+******************************************************************/
 
 // Open collection creation modal
 function openCreateCollectionView(story) {
@@ -901,8 +1175,14 @@ function createStoryCollection(story) {
       if (story)
         addStoryToCollection(story.id,collection.id);
     },
-    function() {alert('failed during collection creation')
+    function() {displayAlertMessage('failed during collection creation')
   })
+}
+
+function addStoryToCollection(storyId,collectionId,onFinished) {
+  stud_addStoryToStoryCollection(storyId,collectionId, function(s) {
+		if (onFinished) onFinished(s);
+	}, function() {displayAlertMessage('failed: Couldn\'t add story to collection')})
 }
 
 // close collection creation modal
@@ -918,7 +1198,7 @@ function openChooseCollectionView(story) {
   user.domainUser.storyCollections.forEach(function(sc) {
     $('<a href="#" class="list-group-item">' + sc.name + '</a>').appendTo(storyCollectionListContainer)
                                                                 .click(function() {
-                                                                  addStoryToCollection(story.id,sc.id);
+                                                                  addStoryToCollection(story.id,sc.id)
                                                                   closeChooseCollectionView();
                                                                 });
   });
@@ -928,6 +1208,25 @@ function openChooseCollectionView(story) {
                                                   closeChooseCollectionView();
                                                 });
   $('#choose-story-collection-modal').modal('show');
+}
+
+function buildChooseCollectionDropdownList(story) {
+  var storyCollectionListContainer = $('<div class="list-group choose-story-collection-dropdown-list"/>');
+	$('<p>Add story to a collection</p>').appendTo(storyCollectionListContainer);
+  user.domainUser.storyCollections.forEach(function(sc) {
+    $('<a href="#" class="list-group-item">' + sc.name + '</a>').appendTo(storyCollectionListContainer)
+                                                                .click(function() {
+																																	console.log('clicked');
+                                                                  addStoryToCollection(story.id,sc.id)
+                                                                  closeChooseCollectionView();
+                                                                });
+  });
+  $('<a href="#" class="list-group-item active">+ new collection</a>').appendTo(storyCollectionListContainer)
+                                                .click(function() {
+                                                  openCreateCollectionView(story);
+                                                  closeChooseCollectionView();
+                                                });
+	return storyCollectionListContainer;
 }
 
 function closeChooseCollectionView() {
@@ -968,59 +1267,12 @@ function lookForUser() {
 	});
 }
 
-//--- initiateMap method ---//
-function initiateStoryMap() {
-	var mapOptions = {
-		zoom : 2,
-		streetViewControl: true,
-		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-    scaleControl : true,
-		zoomControl : true,
-		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
-		mapTypeControl : true,
-		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
-		center : defaultLocation
-	}
-
-	storymap = new google.maps.Map(document.getElementById('story-map-canvas'),mapOptions);
-
-  if (storyLocationMarker) {
-    storyLocationMarker.setMap(storymap);
-    storymap.setCenter(storyLocationMarker.getPosition());
-  }
-
-	//--- Map Event Handlers ---//
-	var listener = google.maps.event.addListener(storymap, 'tilesloaded', function() {
-		//google.maps.event.addListener(storymap, 'dragend', mapCenterChanged);
-		//google.maps.event.addListener(storymap, 'zoom_changed', mapCenterChanged);
-		google.maps.event.removeListener(listener);
-	});
-
-	//updateFocusedLocationName();
-
-  //-- SearchBox --//
-  var input = document.getElementById('story-map-location-input');
-  var searchBox = new google.maps.places.SearchBox(input);
-  //storymap.controls[google.maps.ControlPosition.TOP_LEFT].push(input);
-  //Bias the SearchBox results towards current map's viewport.
-  searchBox.setBounds(storymap.getBounds());
-  storymap.addListener('bounds_changed', function() {
-    searchBox.setBounds(storymap.getBounds());
-  });
-  searchBox.addListener('places_changed', function() {
-    var places = searchBox.getPlaces();
-    if (places.length == 0)
-      return;
-    storymap.setCenter(places[0].geometry.location);
-    storymap.setZoom(8);
-  });
-}
+/******************************************************************
+	MAP
+******************************************************************/
 
 //--- initiateMap method ---//
 function initiateMap() {
-
-  defaultLocation = new google.maps.LatLng(37, -20);
 
   markerIcon = {
     url: "/assets/images/marker_icon.png",
@@ -1031,158 +1283,587 @@ function initiateMap() {
 	var mapOptions = {
 		zoom : 2,
     scrollwheel: false,
-		streetViewControl: true,
+		streetViewControl: false,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-    scaleControl : true,
-		zoomControl : true,
-		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
-		mapTypeControl : true,
+    scaleControl : false,
+		zoomControl : false,
+		zoomControlOptions : {style: google.maps.ZoomControlStyle.SMALL, position: google.maps.ControlPosition.RIGHT_CENTER},
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
+		mapTypeControl : false,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.RIGHT_BOTTOM},
 		center : defaultLocation
 	}
 
-	map = new google.maps.Map(document.getElementById('collection-map-canvas'),mapOptions);
-
-  //--- Marker Cluster ---//
-  var styles = [{
-        url: '',
-        height: 36,
-        width: 36,
-        anchor: [0, 0],
-        textColor: '#fff',
-        textSize: 11
-      }, {
-        url: '',
-        height: 36,
-        width: 36,
-        anchor: [0, 0],
-        textColor: '#fff',
-        textSize: 13
-      }, {
-        url: '',
-        height: 65,
-        width: 65,
-        anchor: [0, 0],
-        textColor: '#fff',
-        textSize: 16
-      }];
-  var mcOptions = {gridSize: 30, maxZoom: 19, styles: styles};
-  markercluster = new MarkerClusterer(map, [], mcOptions);
+	map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
 
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-		// google.maps.event.addListener(map, 'dragend', drawLayout);
+		google.maps.event.addListener(map, 'dragstart', function() {$('#map-region').removeClass('selected') });
 		// google.maps.event.addListener(map, 'zoom_changed', drawLayout);
-    google.maps.event.addListener(map, 'click', clearHighlightedStoryFromMapView);
+		google.maps.event.addListener(map, 'mousemove', function(cursor) {updateSoftArrow(cursor)});
 		google.maps.event.removeListener(listener);
 	});
 
-	//updateFocusedLocationName();
 
   //-- SearchBox --//
-  var input = document.getElementById('collection-location-input');
-  var searchBox = new google.maps.places.SearchBox(input);
-  map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
+  var input = document.getElementById('search-input');
+  searchBox = new google.maps.places.SearchBox(input);
+  // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
   //Bias the SearchBox results towards current map's viewport.
   searchBox.setBounds(map.getBounds());
   map.addListener('bounds_changed', function() {
     searchBox.setBounds(map.getBounds());
   });
   searchBox.addListener('places_changed', function() {
-    var places = searchBox.getPlaces();
-    if (places.length == 0)
-      return;
-    map.setCenter(places[0].geometry.location);
-    map.setZoom(8);
+    searchBoxGetPlaces();
   });
 }
 
-function showStoryMap() {
-  $('#open-story-view .story-container-body').hide();
-  $('#open-story-view .story-set-location-view-container').show();
-  initiateStoryMap();
+function searchBoxGetPlaces() {
+	var places = searchBox.getPlaces();
+	if (!places || places.length == 0) {
+		displayAlertMessage('No places found!')
+		return;
+	}
+	if (places[0].geometry.viewport.R) {
+		var bounds = {
+			north:places[0].geometry.viewport.R.R,
+			east:places[0].geometry.viewport.j.R,
+			south:places[0].geometry.viewport.R.j,
+			west:places[0].geometry.viewport.j.j
+		}
+		fitMapBoundsOnLayout(bounds);
+	} else {
+		map.setZoom(8);
+		centerMapOnLayout(places[0].geometry.location,map);
+	}
 }
 
-function hideStoryMap() {
-  $('#open-story-view .story-set-location-view-container').hide();
-  $('#open-story-view .story-container-body').show();
-}
-
-function selectStoryLocation() {
-  locationName = $('#open-story-view #story-map-location-input').val();
-  storylocation = {
-    latitude:storymap.getCenter().lat(),
-    longitude:storymap.getCenter().lng()
+function setStoryLocation() {
+  locationName = $('.location.editable').val();
+	
+	var bounds = map.getBounds(),
+	north = bounds.getNorthEast().lat(),
+	east = bounds.getNorthEast().lng(),
+	south = bounds.getSouthWest().lat(),
+	west = bounds.getSouthWest().lng(),
+	zoom = map.getZoom(),
+	longitude = east - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom),
+	latitude = (north + south)/2;
+	storylocation = {
+		name: locationName,
+    latitude:latitude,
+    longitude:longitude,
+		zoom: zoom
   }
-  if (storyLocationMarker)
-    storyLocationMarker.setMap(null);
-  storyLocationMarker = new google.maps.Marker({
-    position : storymap.getCenter(),
-    map : storymap,
-    draggable : false
-  });
-  $('#open-story-view .location').text(locationName);
+	if (locationSetMode=='pinpoint') {
+		storylocation.showpin = true;
+		storylocation.radius = 0;
+		var position = new google.maps.LatLng(latitude,longitude);
+		if (storyLocationMarker)
+	    storyLocationMarker.setPosition(position,position,true);
+		else if (editingstory && collectionStoriesMarkerList.get(editingstory.id))
+			collectionStoriesMarkerList.get(editingstory.id).setPosition(position,position,true);
+		else
+	  	storyLocationMarker = drawMarkerOnMap(position);
+	} else if (locationSetMode=='region') {
+		storylocation.showpin = false;
+		storylocation.radius = $('#map-region').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom);
+		if (storyLocationMarker)
+	    storyLocationMarker.setMap(null);
+		$('#map-region').addClass('selected');
+		// storyLocationMarker = drawRegionOnMap(storylocation);
+	}
 }
 
-//--- fitStoryOnView ---//
-function fitStoryOnView(markers,map) {
+function swithStoryLocationSelectionMode() {
+	modes = ['pinpoint','region'];
+	if(locationSetMode!='pinpoint') {
+		locationSetMode='pinpoint';
+		$('#switch-story-location-mode span').addClass('flaticon-location-2').removeClass('flaticon-location-1');
+		$('#map-sight').show();
+		$('#map-region').hide();
+	} else {
+		locationSetMode='region';
+		$('#switch-story-location-mode span').addClass('flaticon-location-1').removeClass('flaticon-location-2');
+		$('#map-sight').hide();
+		$('#map-region, #map-region *').show();
+	}
+}
+
+function centerMapOnLayout(position,map) {
+	var bounds = map.getBounds(),
+	north = bounds.getNorthEast().lat(),
+	east = bounds.getNorthEast().lng(),
+	south = bounds.getSouthWest().lat(),
+	west = bounds.getSouthWest().lng(),
+	zoom = map.getZoom();
+	longitude = position.lng() - ( (east - west)/2 - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom) ),
+	latitude = position.lat(),
+	center = new google.maps.LatLng(latitude,longitude);
+  map.setCenter(center);
+	return center;
+}
+
+function fitMapBoundsOnLayout(bounds) {
+	var north = bounds.north,
+	east = bounds.east,
+	south = bounds.south,
+	west = bounds.west;
+	var width_coord = 1.3*(east - west),
+	height_coord = 1.3*(north - south),
+	width_pix = $('#map-viewport').innerWidth(),
+	height_pix = $('#map-viewport').innerHeight();
+	if (height_pix/width_pix < height_coord/width_coord)
+		zoom = Math.floor(-1/0.693*Math.log(height_coord/(1.404595*height_pix)));
+	else
+		zoom = Math.floor(-1/0.693*Math.log(width_coord/(1.404595*width_pix)));
+	zoom = (zoom >= 2) ? zoom : 2;
+	var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
+	center = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - (width_pix)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+	// var marker = new google.maps.Marker({
+	// 	position : new google.maps.LatLng(0.5*(north+south), 0.5*(west+east)),
+	// 	map : map,
+	// 	draggable : false
+	// });
+	map.setZoom(zoom);
+	map.panTo(center);
+}
+
+
+function getMapCenterOnLayout(map) {
+	var bounds = map.getBounds(),
+	north = bounds.getNorthEast().lat(),
+	east = bounds.getNorthEast().lng(),
+	south = bounds.getSouthWest().lat(),
+	west = bounds.getSouthWest().lng(),
+	zoom = map.getZoom();
+	longitude = east - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom),
+	latitude = (north + south)/2,
+	center = new google.maps.LatLng(latitude,longitude);
+  map.setCenter(center);
+	return center;
+}
+
+function zoomInMap() {
+	var center = getMapCenterOnLayout(map),
+	zoom = map.getZoom()
+	if (zoom <= 20)
+		map.setZoom(zoom+1)
+	centerMapOnLayout(center,map);
+}
+
+function zoomOutMap() {
+	var center = getMapCenterOnLayout(map),
+	zoom = map.getZoom()
+	if (zoom > 3)
+		map.setZoom(zoom-1)
+	centerMapOnLayout(center,map);
+}
+
+//--- fitCollectionOnView ---//
+function fitCollectionOnView(markers,map) {
 	//if (!story) return;
-	var bound = new google.maps.LatLngBounds();
+	var bounds = new google.maps.LatLngBounds();
 	if (markers.length == 0) {
 		return;
 	}
 	else if (markers.length == 1) {
 		if (map)
-			map.setOptions({
-				center: markers[0].getPosition(),
-				zoom : 16
-			});
+			var sets = fitStoryOnView(markers[0].story,map)
+		collectionZoom = sets.zoom;
+		collectionCenter = sets.center;
 	} else {
 		for (var i = 0; i < markers.length; i++) {
-				bound.extend( markers[i].getPosition() );
+			if (markers[i].story.location != null)
+				bounds.extend( markers[i].getPosition() );
 		}
-		if (map) map.fitBounds(bound);
+		var north = bounds.getNorthEast().lat(),
+		east = bounds.getNorthEast().lng(),
+		south = bounds.getSouthWest().lat(),
+		west = bounds.getSouthWest().lng();
+		var width_coord = 1.3*(east - west),
+		height_coord = 1.3*(north - south),
+		width_pix = $('#map-viewport').innerWidth(),
+		height_pix = $('#map-canvas').innerHeight();
+		if (height_pix/width_pix < height_coord/width_coord)
+			zoom = Math.floor(-1/0.693*Math.log(height_coord/(1.404595*height_pix)));
+		else
+			zoom = Math.floor(-1/0.693*Math.log(width_coord/(1.404595*width_pix)));
+		collectionZoom = (zoom >= 2) ? zoom : 2;
+		var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
+		collectionCenter = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - ($('#map-canvas').innerWidth()-storiesGridListContainerWidth)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+		// var marker = new google.maps.Marker({
+		// 	position : new google.maps.LatLng(0.5*(north+south), 0.5*(west+east)),
+		// 	map : map,
+		// 	draggable : false
+		// });
+		map.setZoom(collectionZoom);
+		map.panTo(collectionCenter);
 	}
 }
 
-//--- loadUserStories method ---//
-function loadCollectionStories(collectionId,onFinished) {
-  if (!user) {
-    stud_readPublicCollectionStories(collectionId,function(s) {
-      collectionStories = sortStoriesWithDate(s);
-      if (onFinished)
-        onFinished();
-    });
-  } else {
-    stud_readCollectionStories(collectionId,function(s) {
-      collectionStories = sortStoriesWithDate(s);
-      if (onFinished)
-        onFinished();
-    });
+//--- fitStoryOnView ---//
+function fitStoryOnView(story,map) {
+	if (story.location != null) {
+		var zoom = story.location.zoom,
+		width_pix = $('#map-viewport').innerWidth(),
+		delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
+		center = new google.maps.LatLng(story.location.latitude, story.location.longitude - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+		map.setZoom(zoom);
+		map.panTo(center);
+		return {zoom:zoom, center:center}
+	}
+}
+
+//--- drawPublishedStoryMarkersOnMap method ---//
+function drawCollectionMarkersOnMap(stories,icon) {
+	if (stories.length == 0) return;
+  markerList  = new Hashtable();
+
+  var st_;
+	for ( var i = 0; i < stories.length; i++) {
+		st_ = stories[i];
+		if (st_.location.showpin) {
+			//custom marker
+			var markerDiv = $('<div class="marker-div animated-marker"></div>'),
+			position = new google.maps.LatLng(st_.location.latitude, st_.location.longitude, true),
+			offset = new Object({x:0, y:0 }),
+			marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
+			marker.story = st_;
+			marker.addListener('click', function() {
+        if (connectStoriesEnabled) {
+					clickedOnStory(this.story);
+				} else {
+					drawStoryLargeLayout(this.story);
+				}
+      });
+			marker.addListener('mouseenter',function() {
+				$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
+			});
+			marker.addListener('mouseleave',function() {
+				$('#story-' + this.story.id + '.story-container.sm-container').removeClass('highlighted');
+			});
+			markerList.put(st_.id,marker);
+		}
+	//fitStoryOnView(storyMarkerList);
+	}
+  return markerList;
+}
+
+function drawMarkerOnMap(position,story) {
+	var markerDiv = $('<div class="marker-div animated-marker"></div>'),
+	offset = new Object({x:0, y:0 }),
+	marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
+	marker.story = story;
+	marker.addListener('click', function() {
+    if (connectStoriesEnabled) {
+			clickedOnStory(this.story);
+		} else {
+			drawStoryLargeLayout(this.story);
+		}
+  });
+	marker.addListener('mouseenter',function() {
+		$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
+	});
+	marker.addListener('mouseleave',function() {
+		$('#story-' + this.story.id + '.story-container.sm-container').removeClass('highlighted');
+	});
+  return marker;
+}
+
+function drawAllConectionLines(storypathsList,stories) {
+	var lineList  = new Hashtable();
+	for (var i in storypathsList) {
+		var storiesinpath = storypathsList[i].path,
+		color = colors[i % colors.length];
+		storypathsList[i].color = color;
+		for (var j = 0; j < storiesinpath.length - 1; j++) {
+			var connection = drawConnectingline(getStoryById(storiesinpath[j],stories),getStoryById(storiesinpath[j+1],stories),lineList,color);
+		}
+	}
+	return lineList;
+}
+
+/******************************************************************
+	CREATE AND EDIT STORY
+******************************************************************/
+
+//--- createStory method ---//
+function createStory() {
+
+	if (!user) {
+    displayAlertMessage('Failed to post. User not logged in.')
+    return;
+  }
+  if (storylocation == null) {
+    displayAlertMessage('Failed to post. You must select a location.')
+    return;
+  }
+
+  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
+
+	story = newStoryObj(map);
+	//set new story title
+	story.setTitle("story_" + user.domainUser.numberId + "_" + new Date().getTime());
+	//set location
+	story.setLocation(storylocation);
+	story.setLocationName(storylocation.name);
+	//set summary
+	story.setSummary(getStoryText($('.lg-container .story-summary')));
+  //setArticle
+  if (article) {
+		story.setArticle(article.title,
+						article.description,
+						article.imageUrl,
+						webUrl,
+            article.date,
+            article.source,
+            article.author)
+	}
+	if (collection.published == 0)
+		story.setPublished(false);
+	else
+		story.setPublished(true);
+  //save story on server
+	stud_createStoryOnCollection(collection.id,story.domainStory,function(st){
+		//upload story pics
+		if (saveimagefile) {
+			uploadStoryImage(st.id,function(thumbnail) {
+				st.thumbnail = thumbnail;
+        postingFinished(st);
+			},
+      function() {
+        postingError();
+			});
+		} else {
+			//publish
+      postingFinished(st);
+		}
+	},
+  function() {
+    postingError();
+  });
+}
+
+function editStory() {
+
+	if (!user) {
+    displayAlertMessage('Failed to post. User not logged in.')
+    return;
+  }
+  if (storylocation == null) {
+    displayAlertMessage('Failed to post. You must select a location.')
+    return;
+  }
+
+  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
+
+  var story_ = newStoryObj(map);
+	//set new story title
+	story_.setTitle(editingstory.title);
+	//set location
+	story_.setLocation(storylocation);
+  story_.setLocationName(storylocation.name);
+	//set summary
+	story_.setSummary(getStoryText($('.lg-container .story-summary')));
+  //setArticle
+  if (article) {
+		story_.setArticle(article.title,
+						article.description,
+						article.imageUrl,
+						article.url,
+            article.date,
+            article.source,
+            article.author)
+	} else if (!article && editingstory.articleLink ) {
+    story_.setArticle("","","","","","","");
+  }
+
+  //save story on server
+	stud_createStoryOnCollection(collection.id,story_.domainStory,function(st){
+		//upload story pics
+		var storyId = st.id;
+		if (saveimagefile) {
+			uploadStoryImage(storyId,function(thumbnail) {
+				st.thumbnail = thumbnail;
+        editFinished(st);
+			});
+		} else if (hasImageToDelete(st)) {
+      deleteStoryImage(storyId, function(thumbnail) {
+				st.thumbnail = thumbnail;
+				editFinished(st);
+      })
+		} else {
+      editFinished(st);
+    }
+	},
+  function() {
+    postingError();
+  });
+}
+
+function editFinished(story) {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
+  updateStoryFromCollectionList(story);
+	updateCollectionPaths();
+  //if position changes the marker must be repositioned
+  // updateMarkerPosition(story);
+  drawLayout(collectionStories);
+	closeStoryView();
+}
+
+function postingFinished(story) {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
+	$('#collection-stat-stories #value').html(++collection.noStories);
+	collectionStories.push(story);
+	if (story.location.showpin) {
+		var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
+		marker = drawMarkerOnMap(position,story)
+		collectionStoriesMarkerList.put(story.id,marker)
+	}
+	updateCollectionPaths();
+  drawLayout(collectionStories);
+	closeStoryView();
+}
+
+function postingError() {
+  $('#story-publish-button').text('Post').removeAttr('disabled');
+  displayAlertMessage('Posting Failed. Error while posting the story.')
+}
+
+/******************************************************************
+	SETTERS, GETTERS AND UPDATES
+******************************************************************/
+
+function updateStoryFromCollectionList(story) {
+  for (var i in collectionStories) {
+    if (collectionStories[i].id == story.id) {
+      collectionStories[i] = story;
+    }
   }
 }
 
-function sortStoriesWithDate(stories) {
+function updateCollectionPaths() {
+	collectionStoryConnectionsList.values().forEach(function(connection) {
+		connection.setMap(null);
+	});
+	collectionStoryConnectionsList.clear();
+	collectionStoryPathsList = sortCollectionStoryPaths(collectionStories);
+	collectionStoryConnectionsList = drawAllConectionLines(collectionStoryPathsList,collectionStories);
+}
+
+function updateMarkerPosition(story) {
+	if (story.location == null) return;
+	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
+	marker = collectionStoriesMarkerList.get(story.id).setPosition(position,position,true)
+  collectionStoriesMarkerList.get(story.id).story = story;
+}
+
+function setLayoutDimensions(stories) {
+	var storiesListContainer = $("#story-grid-layout");
+
+  // Set layout
+  var columnWidth = 200,
+  columnMargin = 14,
+  availableWidth = $('#map-canvas').innerWidth(),
+  requestedWidth = columnWidth + columnMargin;
+	noColumns = Math.floor(0.65*availableWidth/requestedWidth);
+	if (!stories || stories.length == 0)
+		noColumns = 0
+	else if (stories.length < 5 && noColumns > 1)
+		noColumns = 1
+	else if (stories.length < 10 && noColumns > 2)
+		noColumns = 2
+	else if (stories.length < 20 && noColumns > 3)
+		noColumns = 3
+	else if (stories.length < 30 && noColumns > 4)
+		noColumns = 4
+
+	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + 14;
+	storiesListContainer.innerWidth(storiesGridListContainerWidth);
+	$('#map-viewport').innerWidth(contentwidth - storiesGridListContainerWidth);
+}
+
+function updateLayoutDimensions() {
+	contentheight = $(window).innerHeight() - $('nav.navbar').height();
+	contentwidth = $('#content-wrapper').innerWidth();
+	$('#content-wrapper').css({ height: contentheight });
+
+	//----------------
+	storyContainersWrapperHeight = contentheight - $('#story-containers-wrapper').css('margin-top').replace("px", "");
+	storyContainersWrapperWidth = contentwidth - $('#story-containers-wrapper').css('margin-left').replace("px", "");
+
+	$('#story-containers-wrapper').css({
+		height: storyContainersWrapperHeight,
+		width: storyContainersWrapperWidth
+	});
+	//Map Sight
+	$('#map-viewport').css({height: contentheight});
+
+	setLayoutDimensions(collectionStories);
+}
+
+function sortStoriesByDate(stories) {
   if (!stories || stories.length==0)
-		return stories;
-  var stories_ = stories;
-  var sortedList = [];
-	sortedList.push(stories_[0])
-	stories_.splice(0, 1);
-  stories_.forEach(function(st) {
-    date_st = parseInt(st.id,10);
-    for (var i in sortedList) {
-      date_sorted = parseInt(sortedList[i].id,10);
-      if (date_st > date_sorted) {
-        sortedList.splice(i,0,st)
-        break;
-			} else if( i == sortedList.length-1) {
-				sortedList.push(st)
-      }
-    }
-  });
-  return sortedList;
+		return;
+	var storyIdList = [],
+	sortedList = [],
+	storypathsList = [];
+	for (var i in stories) {
+		storyIdList.push(stories[i].id);
+	}
+
+	for (var i in stories) {
+		if (stories[i].previousStoryId <= 0 && stories[i].nextStoryId > 0) {
+			var storypath = [stories[i].id],
+			nextStoryId = stories[i].nextStoryId;
+			while (nextStoryId > 0) {
+				storypath.push(nextStoryId);
+				storyIdList.splice(storyIdList.indexOf(nextStoryId),1);
+				nextStoryId = getStoryById(nextStoryId,stories).nextStoryId;
+			}
+			storypathsList.push(storypath);
+		}
+	}
+
+	// Descending order
+	storyIdList.sort(function(id1,id2){return id2-id1});
+
+	for (var i in storypathsList) {
+		var initialstoryId = storypathsList[i][0],
+		index = storyIdList.indexOf(initialstoryId);
+		for ( var j = 1; j < storypathsList[i].length; j++) {
+			storyIdList.splice(++index,0,storypathsList[i][j]);
+		}
+	}
+
+	for (var i in storyIdList) {
+		sortedList.push(getStoryById(storyIdList[i],stories));
+	}
+
+	collectionStories = sortedList;
+	return sortedList;
+}
+
+function sortCollectionStoryPaths(stories) {
+	if (!stories || stories.length==0)
+		return [];
+	var storypathsList = [];
+	for (var i in stories) {
+		if (stories[i].previousStoryId <= 0 && stories[i].nextStoryId > 0) {
+			var path = [stories[i].id],
+			nextStoryId = stories[i].nextStoryId;
+			while (nextStoryId > 0) {
+				path.push(nextStoryId);
+				nextStoryId = getStoryById(nextStoryId,stories).nextStoryId;
+			}
+			var storypath = new Object();
+			storypath.path = path;
+			storypathsList.push(storypath);
+		}
+	}
+	return storypathsList;
 }
 
 function getStoriesWithinMapBounds(stories) {
@@ -1199,18 +1880,41 @@ function getStoriesWithinMapBounds(stories) {
   return storyList;
 }
 
-function formatArticleSource(art) {
-  var s = art.source;
-  if (!s)
-    s = getHostFromUrl(art.url);
-  if (s.split('.')[0] == 'www')
-    return s.replace('www.','')
-  else
-    return s;
+function getStoryById(storyId,list) {
+	for (var i in list) {
+    if (list[i].id == storyId)
+      return list[i];
+  }
+}
+
+function getPathOfStory(story) {
+	for (var i in collectionStoryPathsList) {
+		if (collectionStoryPathsList[i].path.indexOf(story.id) > -1)
+			return collectionStoryPathsList[i];
+	}
+	return false;
+}
+
+function getNextStoryFromCollectionStoriesList(id) {
+	var story = getStoryById(id,collectionStories),
+  index = collectionStories.indexOf(story);
+  if (index > -1 && index < collectionStories.length)
+		return collectionStories[index+1]
+	else
+		return false;
+}
+
+function getPreviousStoryFromCollectionStoriesList(id) {
+	var story = getStoryById(id,collectionStories),
+  index = collectionStories.indexOf(story);
+  if (index > 0)
+		return collectionStories[index-1]
+	else
+		return false;
 }
 
 function storyBelongsToCurrentUser(story) {
-  if (user && user.domainUser.id == story.author.id)
+  if (user && user.domainUser.numberId == story.author.numberId)
     return true;
   else
     return false;
@@ -1220,9 +1924,31 @@ function collectionBelongsToCurrentUser() {
   if (!user)
     return false;
   for (var i in collection.authors) {
-    if (collection.authors[i].id == user.domainUser.id)
+    if (collection.authors[i].numberId == user.domainUser.numberId)
       return true;
   }
+	return false;
+}
+
+function removeMarkerFromStoryInList(story,list) {
+  var marker = list.get(story.id);
+  marker.setMap(null);
+	delete marker;
+  list.remove(story.id);
+}
+
+function removeConnectionsFromStoryInList(story,list) {
+  var connection = list.get(story.id) || list.get(story.previousStoryId);
+	if (!connection) return;
+	if (story.nextStoryId > 0) {
+		getStoryById(story.nextStoryId,collectionStories).previousStoryId = -1;
+	}
+	if (story.previousStoryId > 0) {
+		getStoryById(story.previousStoryId,collectionStories).nextStoryId = -1;
+	}
+	connection.setMap(null);
+	delete connection;
+	list.remove(story.id);
 }
 
 function removeStoryFromCollectionStoriesList(story) {
@@ -1231,57 +1957,29 @@ function removeStoryFromCollectionStoriesList(story) {
     collectionStories.splice(index,1);
   }
   //remove marker
-  removeMarkerForStoryInList(story,collectionStoriesMarkerList);
+  removeMarkerFromStoryInList(story,collectionStoriesMarkerList);
+	removeConnectionsFromStoryInList(story,collectionStoryConnectionsList)
+	updateCollectionPaths();
+	drawLayout(collectionStories);
+	delete story;
 }
 
-//--- drawPublishedStoryMarkersOnMap method ---//
-function drawCollectionMarkersOnMap(stories,icon) {
-  markerList  = new Hashtable();
-
-  var st_;
-	for ( var i = 0; i < stories.length; i++) {
-		st_ = stories[i];
-		if (st_.location != null) {
-			var marker = new google.maps.Marker({
-				position : new google.maps.LatLng(st_.location.latitude, st_.location.longitude, true),
-				icon: icon,
-				map : map,
-				draggable : false,
-        story: st_
-			});
-      //add to marker cluster
-      markercluster.addMarker(marker);
-			marker.addListener('click', function() {
-        // map.setZoom(14);
-        map.setCenter(new google.maps.LatLng(this.story.location.latitude, this.story.location.longitude, true) )
-        drawStoryItemOnMapView(this.story);
-      });
-			markerList.put(st_.id,marker);
-		}
-	//fitStoryOnView(storyMarkerList);
-	}
-  return markerList;
-}
-
-function removeMarkerForStoryInList(story,list) {
-  var marker = list.get(story.id);
-  markercluster.removeMarker(marker);
-  marker.setMap(null);
-  list.remove(story.id);
-}
-
-function updateMarkerPosition(story) {
-  var marker = collectionStoriesMarkerList.get(story.id);
-  marker.setPosition(new google.maps.LatLng(story.location.latitude, story.location.longitude, true));
-  marker.story = story;
-}
-
-function addStoryToCollection(storyId,collectionId) {
-  stud_addStoryToStoryCollection(storyId,collectionId, function() {}, function() {alert('failed: Couldn\'t add story to collection')})
-}
+/******************************************************************
+	HELPERS
+******************************************************************/
 
 function getHostFromUrl(url) {
 	return url.split("//")[1].split("/")[0];
+}
+
+function formatArticleSource(art) {
+  var s = art.source;
+  if (!s)
+    s = getHostFromUrl(art.url);
+  if (s.split('.')[0] == 'www')
+    return s.replace('www.','')
+  else
+    return s;
 }
 
 function loadStoryTextBehaviours(element) {
@@ -1345,92 +2043,6 @@ function getStoryText(element) {
                     // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
-function editStory() {
-  hideStoryMap();
-
-	if (!user) {
-    alert('Failed to post. User not logged in.')
-    return;
-  }
-  if ($('#open-story-view #story-map-location-input').val() == "" || storylocation == null) {
-    alert('Failed to post. You must select a location.')
-    return;
-  }
-
-  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
-
-  var story_ = newStoryObj(map);
-	//set new story title
-	story_.setTitle(editingstory.title);
-	story_.setLocation(storylocation.latitude,storylocation.longitude);
-  //set location name
-  story_.setLocationName(locationName);
-	story_.setSummary(getStoryText($('#open-story-view #story-text')));
-  //setArticle
-  if (article) {
-		story_.setArticle(article.title,
-						article.description,
-						article.imageUrl,
-						article.url,
-            article.date,
-            article.source,
-            article.author)
-	} else if (!article && editingstory.articleLink ) {
-    story_.setArticle("","","","","","","");
-  }
-
-  //save story on server
-	stud_createStory(story_.domainStory,function(st){
-		//upload story pics
-		var storyId = st.id;
-		if (saveimagefile) {
-			uploadStoryImage(storyId,function(thumbnail) {
-				st.thumbnail = thumbnail;
-        editFinished(st);
-			});
-		} else if (hasImageToDelete(st)) {
-      deleteStoryImage(storyId, function(thumbnail) {
-				st.thumbnail = thumbnail;
-				editFinished(st);
-      })
-		} else {
-      editFinished(st);
-    }
-	},
-  function() {
-    postingError();
-  });
-}
-
-function editFinished(story) {
-  $('#story-publish-button').text('Post').removeAttr('disabled');
-  closeStoryView();
-  updateStoryFromCollectionList(story)
-  //if position changes the marker must be repositioned
-  updateMarkerPosition(story);
-  drawLayout();
-}
-
-function updateStoryFromCollectionList(story) {
-  for (var i in collectionStories) {
-    if (collectionStories[i].id == story.id) {
-      collectionStories[i] = story;
-    }
-  }
-}
-
-function postingError() {
-  $('#story-publish-button').text('Post').removeAttr('disabled');
-  alert('Posting Failed. Error while posting the story.')
-}
-
-function hasImageToDelete(st) {
-  var imagesrc = $('#open-story-view #story-image').attr('src');
-  if (imagesrc == "" && (st.thumbnail != "" && st.thumbnail))
-    return true;
-  return false;
-}
-
 function getUrlFromText(text) {
 	var regex = ""
 	if (text.indexOf("http://") > -1)
@@ -1448,7 +2060,10 @@ function getUrlFromText(text) {
 		regex = "http://www."
 
 	return regex + url
+}
 
+function getHostFromUrl(url) {
+	return url.split("//")[1].split("/")[0];
 }
 
 function grabWebsiteMetadata(webUrl) {
@@ -1484,13 +2099,40 @@ function grabWebsiteMetadataReady() {
   isgrabWebsiteMetadataBusy = false;
 }
 
-function getHostFromUrl(url) {
-	return url.split("//")[1].split("/")[0];
+function hasImageToDelete(st) {
+  var imagesrc = $('.lg-container .story-image').attr('src');
+  if (imagesrc == "" && (st.thumbnail != "" && st.thumbnail))
+    return true;
+  return false;
 }
+
+function displayAlertMessage(msg,container,delay) {
+	$('.alert-message').remove();
+	if (!container) {
+		var container = $('#content-wrapper');
+	}
+	if (!delay) {
+		var delay = 2000;
+	}
+
+	if (!container.css('position'))
+		container.css('position','relative')
+
+	var alertMessageContainer = $('<div class="alert-message"><p>' + msg + '</p></div>').appendTo(container);
+	$('.alert-message').animate({opacity: 1}, 500,"easeOutQuart", function() {
+		setTimeout(function () {
+			$('.alert-message').animate({opacity: 0}, 500,"easeOutQuart");
+		}, delay);
+	});
+}
+
+/******************************************************************
+	SERVER LINKS STUDS
+******************************************************************/
 
 function uploadStoryImage(storyId,onFinished) {
 	url = '/story/'+storyId+'/uploadimage';
-	var uploadImageForm = new FormData($('#open-story-view #image-upload-form')[0]);
+	var uploadImageForm = new FormData($('.lg-container #image-upload-form')[0]);
 	$.ajax( {
 	  url: url,
 	  type: 'POST',
@@ -1598,6 +2240,16 @@ function stud_createStoryCollection(name, success, error){
 	});
 }
 
+function stud_publishCollection(collectionId, publish, success, error){
+	$.ajax({
+		url: "/collection/" + collectionId + "/publish/" + publish,
+		type: "PUT",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
 function stud_updateStoryCollection(collection, success, error){
 	$.ajax({
 		url: "/collection/" + collection.id,
@@ -1690,4 +2342,50 @@ function fetchInstagramEmbedIframe(link,onFinished) {
 	  dataType: "json",
 	  success: onFinished
 	} );
+}
+
+function stud_connectStories(collectionId,st1Id,st2Id,success) {
+	$.ajax( {
+		url: "/collection/" + collectionId + "/connect/" + st1Id + "," + st2Id,
+		type: 'PUT',
+		success: success
+	});
+}
+
+function stud_disconnectStories(collectionId,st1Id,st2Id,success) {
+	$.ajax( {
+		url: "/collection/" + collectionId + "/disconnect/" + st1Id + "," + st2Id,
+		type: 'PUT',
+		success: success
+	});
+}
+
+function stud_createStoryOnCollection(collectionId, story, success, error){
+	$.ajax({
+		url: "/collection/" + collectionId + "/create",
+		type: "POST",
+		dataType: "json",
+		data: JSON.stringify(story),
+		contentType:"application/json",
+		success: success,
+		error: error,
+	});
+}
+
+function stud_followCollection(collectionId,unfollow,success) {
+	$.ajax( {
+		url: "/follow/collection/" + collectionId + "," + unfollow,
+		type: 'PUT',
+		dataType: "json",
+		success: success
+	});
+}
+
+function stud_followUser(numberId,unfollow,success) {
+	$.ajax( {
+		url: "/follow/user/" + numberId + "," + unfollow,
+		type: 'PUT',
+		dataType: "json",
+		success: success
+	});
 }

@@ -8,6 +8,8 @@ import play.mvc.Result;
 import models.User;
 import models.Story;
 import models.StoryCollection;
+import models.HighlightedItem;
+import models.exceptions.ModelAlreadyExistsException;
 
 import com.google.gson.Gson;
 import com.typesafe.plugin.*;
@@ -17,6 +19,9 @@ import controllers.utils.FeedsFetcher;
 import securesocial.core.java.SecureSocial;
 import securesocial.core.Identity;
 import securesocial.core.java.SecureSocial.SecuredAction;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class Application extends Controller {
 
@@ -96,7 +101,7 @@ public class Application extends Controller {
 
 	public static Result openCollectionView(Long collectionId) {
 		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection,false);
 		return ok(views.html.collection.render(jsonCollection));
 	}
 
@@ -141,6 +146,40 @@ public class Application extends Controller {
 
 		System.out.println("email sent");
 
+		return ok();
+	}
+
+	@SecuredAction
+	public static Result highlightItem(Long itemId, Integer type) throws ModelAlreadyExistsException {
+		HighlightedItem.create(itemId,type);
+		return ok();
+	}
+
+	public static Result getHighlightedItems() {
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		List<HighlightedItem> hitems = HighlightedItem.findAll();
+		for (HighlightedItem item : hitems) {
+			controllers.json.Story jsonStory;
+			if (item.getType() == 0) {
+				Story story = Story.findById(item.getItemId());
+				jsonStory = controllers.json.Story.getStory(story, false);
+			} else {
+				StoryCollection collection = StoryCollection.findCollectionById(item.getItemId());
+				jsonStory = controllers.json.Story.getCollectionAsStory(collection);
+			}
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecuredAction
+	public static Result correctRadius() {
+		List<models.Location> locations = models.Location.findAll();
+		for (models.Location l : locations) {
+			l.setRadius(0.0);
+			l.save();
+		}
 		return ok();
 	}
 }

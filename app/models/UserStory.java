@@ -117,6 +117,11 @@ public class UserStory extends Model {
 		return userStories;
 	}
 
+	public static List<UserStory> findByStoryId(Long storyId) {
+		List<UserStory> userStories = finder.where().eq("story_id", storyId).findList();
+		return userStories;
+	}
+
 	public static List<Long> findStoryIdsByUser(String userId){
 		List<Long> storyIds = new ArrayList<Long>();
 		for (UserStory userStory : UserStory.findByUserId(userId)) {

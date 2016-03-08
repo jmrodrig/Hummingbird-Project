@@ -8,6 +8,9 @@ import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
 
+import java.util.List;
+import java.util.ArrayList;
+
 import play.db.ebean.Model;
 
 import models.utils.DBConstants;
@@ -34,6 +37,15 @@ public class Location extends Model {
 
 	@Column(name = "radius")
 	private Double radius;
+
+	@Column(name = "zoom")
+	private Integer zoom;
+
+	@Column(name = "showpin")
+	private Boolean showpin;
+
+	@Column(name = "name")
+	private String name;
 
 	@OneToOne(fetch = FetchType.LAZY, mappedBy = "location")
 	private Story story;
@@ -66,6 +78,18 @@ public class Location extends Model {
 		return id;
 	}
 
+	public String getName() {
+		return name;
+	}
+
+	public Integer getZoom() {
+		return zoom;
+	}
+
+	public Boolean isShowPin() {
+		return showpin;
+	}
+
 	public Story getStory() {
 		return story;
 	}
@@ -74,10 +98,21 @@ public class Location extends Model {
 		this.story = story;
 	}
 
+	public Boolean isWithinBounds(Double w, Double n, Double e, Double s) {
+		if (this.latitude + this.radius > n || this.latitude - this.radius < s)
+			return false;
+		if (this.longitude + this.radius > e || this.longitude - this.radius < w)
+			return false;
+		return true;
+	}
+
 	public Location(controllers.json.Location location) {
+		this.name = location.name;
 		this.latitude = location.latitude;
 		this.longitude = location.longitude;
-		this.radius =  (location.radius == null) ? 5.0 : location.radius;
+		this.radius = location.radius;
+		this.zoom = location.zoom;
+		this.showpin = location.showpin;
 		this.save(DBConstants.lir_backoffice);
 	}
 
@@ -86,4 +121,38 @@ public class Location extends Model {
 		this.longitude = location.getLongitude();
 		this.radius = location.getRadius();
 	}
+
+	public Location() {
+		this.name = null;
+		this.latitude = null;
+		this.longitude = null;
+		this.radius = null;
+		this.zoom = null;
+		this.showpin = false;
+	}
+
+	private static Finder<Long, Location> finder = new Finder<Long, Location>(Long.class, Location.class);
+
+	public static List<Location> findLocationsWithinBounds(Double w, Double n, Double e, Double s) {
+		List<Location> locations = finder.where().gt("latitude", s)
+																							.lt("latitude", n)
+																							.gt("longitude", w)
+																							.lt("longitude", e)
+																							.findList();
+		// Correct with the radius
+		List<Location> trueLocations = new ArrayList<Location>();
+		for (Location location : locations) {
+			if (location.isWithinBounds(w,n,e,s))
+				trueLocations.add(location);
+		}
+		return trueLocations;
+	}
+
+	public static List<Location> findAll() {
+		List<Location> locations = finder.where().gt("radius", 4.9)
+																							.lt("radius", 5.1)
+																							.findList();
+		return locations;
+	}
+
 }

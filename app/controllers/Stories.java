@@ -7,6 +7,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Date;
+import java.util.Collections;
 
 
 
@@ -45,15 +46,55 @@ public class Stories extends Controller {
 	 * @return
 	 */
 
-	@SecureSocial.SecuredAction
+	@SecureSocial.UserAwareAction
 	public static Result listPublishedStories(){
-		List<models.Story> stories = models.Story.findAllByPublished(true);
+		List<models.Story> stories = models.Story.findAllByPublished();
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		User currentUser = getCurrentUser();
+		System.out.println(currentUser);
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecureSocial.UserAwareAction
+	public static Result listPublishedStoriesWithinBounds(Double w, Double n, Double e, Double s){
+		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s);
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
+		}
+
+		Collections.sort(result);
+		Collections.sort(result, controllers.json.Story.StoryLikesComparator);
+		if (result.size() > 26)
+			result = result.subList(0,25);
+
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecureSocial.UserAwareAction
+	public static Result listPublishedStoriesWithinBoundsFromFollowingUsers(Double w, Double n, Double e, Double s){
+		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s);
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		User currentUser = getCurrentUser();
+		List<User> followingUsers = currentUser.getFollowingUsers();
+		followingUsers.add(currentUser);
+
+		for (models.Story story : stories) {
+			for (models.User user : followingUsers) {
+				if (story.storyIsOwnedByUser(user)) {
+					controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+					result.add(jsonStory);
+				}
+			}
 		}
 		String json = new Gson().toJson(result);
 		return ok(json);
@@ -125,24 +166,21 @@ public class Stories extends Controller {
 			jsonStory.title = "Untitled Story";
 		}
 
-		controllers.json.Location location =  jsonStory.location;
-
-		System.out.println(location);
-
 		User user = getCurrentUser();
 		Story domainStory = new Story();
 		domainStory.setTitle(jsonStory.title);
 		if (jsonStory.summary != null){
 			domainStory.setSummary(jsonStory.summary);
 		}
-		String path = models.Story.saveDomainStory(domainStory);
+		// String path = models.Story.saveDomainStory(domainStory);
 
 		models.Story story = models.Story.create(user,
-											domainStory.getTitle(),
-											domainStory.getSummary(),
+											jsonStory.title,
+											jsonStory.summary,
 											jsonStory.content,
 											0.0,
-											path,
+											jsonStory.published,
+											null,
 											jsonStory.locationName,
 											jsonStory.articleTitle,
 											jsonStory.articleDescription,
@@ -152,9 +190,9 @@ public class Stories extends Controller {
 											jsonStory.articleSource,
 											jsonStory.articleAuthor,
 											jsonStory.articleLanguage,
-											location);
+											jsonStory.location);
 
-		story.setDomainStory(domainStory);
+		// story.setDomainStory(domainStory);
 
 		jsonStory = controllers.json.Story.getStory(story, user, true);
 		String json = new Gson().toJson(jsonStory);
@@ -247,7 +285,7 @@ public class Stories extends Controller {
 				story.setThumbnail(jsonStory.thumbnail);
 				story.setLocationName(jsonStory.locationName);
 
-				story.saveDomainStory();
+				// story.saveDomainStory();
 
 
 				jsonStory = controllers.json.Story.getStory(story, true);
@@ -278,52 +316,6 @@ public class Stories extends Controller {
 
 		String publicPath = file.getAbsolutePath().contains("\\") ? "\\private\\uploads" : "/private/uploads";
 		return redirect("/uploads" + StringUtils.removeRemovePreString(file.getAbsolutePath(), Play.current().path().getAbsolutePath() + publicPath));
-	}
-
-	// @SecureSocial.SecuredAction
-	// public static Result saveStory(Long storyId) throws ModelAlreadyExistsException, IOException{
-	// 	User user = getCurrentUser();
-	// 	models.Story story = models.Story.findById(storyId);
-	// 	//TODO: Garantir que a historia é do user
-	//
-	// 	if (story == null) {
-	// 		return badRequest("Invalid story id");
-	// 	}
-	// 	story.saveDomainStory();
-	// 	return ok("Story saved");
-	// }
-
-	@SecureSocial.SecuredAction
-	public static Result uploadStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
-
-		User user = getCurrentUser();
-		MultipartFormData body = request().body().asMultipartFormData();
-		FilePart storyFilePart = body.getFile("storyFile");
-		if (storyFilePart != null) {
-			File storyFile = storyFilePart.getFile();
-
-			Story domainStory = models.Story.loadDomainStory(storyFile);
-
-			models.Story story = models.Story.findByUserAndTitle(user, domainStory.getTitle());
-			if (story == null){
-				story = models.Story.create(user,
-											domainStory.getTitle(),
-											domainStory.getSummary(),
-											"", 0.0, "", "",
-											"","","","","","","","",
-											null);
-			}
-
-			story.setDomainStory(domainStory);
-			story.saveDomainStory();
-
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			String json = new Gson().toJson(jsonStory);
-			return ok(json);
-		} else {
-			flash("error", "Missing file");
-			return redirect(routes.Application.index());
-		}
 	}
 
 	private static User getCurrentUser() {
@@ -542,6 +534,7 @@ public class Stories extends Controller {
 
 		JsonObject json = new JsonObject();
 
+		json.addProperty("storyId", storyId);
     json.addProperty("currentUserSavedStory", currentUserSavedStory);
     json.addProperty("noOfSaves", noOfSaves);
 
@@ -559,7 +552,7 @@ public class Stories extends Controller {
 		} else {
 			collection = StoryCollection.create(currentUser,collectionName);
 		}
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
 	}
@@ -574,13 +567,13 @@ public class Stories extends Controller {
 		collection.setDescription(jsonCollection.description);
 		collection.save(DBConstants.lir_backoffice);
 
-		jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection);
+		jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
 	}
 
 	@SecureSocial.SecuredAction
-	public static Result addStoryToCollection(Long collectionId, Long storyId) throws IOException {
+	public static Result addStoryToCollection(Long collectionId, Long storyId) throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		//TODO: only allow owner and a selected group of users, with premission of the owner, to add and remove stories
 		User currentUser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
@@ -588,30 +581,65 @@ public class Stories extends Controller {
 		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
 		storyCollection.addStoryToCollection(story);
 
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
 	}
 
 	@SecureSocial.SecuredAction
-	public static Result removeStoryToCollection(Long collectionId, Long storyId) throws IOException {
+	public static Result removeStoryFromCollection(Long collectionId, Long storyId) throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		//TODO: only allow owner and a selected group of users, with premission of the owner, to add and remove stories
 		User currentUser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
-
 		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+
+		// Remove connections
+		Long nextStoryId = storyCollection.getNextStoryId(storyId);
+		Long previousStoryId = storyCollection.getPreviousStoryId(storyId);
+		if (nextStoryId > 0)
+			storyCollection.setPreviousStoryId(nextStoryId,null);
+		if (previousStoryId > 0)
+			storyCollection.setNextStoryId(previousStoryId,null);
+
+		// Remove story from collection
 		storyCollection.removeStoryFromCollection(story);
 
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
 	}
 
+	@SecureSocial.UserAwareAction
 	public static Result readCollection(Long collectionId) throws IOException {
+		User currentUser = getCurrentUser();
 		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection);
+		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection,false);
+		if (currentUser != null && storyCollection.userFollowsCollection(currentUser))
+			jsonCollection.currentUserFollows = true;
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result publishCollection(Long collectionId, Integer publish) throws IOException {
+		User currentUser = getCurrentUser();
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		if (!storyCollection.userOwnsCollection(currentUser)) return badRequest("Permission denied");
+
+		storyCollection.setPublished(publish);
+
+		List<models.Story> collectionstories = storyCollection.getStories();
+		Boolean publishStory = false;
+		if (publish == 0) publishStory = false;
+		else if (publish == 1) publishStory = true;
+		for (models.Story story : collectionstories) {
+			if(storyCollection.collectionUsersOwnStory(story)) {
+				story.setPublished(publishStory);
+				story.save();
+			}
+		}
+
+		return ok();
 	}
 
 	@SecureSocial.SecuredAction
@@ -623,6 +651,8 @@ public class Stories extends Controller {
 
 		for (models.Story story : collectionstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			jsonStory.nextStoryId = storyCollection.getNextStoryId(story.getId());
+			jsonStory.previousStoryId = storyCollection.getPreviousStoryId(story.getId());
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -636,9 +666,8 @@ public class Stories extends Controller {
 
 		for (models.Story story : collectionstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			// jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
-			// jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
-			// jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
+			jsonStory.nextStoryId = storyCollection.getNextStoryId(story.getId());
+			jsonStory.previousStoryId = storyCollection.getPreviousStoryId(story.getId());
 			result.add(jsonStory);
 		}
 		String json = new Gson().toJson(result);
@@ -654,4 +683,66 @@ public class Stories extends Controller {
 		return ok();
 	}
 
+	@SecureSocial.SecuredAction
+	public static Result connectStories(Long collectionId, Long story1, Long story2) throws IOException, ModelNotFountException {
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		storyCollection.setNextStoryId(story1,story2);
+		storyCollection.setPreviousStoryId(story2,story1);
+		return ok();
+	}
+
+	@SecureSocial.SecuredAction
+	public static Result disconnectStories(Long collectionId, Long story1, Long story2) throws IOException, ModelNotFountException {
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		storyCollection.setNextStoryId(story1,null);
+		storyCollection.setPreviousStoryId(story2,null);
+		return ok();
+	}
+
+
+	@SecureSocial.SecuredAction
+	public static Result createStoryOnCollection(Long collectionId) throws IOException, ModelNotFountException, ModelAlreadyExistsException {
+		User user = getCurrentUser();
+		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
+		controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
+		if (jsonStory.title == null || jsonStory.title.length() == 0){
+			jsonStory.title = "Untitled Story";
+		}
+
+		Story domainStory = new Story();
+		domainStory.setTitle(jsonStory.title);
+		if (jsonStory.summary != null){
+			domainStory.setSummary(jsonStory.summary);
+		}
+		// String path = models.Story.saveDomainStory(domainStory);
+
+		models.Story story = models.Story.create(user,
+											jsonStory.title,
+											jsonStory.summary,
+											jsonStory.content,
+											0.0,
+											jsonStory.published,
+											null,
+											jsonStory.locationName,
+											jsonStory.articleTitle,
+											jsonStory.articleDescription,
+											jsonStory.articleImage,
+											jsonStory.articleLink,
+											jsonStory.articleDate,
+											jsonStory.articleSource,
+											jsonStory.articleAuthor,
+											jsonStory.articleLanguage,
+											jsonStory.location);
+		// story.setDomainStory(domainStory);
+
+		//Add to collection
+		storyCollection.addStoryToCollection(story);
+
+		//Response
+		jsonStory = controllers.json.Story.getStory(story, user, true);
+		jsonStory.nextStoryId = storyCollection.getNextStoryId(story.getId());
+		jsonStory.previousStoryId = storyCollection.getPreviousStoryId(story.getId());
+		String json = new Gson().toJson(jsonStory);
+		return ok(json);
+	}
 }

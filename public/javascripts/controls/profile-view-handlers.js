@@ -1174,6 +1174,7 @@ function createStory() {
   //set location name
   story.setLocationName(locationName);
 	story.setSummary(getStoryText($('#create-edit-open-story-view #story-text')));
+  story.setPublished(true);
   //setArticle
   if (article) {
 		story.setArticle(article.title,
@@ -1190,21 +1191,13 @@ function createStory() {
 		//upload story pics
 		if (saveimagefile) {
 			uploadStoryImage(st.id,function() {
-				stud_publishStory(st.id,1,function(pubsStory) {
-          postingFinished(pubsStory);
-        },
-        function() {
-          postingError();
-        });
-			});
-		} else {
-			//publish
-      stud_publishStory(st.id,1,function(pubsStory) {
         postingFinished(pubsStory);
       },
       function() {
         postingError();
-      });
+			});
+		} else {
+      postingFinished(pubsStory);
 		}
 	},
   function() {

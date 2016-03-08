@@ -28,6 +28,9 @@ GET     /user/:numberId             controllers.Users.getUserProfile(numberId: L
 PUT     /user/update                controllers.Users.updateUserProfile()
 POST    /user/uploadimage           controllers.Users.uploadUserImage()
 GET     /user/search/:email         controllers.Users.findUsersByEmail(email: String)
+PUT     /follow/collection/:collectionId,:unfollow         controllers.Users.followCollection(collectionId: Long, unfollow: Boolean)
+PUT     /follow/user/:numberId,:unfollow         controllers.Users.followUser(numberId: Long, unfollow: Boolean)
+
 
 
 #Utils
@@ -41,12 +44,15 @@ GET			/validateInvite/:invitationCode				controllers.Application.validInvite(inv
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
-
+GET    /highlight/:itemId,:type     controllers.Application.highlightItem(itemId: Long,type: Integer)
+GET    /correctradius                 controllers.Application.correctRadius()
+GET    /highlighted                 controllers.Application.getHighlightedItems()
 
 
 #Stories
 
 GET		/publishedstories											controllers.Stories.listPublishedStories()
+GET		/storiesin/:w,:n,:e,:s				controllers.Stories.listPublishedStoriesWithinBounds(w: Double, n: Double, e: Double, s: Double)
 GET		/listuserstories														controllers.Stories.listCurrentUserStories()
 GET		/listusersavedstories														controllers.Stories.listCurrentUserSavedStories()
 GET		/listuserstories/:numberId														controllers.Stories.listUserStories(numberId: Long)
@@ -59,7 +65,6 @@ GET		/story/:storyId/download									controllers.Stories.downloadStory(storyId:
 POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(storyId: Long)
 POST	/story/:storyId/uploadimage									controllers.Stories.uploadImage(storyId: Long)
 POST	/story/:storyId/publish/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
-POST	/story/upload												controllers.Stories.uploadStory()
 POST	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
 POST	/story/:storyId/save												controllers.Stories.saveStory(storyId: Long)
 DELETE /story/:storyId/deleteimage                controllers.Stories.deleteImage(storyId: Long)
@@ -68,14 +73,16 @@ DELETE /story/:storyId/deleteimage                controllers.Stories.deleteImag
 POST	/collection/:name												controllers.Stories.createStoryCollection(name: String)
 PUT	  /collection/:collectionId												controllers.Stories.updateStoryCollection(collectionId: Long)
 POST	/collection/:collectionId/story/:storyId												controllers.Stories.addStoryToCollection(collectionId: Long, storyId: Long)
-PUT	  /collection/:collectionId/story/:storyId												controllers.Stories.removeStoryToCollection(collectionId: Long, storyId: Long)
+PUT	  /collection/:collectionId/story/:storyId												controllers.Stories.removeStoryFromCollection(collectionId: Long, storyId: Long)
 GET	  /collection/stories/:collectionId											controllers.Stories.readCollectionStories(collectionId: Long)
 GET	  /public/collection/stories/:collectionId											controllers.Stories.readPublicCollectionStories(collectionId: Long)
 GET	  /collection/details/:collectionId											controllers.Stories.readCollection(collectionId: Long)
 POST	/collection/:collectionId/uploadimage									controllers.Stories.uploadCollectionImage(collectionId: Long)
 PUT	/collection/:collectionId/adduser/:numberId									controllers.Stories.addUserToCollection(collectionId: Long, numberId: Long)
-
-
+PUT /collection/:collectionId/connect/:story1Id,:story2Id       controllers.Stories.connectStories(collectionId: Long, story1Id: Long, story2Id: Long)
+PUT /collection/:collectionId/disconnect/:story1Id,:story2Id       controllers.Stories.disconnectStories(collectionId: Long, story1Id: Long, story2Id: Long)
+POST /collection/:collectionId/create                               controllers.Stories.createStoryOnCollection(collectionId: Long)
+PUT /collection/:collectionId/publish/:publish                               controllers.Stories.publishCollection(collectionId: Long, publish: Integer)
 
 
 

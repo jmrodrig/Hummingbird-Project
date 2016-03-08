@@ -40,7 +40,12 @@
 					<p>Editing mode:</p>
 					<div id="toggle-editing-mode-btn-group" class="btn-group">
 						<button id="editing-mode-on-btn" class="btn btn-default btn-xs" onclick="enableEditingMode()">On</button>
-						<button id="editing-mode-off-btn" class="btn active btn-default btn-primary btn-xs" onclick="disableEditingMode()">Off</button>
+						<button id="editing-mode-off-btn" class="btn active btn-default btn-danger btn-xs" onclick="disableEditingMode()">Off</button>
+					</div>
+					<p>Story status:</p>
+					<div id="toggle-publish-status-btn-group" class="btn-group">
+						<button id="private-status-btn" class="btn btn-default btn-xs" onclick="unPublishCollection()">private</button>
+						<button id="public-status-btn" class="btn active btn-default btn-danger btn-xs" onclick="publishCollection()">public</button>
 					</div>
 				</div>
 			</div>
@@ -59,106 +64,82 @@
 				</div>
 			</div>
 			<div>
-				<button id="follow-collection-btn" class="btn btn-default btn-lg">Follow</button>
+				<button id="follow-collection-btn" class="btn btn-default btn-lg" onclick="followCollection()">Follow</button>
+				<!-- <button id="show-stories-btn" class="btn btn-default" onclick="showStoriesAndMap()">Stories >></button> -->
 			</div>
 		</div>
 	</div>
 
-	<!----------------------->
-	<!--  Collection Map   -->
-	<!----------------------->
+	<!-------------------------------->
+	<!--  Collection Map & Stories  -->
+	<!-------------------------------->
 
-	<div id="collection-map-container" >
-		<input id="collection-location-input" class="controls" type="text" placeholder="Search Box">
-		<div id="collection-map-cover-left"></div>
-		<div id="collection-map-canvas"></div>
-		<div id="collection-map-cover-right"></div>
-	</div>
+	<div id="collection-map-and-stories-container">
 
-	<!------------------------>
-	<!--  Location Banner   -->
-	<!------------------------>
-	<!-- <div id="profile-location-banner">
-		<input id="profile-location-input" class="controls" type="text" placeholder="Search Box">
-	</div> -->
+		<!----------------------->
+		<!--  Collection Map   -->
+		<!----------------------->
 
-
-	<!--------------------------->
-	<!--  Collection Stories   -->
-	<!--------------------------->
-
-	<div id="stories-container" class="animate-transition">
-		<div id="change-stories-view-btn-group" class="btn-group">
-			<button id="stories-list-view-btn" class="btn active btn-default">List</button>
-			<button id="stories-map-view-btn" class="btn btn-default">Map</button>
-		</div>
-		<div id="stories-list-view" >
-			<div id="stories-list-view-left-container" ></div>
-			<div id="stories-list" ></div>
-			<div id="no-stories-message">
-				<p>There are no stories for this collection.</p>
+		<div id="collection-map-container" >
+			<div id="map-canvas"></div>
+			<div id="map-viewport">
+				<div id="map-sight"></div>
+				<div id="map-region"></div>
 			</div>
 		</div>
+
+		<!------------------------------->
+		<!--  Collection Map Details   -->
+		<!------------------------------->
+
+		<div id="collection-map-details-container">
+			<div id="collection-thumbnail-container">
+				<span class="glyph-icon icon-no-margins icon-20px flaticon-nature">
+			</div>
+			<p id="collection-details-name"></p>
+		</div>
+
+		<!----------------------------->
+		<!--  Search & Controls Bar  -->
+		<!----------------------------->
+
+		<div id="search-and-controls-bar">
+			<div class="input-group">
+				<input id="search-input" class="form-control" placeholder="Search for a place...">
+				<div class="input-group-btn">
+					<!-- <button id="search-btn" type="button" class="btn btn-success" onclick="searchBoxGetPlaces()"><span class="glyph icon-no-margins icon-15px flaticon-search"></button> -->
+					<button id="zoom-in" type="button" class="btn btn-default" onclick="zoomInMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom in"><span class="glyph icon-no-margins icon-15px flaticon-circle"></button>
+					<button id="zoom-out" type="button" class="btn btn-default" onclick="zoomOutMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom out"><span class="glyph icon-no-margins icon-15px flaticon-circle-1"></button>
+				</div>
+			</div>
+			<button id="create-story" type="button" class="btn btn-default" onclick="openCreateStoryView()" data-toggle="tooltip" data-placement="left" title="Create a new story."><span class="glyph icon-no-margins icon-15px flaticon-draw"></button>
+			<button id="connect-stories" type="button" class="btn btn-default" onclick="startConnectingStories()" data-toggle="tooltip" data-placement="left" title="Create a path, connecting stories."><span class="glyph icon-no-margins icon-15px flaticon-road-1"></button>
+		</div>
+
+		<!--------------->
+		<!--  Stories  -->
+		<!--------------->
+
+		<div id="story-containers-wrapper">
+			<div id="story-grid-layout"></div>
+			<div id="story-large-layout">
+				<div id="story-large-layout-controllers">
+					<div class="lg-arrow-left"></div>
+					<div class="lg-arrow-right"></div>
+				</div>
+				<div id="story-large-layout-container"></div>
+			</div>
+
+		</div>
+
 	</div>
+
 </section>
 
-<!------------------------------------->
-<!--  Create/Edit/Open Story view   -->
-<!------------------------------------->
 
-<div id="open-story-view" class="modal fade">
-	<div class="modal-dialog">
-		<div id="create-story-container" class="modal-content">
-			<div class="story-container-header">
-				<div class="author-container">
-					<div id="user-thumbnail" class='story-author-thumbnail'></div>
-					<a id="story-username" class='story-author-name'></a>
-				</div>
-				<div class="location-container pull-right" onclick="showStoryMap()"/>
-					<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-facebook30"></div>
-					<a class="location">Select location</a>
-				</div>
-			</div>
-			<div class="story-container-body">
-				<div id="story-text" class="editable empty" contenteditable="true" placeholder="write your story" ></div>
-				<div id="story-image-container">
-					<button id="remove-story-image" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-					<img id="story-image">
-				</div>
-				<div id="story-insert-article">
-					<input id="article-link" placeholder="article link">
-					<button id="close-article-link" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-				</div>
-			</div>
-			<div class='story-set-location-view-container'>
-				<a id="return-story-edit" onclick="hideStoryMap()">< go back</a>
-				<input id="story-map-location-input" class="controls" type="text" placeholder="Search Box">
-				<div class='story-map-container'>
-					<div id="story-map-canvas"></div>
-					<div id="story-map-sight">
-						<div id="story-map-sight-dot"></div>
-					</div>
-				</div>
-				<button id="set-location-btn" type="button" class="btn btn-default btn-block" onclick="selectStoryLocation()">Select story location</button>
-			</div>
-			<div id="create-story-options" class="story-container-footer">
-				<a id="story-cancel-create-button" class="btn" onclick="closeStoryView()">cancel</a>
-				<a id="story-add-link-button" class="btn" >add link</a>
-				<a id="story-add-picture-button" class="btn">add image
-					<form enctype="multipart/form-data" id="image-upload-form">
-						<input id="f" name="profileImg[]" type="file" />
-					</form>
-				</a>
-				<a id="story-publish-button" class="btn btn-primary ga-event-map-publish" onclick="editStory()">Post</a>
-				<a id="close-story-view" class="btn" onclick="closeStoryView()">Close</a>
-			</div>
-		</div>
-	</div>
-</div>
-
-<!------------------------------------->
-<!--  Story Collections  -->
-<!------------------------------------->
+<!-------------------------------------------------->
+<!--  Create Collections /Add Stories/Add Users   -->
+<!-------------------------------------------------->
 
 <!-- Create Story Collections modal -->
 <div id="create-story-collection-modal" class="modal fade">

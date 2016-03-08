@@ -11,17 +11,26 @@ public class StoryCollection {
 	public Integer noStories;
 	public Integer noFollowers;
 	public String imageUrl;
+	public Integer published;
+	public Boolean currentUserFollows;
 	public List<User> authors;
 	public List<User> followers;
 
-	public static StoryCollection getStoryCollection(models.StoryCollection storyCollection) {
+	public static StoryCollection getStoryCollection(models.StoryCollection storyCollection,Boolean getsimple) {
 		StoryCollection sc = new StoryCollection();
+		if (getsimple) {
+			sc.id = storyCollection.getId();
+			sc.name = storyCollection.getName();
+			sc.imageUrl = storyCollection.getImageUrl();
+			return sc;
+		} 
 		sc.id = storyCollection.getId();
 		sc.name = storyCollection.getName();
 		sc.description = storyCollection.getDescription();
 		sc.imageUrl = storyCollection.getImageUrl();
+		sc.published = storyCollection.getPublished();
 		sc.noStories = storyCollection.getStories().size();
-		sc.noFollowers = 0;
+		sc.noFollowers = storyCollection.getFollowers().size();
 		sc.authors = getUsers(storyCollection);
 		return sc;
 	}

@@ -130,15 +130,35 @@ function newStoryObj(map){
 		return this.domainStory.published;
 	}
 
+	nStory.setPublished = function(published){
+		this.domainStory.published = published;
+	}
+
 	nStory.getLocation = function(){
 		return this.domainStory.location;
 	}
 
-	nStory.setLocation = function(lat,lng){
+	nStory.setLocation = function(location){
+		this.domainStory.place = null;
 		if (this.domainStory.location == null)
 			this.domainStory.location = new Object();
-		this.setLat(lat);
-		this.setLng(lng);
+		this.domainStory.location.name = location.name;
+		this.domainStory.location.latitude = location.latitude;
+		this.domainStory.location.longitude = location.longitude;
+		this.domainStory.location.radius = location.radius;
+		this.domainStory.location.zoom = location.zoom;
+		this.domainStory.location.showpin = location.showpin;
+	}
+
+	nStory.setPlace = function(place){
+		this.domainStory.location = null;
+		if (this.domainStory.place == null)
+			this.domainStory.place = new Object();
+		this.domainStory.place.name = location.name;
+		this.domainStory.place.selat = location.selat;
+		this.domainStory.place.nwlat = location.nwlat;
+		this.domainStory.place.nwlng = location.nwlng;
+		this.domainStory.place.selng = location.selng;
 	}
 
 	//Latitude
