@@ -209,10 +209,19 @@ function  initializeProfileDetails() {
   $('#profile-stat-user-folllowing #value').html('0');
 
   // STORY COLLECTIONS LIST
-  var collectionList = $('#story-collections-list')
+  var collectionList = $('#story-collections-list');
   user.domainUser.storyCollections.forEach(function(collection) {
     $('<li><a href="/collection/' + collection.id + '">' + collection.name + '</a></li>').appendTo(collectionList);
   });
+  collectionList = $('#following-collections-list');
+  if (user.domainUser.userFollowingCollections.length > 0) {
+    $('#follow').show();
+    user.domainUser.userFollowingCollections.forEach(function(collection) {
+      $('<li><a href="/collection/' + collection.id + '">' + collection.name + '</a></li>').appendTo(collectionList);
+    });
+  } else {
+    $('#follow').hide();
+  }
 }
 
 function openProfileSettingsView() {
@@ -749,7 +758,7 @@ function initiateStoryMap() {
     scaleControl : true,
 		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		mapTypeControl : true,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
 		center : defaultLocation
@@ -800,7 +809,7 @@ function initiateMap() {
     scaleControl : true,
 		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		mapTypeControl : true,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.RIGHT_BOTTOM},
 		center : defaultLocation

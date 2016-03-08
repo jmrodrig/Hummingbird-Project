@@ -17,6 +17,7 @@ public class User {
 	public Integer noOfFollowers;
 	public Integer noOfFollowing;
 	public List<StoryCollection> storyCollections;
+	public List<StoryCollection> userFollowingCollections;
 
 
 	public static User getUser(models.User domainUser, Boolean fetchAll) {
@@ -31,6 +32,7 @@ public class User {
 		user.noOfFollowing = domainUser.getFollowingUsers().size();
 		if (fetchAll)
 			user.storyCollections = getStoryCollections(domainUser);
+			user.userFollowingCollections = getUserFollowingCollections(domainUser);
 			user.email = domainUser.getEmail();
 			user.firstName = domainUser.getFirstName();
 			user.lastName = domainUser.getLastName();
@@ -40,8 +42,16 @@ public class User {
 	public static List<StoryCollection> getStoryCollections(models.User domainUser) {
 		List<StoryCollection> storyCollectionList = new ArrayList<StoryCollection>();
 		for (models.StoryCollection sc : domainUser.getStoryCollections()) {
-			storyCollectionList.add(StoryCollection.getStoryCollection(sc,false));
+			storyCollectionList.add(StoryCollection.getStoryCollection(sc,true));
 		}
 		return storyCollectionList;
+	}
+
+	public static List<StoryCollection> getUserFollowingCollections(models.User domainUser) {
+		List<StoryCollection> list = new ArrayList<StoryCollection>();
+		for (models.StoryCollection sc : domainUser.getFollowingCollections()) {
+			list.add(StoryCollection.getStoryCollection(sc,true));
+		}
+		return list;
 	}
 }

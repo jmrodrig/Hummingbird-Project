@@ -313,7 +313,7 @@ function openCreateStoryView() {
 	var story = new Object();
 	$('.location.editable').val($('#search-input').val());
 	story.author = {fullName:user.getFullName(),avatarUrl:user.getAvatarUrl()}
-	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
+	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true,new:true});
 	$('#story-large-layout').animate({top: '100%'}, 150, "easeOutQuart", function() {
 		$('#story-large-layout-container').html(largeStoryContainer);
 		$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
@@ -359,7 +359,7 @@ function openEditStoryView(story) {
 
 function closeStoryView(options) {
 	if (!options) var options = {keephidden:false,featured:false}
-	$('#map-viewport').innerWidth(contentwidth - storiesGridListContainerWidth);
+	$('#map-viewport').innerWidth(contentwidth - $('#story-grid-layout').outerWidth());
 	$('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
 		$('#story-large-layout').removeClass('active')
 		$('#story-grid-layout').addClass('active')
@@ -605,7 +605,7 @@ function buildCollectionSmallContainer(collection,options) {
 ******************************************************************/
 
 function buildStoryLargeContainer(story,options) {
-	if (!options) var options = {featured:false,editable:false}
+	if (!options) var options = {featured:false,editable:false,new:true}
   var storyContainer = $('<div class="story-container lg-container"></div>');
 
 	if (story.id)
@@ -760,7 +760,7 @@ function buildStoryLargeContainer(story,options) {
   }
 
 	// Story Collections
-	if (story.collections.length > 0) {
+	if (!options.new && story.collections.length > 0 ) {
 		var storyCollectionsContainer = $('<div class="story-collections-container"/>').appendTo(storyContainerFooter);
 		$('<p>Story appears on collection:</p>').appendTo(storyCollectionsContainer);
 		story.collections.forEach(function(collection) {
@@ -1742,10 +1742,12 @@ function setLayoutDimensions(stories) {
 
 	if (stories.length < 5)
 		noColumns = 1
-	else if (stories.length < 15)
+	else if (stories.length < 10)
 		noColumns = 2
-	else if (stories.length >= 15)
+	else if (stories.length < 20)
 		noColumns = 3
+	else if (stories.length >= 20)
+		noColumns = 4
 
 
 	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + paddingright + paddingleft;

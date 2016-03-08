@@ -175,13 +175,22 @@ h1, h2, h3, h4, p, a {
 	margin-top: 25px;
 }
 
+#stories-list-view-left-container p {
+	font-size: 18px;
+	color: grey;
+	margin: 0;
+}
 
-#story-collections-list li {
+#stories-list-view-left-container #follow {
+	padding-top: 20px;
+}
+
+#story-collections-list li, #following-collections-list li {
 	display: block;
 	cursor: pointer;
 }
 
-#story-collections-list li a {
+#story-collections-list li a, #following-collections-list li a {
   color: black;
 }
 
@@ -192,6 +201,7 @@ h1, h2, h3, h4, p, a {
 #stories-list {
 	width: 60%;
 	margin: auto;
+	float: left;
 }
 
 .layout-column {

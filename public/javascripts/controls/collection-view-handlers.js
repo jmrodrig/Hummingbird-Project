@@ -171,6 +171,8 @@ function intializeEvents() {
 		});
 	});
 
+	setLayoutDimensions();
+
   //--- Google Analytics track event ----//
 	$(".ga-event-map-publish").click( function() {
 		ga('send','event','map', 'publish') //Google Analytics track event
@@ -300,7 +302,6 @@ function  initializeCollectionDetails() {
 ******************************************************************/
 
 function drawLayout(stories) {
-	setLayoutDimensions(stories);
   drawStoryGridLayout(stories);
 }
 
@@ -340,7 +341,7 @@ function drawStoryGridLayout(stories) {
 function drawStoryLargeLayout(story,options) {
 	var largeStoryContainer = buildStoryLargeContainer(story,options);
 	$('#story-large-layout-container').html(largeStoryContainer);
-	$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 	$('#story-large-layout-controllers').show();
 	//Zoom in on the story location
 	fitStoryOnView(story,map);
@@ -355,7 +356,7 @@ function openCreateStoryView() {
 	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
 	$('#story-large-layout').animate({top: '100%'}, 150, "easeOutQuart", function() {
 		$('#story-large-layout-container').html(largeStoryContainer);
-		$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+		$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 		$('#story-large-layout-controllers').hide();
 		$('#story-large-layout').animate({top: 0}, 150, "easeOutQuart");
 	});
@@ -378,7 +379,7 @@ function openEditStoryView(story) {
 	$('.location.editable').val(locationName);
 	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
 	$('#story-large-layout-container').html(largeStoryContainer);
-	$('#map-viewport').innerWidth(contentwidth - largeStoryContainer.width());
+	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 	//Zoom in on the story location
 	fitStoryOnView(story,map);
 	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
@@ -386,11 +387,11 @@ function openEditStoryView(story) {
 }
 
 function closeStoryView(keephidden) {
-	$('#map-viewport').innerWidth(contentwidth - storiesGridListContainerWidth);
+	$('#map-viewport').innerWidth(contentwidth - $('#story-grid-layout').outerWidth());
 	if (!keephidden) $('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart");
 	$('#story-large-layout').animate({top: '100%'}, 300, "easeOutQuart");
 	$('#story-large-layout-container').html('');
-	$('#map-viewport *').hide();
+	$('#map-viewport > *').hide();
 	$('#map-region').removeClass('selected');
 	$('#story-large-layout-controllers').hide();
 	$('.marker-div').removeClass('highlighted');
@@ -1341,7 +1342,7 @@ function searchBoxGetPlaces() {
 
 function setStoryLocation() {
   locationName = $('.location.editable').val();
-	
+
 	var bounds = map.getBounds(),
 	north = bounds.getNorthEast().lat(),
 	east = bounds.getNorthEast().lng(),
@@ -1765,24 +1766,34 @@ function setLayoutDimensions(stories) {
 
   // Set layout
   var columnWidth = 200,
+	paddingleft = 25,
+	paddingright = 14,
   columnMargin = 14,
   availableWidth = $('#map-canvas').innerWidth(),
   requestedWidth = columnWidth + columnMargin;
-	noColumns = Math.floor(0.65*availableWidth/requestedWidth);
-	if (!stories || stories.length == 0)
-		noColumns = 0
-	else if (stories.length < 5 && noColumns > 1)
+	if (!stories || stories.length==0) {
+		noColumns = 0;
+		storiesListContainer.outerWidth(0);
+		$('#map-viewport').innerWidth(contentwidth);
+		return;
+	}
+	// noColumns = Math.floor(0.65*availableWidth/requestedWidth);
+
+	if (stories.length < 5)
 		noColumns = 1
-	else if (stories.length < 10 && noColumns > 2)
+	else if (stories.length < 10)
 		noColumns = 2
-	else if (stories.length < 20 && noColumns > 3)
+	else if (stories.length < 20)
 		noColumns = 3
-	else if (stories.length < 30 && noColumns > 4)
+	else if (stories.length >= 20)
 		noColumns = 4
 
-	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + 14;
-	storiesListContainer.innerWidth(storiesGridListContainerWidth);
-	$('#map-viewport').innerWidth(contentwidth - storiesGridListContainerWidth);
+
+	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + paddingright + paddingleft;
+	storiesListContainer.outerWidth(storiesGridListContainerWidth);
+
+	$('#map-viewport').innerWidth(contentwidth-storiesGridListContainerWidth);
+
 }
 
 function updateLayoutDimensions() {

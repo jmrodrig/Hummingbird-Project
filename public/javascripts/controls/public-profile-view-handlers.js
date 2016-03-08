@@ -628,7 +628,7 @@ function initiateStoryMap() {
     scaleControl : true,
 		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		mapTypeControl : true,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
 		center : defaultLocation
@@ -679,7 +679,7 @@ function initiateMap() {
     scaleControl : true,
 		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.HYBRID,
+		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		mapTypeControl : true,
 		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.RIGHT_BOTTOM},
 		center : defaultLocation
