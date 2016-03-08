@@ -47,7 +47,7 @@ section {
 
 .glyph {
 	display: inline-block;
-	font-family:"Flaticon";
+	font-family:"flaticon";
 	line-height: 1;
 	margin-left:0px;
 	vertical-align:middle;
@@ -61,7 +61,7 @@ section {
 .glyph-icon {
 	padding: 10px;
 	display: inline-block;
-	font-family:"Flaticon";
+	font-family:"flaticon";
 	vertical-align:middle;
 }
 
