@@ -622,7 +622,7 @@ function buildStoryLargeContainer(story,options) {
 	//Scrollable content
 	var scrollableContent = $('<div class="scrollable-content"/>').appendTo(storyContainer).innerHeight(storyContainersWrapperHeight - 110);
   //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent).innerHeight(storyContainersWrapperHeight - 110);
+  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent).css('min-height',storyContainersWrapperHeight - 110 + 'px');
 	if (options.editable)
 		storyContainerBody.addClass('edit');
   //Story container footer

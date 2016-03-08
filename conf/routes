@@ -45,7 +45,6 @@ GET			/notify/:storyId							controllers.Application.sendNotification(storyId: L
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
 GET    /highlight/:itemId,:type     controllers.Application.highlightItem(itemId: Long,type: Integer)
-GET    /correctradius                 controllers.Application.correctRadius()
 GET    /highlighted                 controllers.Application.getHighlightedItems()
 
 
