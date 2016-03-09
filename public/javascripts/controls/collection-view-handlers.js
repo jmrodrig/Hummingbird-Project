@@ -1249,6 +1249,8 @@ function closeAddUserCollectionView() {
 function lookForUser() {
 	var email = $('#user-email-input').val();
 	stud_findUserByEmail(email, function(usr) {
+		$('#add-user-collection-modal .label').hide();
+		$('#add-user-collection-modal .list-group').empty();
 	  var authorContainer = $('<a class="author-container list-group-item"/>').appendTo($('#add-user-collection-modal .list-group'));
 		var avatarUrl = (usr.avatarUrl) ? usr.avatarUrl : defaultAvatarPic;
 	  var authorThumbnail = $("<div class='story-author-thumbnail'></div>")

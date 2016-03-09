@@ -290,15 +290,17 @@ function drawStoryLargeLayout(story,options) {
 		return;
 	}
 	isStoryViewOpen = true;
-	previousCenter = map.getCenter();
-	previousZoom = map.getZoom();
-	fitStoryOnView(story,map);
 	var largeStoryContainer = buildStoryLargeContainer(story,options);
 
 	// update layout
 	$('#story-large-layout-container').html(largeStoryContainer);
 	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 	$('#story-large-layout-controllers').show();
+
+	//fir story on map
+	previousCenter = map.getCenter();
+	previousZoom = map.getZoom();
+	fitStoryOnView(story,map);
 
 	// Show
 	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
