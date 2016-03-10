@@ -2389,7 +2389,6 @@ function stud_followCollection(collectionId,unfollow,success) {
 	$.ajax( {
 		url: "/follow/collection/" + collectionId + "," + unfollow,
 		type: 'PUT',
-		dataType: "json",
 		success: success
 	});
 }

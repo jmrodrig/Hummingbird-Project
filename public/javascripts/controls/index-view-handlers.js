@@ -23,6 +23,7 @@ var previousZoom = 2;
 var user = null;
 
 var defaultAvatarPic = "/assets/images/user-avatar.jpg"
+var defaultCollectionThumbnail = "/assets/images/collection-thumbnail.jpg"
 
 var markerIcon;
 
@@ -222,11 +223,13 @@ function intializeEvents() {
 function openStoryLayoutView() {
 	$("#content-wrapper").addClass('showing-map');
 	$('#index-heros').animate({top: '100%'}, 300,"easeOutQuart")
-	if (user) {
-		$('#search-and-controls-bar, #create-story').show().animate({opacity: 1}, 300, "easeOutQuart");
-	}	else {
-		$('#search-and-controls-bar').show().animate({opacity: 1}, 300, "easeOutQuart");
-	}
+	$('#search-and-controls-bar, #create-story').show().animate({opacity: 1}, 300, "easeOutQuart");
+	$('#create-story').click(function() {
+		if (user)
+			openCreateStoryView();
+		else
+			displayAlertMessage('You must login to create a story.')
+	});
 }
 
 function drawLayout(stories,options) {
@@ -541,6 +544,7 @@ function buildStorySmallContainer(story,options) {
 		$('<p>Story appears on collection:</p>').appendTo(storyCollectionsContainer);
 		story.collections.forEach(function(collection) {
 			var collectionItem = $('<div class="collection-item" ></div>').appendTo(storyCollectionsContainer);
+			if (!collection.imageUrl || collection.imageUrl == "") collection.imageUrl = defaultCollectionThumbnail;
 			$('<div class="collection-thumbnail"></div>').appendTo(collectionItem).css('background-image','url(' + collection.imageUrl + ')');
 			$('<a class="collection-name" href="/collection/' + collection.id + '">' + collection.name + '</a>').appendTo(collectionItem);
 		});
