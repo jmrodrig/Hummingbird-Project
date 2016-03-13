@@ -212,6 +212,9 @@ function intializeEvents() {
 
   $('[data-toggle="tooltip"]').tooltip({delay: { "show": 1500, "hide": 100 }})
 
+setTimeout(function () {
+		$('#scroll-down-indicator').animate({opacity: 0.8, bottom:20}, 800, "easeOutBounce");
+	}, 2000);
 }
 
 /******************************************************************
