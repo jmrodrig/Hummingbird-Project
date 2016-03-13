@@ -503,21 +503,23 @@ h1, h2, h3, h4, p, a {
 }
 
 #search-input {
-  height: 35px;
 }
 
 #search-and-controls-bar #create-story {
   position: absolute;
   display: none;
   right: -20px;
+  width: 45px;
+  height: 45px;
   top: 100px;
-  padding: 15px;
+  padding: 10px 10px;
   border-radius: 100%;
   position: absolute;
   border-color: #000;
   -moz-box-shadow:     2px 2px 5px 0px rgba(1,1,1,.3);
   -webkit-box-shadow:  2px 2px 5px 0px rgba(1,1,1,.3);
   box-shadow: 2px 2px 5px 0px rgba(1,1,1,.3);
+	opacity: 0;
   outline: none;
 }
 
@@ -525,15 +527,17 @@ h1, h2, h3, h4, p, a {
   position: absolute;
   display: none;
   right: -20px;
+  width: 45px;
+  height: 45px;
+  padding: 10px 10px;
   top: 170px;
-  padding: 15px;
   border-radius: 100%;
   position: absolute;
   border-color: #000;
   -moz-box-shadow:     2px 2px 5px 0px rgba(1,1,1,.3);
   -webkit-box-shadow:  2px 2px 5px 0px rgba(1,1,1,.3);
   box-shadow: 2px 2px 5px 0px rgba(1,1,1,.3);
-  outline: none;
+	opacity: 0;
 }
 
 /******************************************************************

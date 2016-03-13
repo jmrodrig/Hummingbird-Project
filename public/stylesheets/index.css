@@ -84,7 +84,6 @@ h1, h2, h3, h4, p, a {
 }
 
 #hero-1 input, #hero-5 input {
-	height: 35px;
 }
 
 #hero-1 #scroll-down-indicator {
@@ -407,15 +406,16 @@ h1, h2, h3, h4, p, a {
 }
 
 #search-input {
-  height: 35px;
 }
 
 #search-and-controls-bar #create-story {
   position: absolute;
   display: none;
   right: -20px;
+  width: 45px;
+  height: 45px;
   top: 100px;
-  padding: 15px;
+  padding: 10px 10px;
   border-radius: 100%;
   position: absolute;
   border-color: #000;
@@ -430,8 +430,10 @@ h1, h2, h3, h4, p, a {
   position: absolute;
   display: none;
   right: -20px;
+  width: 45px;
+  height: 45px;
+  padding: 10px 10px;
   top: 170px;
-  padding: 15px;
   border-radius: 100%;
   position: absolute;
   border-color: #000;
