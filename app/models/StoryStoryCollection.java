@@ -45,7 +45,7 @@ public class StoryStoryCollection extends Model {
 	@JoinColumn(name="collection_id")
 	private StoryCollection storyCollection;
 
-	@ManyToOne(fetch=FetchType.LAZY)
+	@ManyToOne(fetch=FetchType.LAZY, cascade = CascadeType.ALL)
 	@JoinColumn(name="story_id")
 	private Story story;
 

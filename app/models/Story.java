@@ -149,8 +149,6 @@ public class Story extends Model {
 	}
 
 	public String getTitle() {
-		System.out.println("story id is:");
-		System.out.println(this.getId());
 		return this.title;
 	}
 
