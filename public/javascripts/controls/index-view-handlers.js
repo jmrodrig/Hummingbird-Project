@@ -171,10 +171,8 @@ function intializeEvents() {
 	// RESIZE
 	$(window).resize(function() {
 		updateLayoutDimensions();
-    //resize of Vine's iframe
-    iframesize = $('.article-container').height();
-    $('.vines-iframe').attr("width",iframesize)
-                      .attr("height",iframesize);
+    $('.lg-container .story-container-body').css('min-height',storyContainersWrapperHeight - 110 + 'px');
+
 	});
 
 
@@ -892,6 +890,8 @@ function buildArticleContainer(art,addToContainer,options) {
     buildVimeoContainer(art.url,articleContainer,options);
   } else if (getHostFromUrl(art.url) == "www.instagram.com") {
 		buildInstagramContainer(art.url,articleContainer,options);
+	} else if (getHostFromUrl(art.url) == "www.facebook.com") {
+		buildFacebookVideoContainer(art.url,articleContainer,options);
 	} else {
     articleContainer.click(function() {window.open(art.url);});
 
@@ -1014,6 +1014,22 @@ function buildInstagramContainer(link,addToContainer,options) {
 	});
 }
 
+function buildFacebookVideoContainer(link,addToContainer,options) {
+	var VIDEO_RATIO = 16/9;
+	if (options.size == "large") addToContainer.addClass('large-view');
+	var width = addToContainer.width();
+	var height= width / VIDEO_RATIO;
+	height = (height>540) ? 540 : height;
+	width = (height>540) ? 540 * VIDEO_RATIO : width;
+	fbvideoContainer = $('<div class="fb-video" data-width="'+ width +'" data-allowfullscreen="true"></div>')
+												.appendTo(addToContainer)
+												.innerWidth(width)
+								 				.innerHeight(height)
+												.attr('data-href', link )
+								 				.show();
+	window.fbAsyncInit();
+}
+
 /******************************************************************
 	CREATE AND ADD TO COLLECTION DIALOGS
 ******************************************************************/
@@ -1053,7 +1069,7 @@ function closeCreateCollectionView() {
 
 function openChooseCollectionView(story) {
   $('#choose-story-collection-modal .modal-body').empty();
-  var storyCollectionListContainer = $('<div class="list-group"/>').appendTo($('#choose-story-collection-modal .modal-body'));
+  var storyCollectionListContainer = $('<div class="list-group ga-event-index-addcollection"/>').appendTo($('#choose-story-collection-modal .modal-body'));
   user.domainUser.storyCollections.forEach(function(sc) {
     $('<a href="#" class="list-group-item">' + sc.name + '</a>').appendTo(storyCollectionListContainer)
                                                                 .click(function() {
@@ -1061,7 +1077,7 @@ function openChooseCollectionView(story) {
                                                                   closeChooseCollectionView();
                                                                 });
   });
-  $('<a href="#" class="list-group-item active">+ new collection</a>').appendTo(storyCollectionListContainer)
+  $('<a href="#" class="list-group-item active ga-event-index-addcollection">+ new collection</a>').appendTo(storyCollectionListContainer)
                                                 .click(function() {
                                                   openCreateCollectionView(story);
                                                   closeChooseCollectionView();

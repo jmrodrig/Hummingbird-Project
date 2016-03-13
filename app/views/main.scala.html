@@ -152,44 +152,7 @@
 			});
 		</script>-->
 
-		<!-- FACEBOOK -->
-		<script>
-		  window.fbAsyncInit = function() {
-			FB.init({
-			  appId      : '1494692634127358',
-			  xfbml      : true,
-			  version    : 'v2.2'
-			});
-		  };
 
-		  (function(d, s, id){
-			 var js, fjs = d.getElementsByTagName(s)[0];
-			 if (d.getElementById(id)) {return;}
-			 js = d.createElement(s); js.id = id;
-			 js.src = "//connect.facebook.net/en_US/sdk.js";
-			 fjs.parentNode.insertBefore(js, fjs);
-		   }(document, 'script', 'facebook-jssdk'));
-		</script>
-
-		<!-- TWITTER -->
-		<script>
-		  $('.twitter-share').click(function(event) {
-			var width  = 575,
-				height = 400,
-				left   = ($(window).width()  - width)  / 2,
-				top    = ($(window).height() - height) / 2,
-				url    = this.href,
-				opts   = 'status=1' +
-						 ',width='  + width  +
-						 ',height=' + height +
-						 ',top='    + top    +
-						 ',left='   + left;
-
-			window.open(url, 'twitter', opts);
-
-			return false;
-		  });
-		</script>
 
 		<!-- MAP STYLE -->
 		<!-- <script>
@@ -310,6 +273,46 @@
 
     </head>
     <body>
+
+    <!-- FACEBOOK -->
+    <script>
+    window.fbAsyncInit = function() {
+      FB.init({
+        appId      : '1494692634127358',
+        xfbml      : true,
+        version    : 'v2.5'
+      });
+    };
+
+  (function(d, s, id){
+     var js, fjs = d.getElementsByTagName(s)[0];
+     if (d.getElementById(id)) {return;}
+     js = d.createElement(s); js.id = id;
+     js.src = "//connect.facebook.net/en_US/sdk.js";
+     fjs.parentNode.insertBefore(js, fjs);
+   }(document, 'script', 'facebook-jssdk'));
+</script>
+
+		<!-- TWITTER -->
+		<script>
+		  $('.twitter-share').click(function(event) {
+			var width  = 575,
+				height = 400,
+				left   = ($(window).width()  - width)  / 2,
+				top    = ($(window).height() - height) / 2,
+				url    = this.href,
+				opts   = 'status=1' +
+						 ',width='  + width  +
+						 ',height=' + height +
+						 ',top='    + top    +
+						 ',left='   + left;
+
+			window.open(url, 'twitter', opts);
+
+			return false;
+		  });
+		</script>
+
 		<!---------------->
 		<!--   NavBar   -->
 		<!---------------->
@@ -389,36 +392,36 @@
 		ga('send','event','navbar', 'library'); //Google Analytics track event
 	});
 
-	//map
+	//collection
 
-	$(".ga-event-map-publish").click( function() {
-		ga('send','event','map', 'publish') //Google Analytics track event
+	$(".ga-event-collection-publish").click( function() {
+		ga('send','event','collection', 'publish') //Google Analytics track event
 	});
 
-	$(".ga-event-map-unpublish").click( function() {
-		ga('send','event','map', 'unpublish') //Google Analytics track event
+	$(".ga-event-collection-addcollection").click( function() {
+		ga('send','event','collection', 'addcollection') //Google Analytics track event
 	});
 
-	$(".ga-event-map-createstory").click( function() {
-		ga('send','event','map', 'createstory') //Google Analytics track event
+	$(".ga-event-collection-createstory").click( function() {
+		ga('send','event','collection', 'createstory') //Google Analytics track event
 	});
 
-	$(".ga-event-map-addpost").click( function() {
-		ga('send','event','map', 'addpost') //Google Analytics track event
+	$(".ga-event-collection-connect").click( function() {
+		ga('send','event','collection', 'connect') //Google Analytics track event
 	});
 
-	$(".ga-event-map-addconnection").click( function() {
-		ga('send','event','maker', 'addconnection') //Google Analytics track event
+	$(".ga-event-collection-follow").click( function() {
+		ga('send','event','collection', 'follow') //Google Analytics track event
 	});
 
 	//index
 
-	$(".ga-event-index-download").click( function() {
-		ga('send','event','index', 'download'); //Google Analytics track event
+	$(".ga-event-index-addcollection").click( function() {
+		ga('send','event','index', 'addcollection'); //Google Analytics track event
 	});
 
-	$(".ga-event-index-library").click( function() {
-		ga('send','event','index', 'library'); //Google Analytics track event
+	$(".ga-event-index-search").click( function() {
+		ga('send','event','index', 'search'); //Google Analytics track event
 	});
 
 	$(".ga-event-index-createstory").click( function() {

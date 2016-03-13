@@ -45,7 +45,7 @@
 					<p>Story status:</p>
 					<div id="toggle-publish-status-btn-group" class="btn-group">
 						<button id="private-status-btn" class="btn btn-default btn-xs" onclick="unPublishCollection()">private</button>
-						<button id="public-status-btn" class="btn active btn-default btn-danger btn-xs" onclick="publishCollection()">public</button>
+						<button id="public-status-btn" class="btn active btn-default btn-danger btn-xs ga-event-collection-publish" onclick="publishCollection()">public</button>
 					</div>
 				</div>
 			</div>
@@ -112,8 +112,8 @@
 					<button id="zoom-out" type="button" class="btn btn-default" onclick="zoomOutMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom out"><span class="glyph icon-no-margins icon-15px flaticon-circle-1"></button>
 				</div>
 			</div>
-			<button id="create-story" type="button" class="btn btn-default" onclick="openCreateStoryView()" data-toggle="tooltip" data-placement="left" title="Create a new story."><span class="glyph icon-no-margins icon-15px flaticon-draw"></button>
-			<button id="connect-stories" type="button" class="btn btn-default" onclick="startConnectingStories()" data-toggle="tooltip" data-placement="left" title="Create a path, connecting stories."><span class="glyph icon-no-margins icon-15px flaticon-road-1"></button>
+			<button id="create-story" type="button" class="btn btn-default ga-event-collection-createstory" onclick="openCreateStoryView()" data-toggle="tooltip" data-placement="left" title="Create a new story."><span class="glyph icon-no-margins icon-15px flaticon-draw"></button>
+			<button id="connect-stories" type="button" class="btn btn-default ga-event-collection-connect" onclick="startConnectingStories()" data-toggle="tooltip" data-placement="left" title="Create a path, connecting stories."><span class="glyph icon-no-margins icon-15px flaticon-road-1"></button>
 		</div>
 
 		<!--------------->
