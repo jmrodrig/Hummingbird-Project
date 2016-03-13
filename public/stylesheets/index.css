@@ -1005,9 +1005,7 @@ h1, h2, h3, h4, p, a {
 }
 
 @media (max-width: 768px) {
-	.lg-container .story-container-body  {
-		padding: 0px;
-	}
+	.lg-container .story-container-body  {}
 }
 
 .lg-container .author-container {
@@ -1211,6 +1209,7 @@ h1, h2, h3, h4, p, a {
 	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 	overflow:hidden;
+  z-index: 100000;
 }
 
 /*.article-container > *:not(#article-img-container) {

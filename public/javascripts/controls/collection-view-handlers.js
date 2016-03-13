@@ -54,6 +54,9 @@ storyContainersWrapperHeight,
 storiesGridListContainerWidth,
 noColumns;
 
+var EMBED_MAX_WIDTH = 570,
+EMBED_MAX_HEIGHT = 440
+
 /******************************************************************
 	INITIALIZATION
 ******************************************************************/
@@ -843,7 +846,7 @@ function buildVineContainer(link,addToContainer,options) {
                                           .load(function() {
                                             if (options.size == "large") {
                                               addToContainer.addClass('large-view');
-                                              iframesize = 540;
+                                              iframesize = EMBED_MAX_HEIGHT;
                                               addToContainer.width(iframesize);
                                               addToContainer.height(iframesize);
                                             } else {
@@ -874,8 +877,8 @@ function buildYouTubeContainer(link,addToContainer,options) {
                                             if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
-                                            iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
-                                            iframeWidth = (iframeHeight>540) ? 540 * VIDEO_RATIO : iframeWidth;
+                                            iframeHeight = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : iframeHeight;
+                                            iframeWidth = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : iframeWidth;
                                             iframe.attr("width",iframeWidth)
                                                   .attr("height",iframeHeight);
                                             iframeContainer.innerWidth(iframeWidth)
@@ -902,8 +905,8 @@ function buildVimeoContainer(link,addToContainer,options) {
                                             if (options.size == "large") addToContainer.addClass('large-view');
                                             var iframeWidth= addToContainer.width();
                                             var iframeHeight= iframeWidth / VIDEO_RATIO;
-                                            iframeHeight = (iframeHeight>540) ? 540 : iframeHeight;
-                                            iframeWidth = (iframeHeight>540) ? 540 * VIDEO_RATIO : iframeWidth;
+                                            iframeHeight = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : iframeHeight;
+                                            iframeWidth = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : iframeWidth;
                                             iframe.attr("width",iframeWidth)
                                                   .attr("height",iframeHeight);
                                             iframeContainer.innerWidth(iframeWidth)
@@ -920,7 +923,7 @@ function buildInstagramContainer(link,addToContainer,options) {
 		var iframe = $(data.html).appendTo(iframeContainer);
 		if (options.size == "large") {
 			addToContainer.addClass('large-view-instagram');
-			var iframeWidth = 540;
+			var iframeWidth = EMBED_MAX_WIDTH;
 			addToContainer.width(iframeWidth);
 		} else {
 			var iframeWidth = addToContainer.width();
@@ -936,10 +939,10 @@ function buildInstagramContainer(link,addToContainer,options) {
 function buildFacebookVideoContainer(link,addToContainer,options) {
 	var VIDEO_RATIO = 16/9;
 	if (options.size == "large") addToContainer.addClass('large-view');
-	var width = addToContainer.width();
+	var width = EMBED_MAX_WIDTH;
 	var height= width / VIDEO_RATIO;
-	height = (height>540) ? 540 : height;
-	width = (height>540) ? 540 * VIDEO_RATIO : width;
+	height = (height>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : height;
+	width = (height>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : width;
 	fbvideoContainer = $('<div class="fb-video" data-width="'+ width +'" data-allowfullscreen="true"></div>')
 												.appendTo(addToContainer)
 												.innerWidth(width)
