@@ -46,6 +46,7 @@ POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
 GET    /highlight/:itemId,:type     controllers.Application.highlightItem(itemId: Long,type: Integer)
 GET    /highlighted                 controllers.Application.getHighlightedItems()
+GET   /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
 
 
 #Stories

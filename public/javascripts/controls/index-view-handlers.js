@@ -15,7 +15,7 @@ var fr;
 var defaultLocation = new google.maps.LatLng(37, -20);
 
 var indexStories;
-var indexStoriesMarkerList;
+var indexStoriesMarkerList = new Hashtable();
 var indexStoryPathsList;
 var previousCenter = defaultLocation;
 var previousZoom = 2;
@@ -1494,8 +1494,8 @@ function fitStoryOnView(story,map) {
 //--- drawPublishedStoryMarkersOnMap method ---//
 function drawMarkersOnMap(stories,icon) {
 	clearAllMarkersFromMap();
-	if (stories.length == 0) return;
-  markerList  = new Hashtable();
+	markerList  = new Hashtable();
+	if (stories.length == 0) return markerList;
 
   var st_;
 	for ( var i = 0; i < stories.length; i++) {
@@ -1541,8 +1541,6 @@ function drawMarkerOnMap(position,story) {
 }
 
 function getBounds() {
-
-
 	var bounds = {
 		north: map.getBounds().getNorthEast().lat(),
 		east: map.getBounds().getNorthEast().lng(),
@@ -1589,6 +1587,8 @@ function createStory() {
 	story.setLocationName(storylocation.name);
 	//set summary
 	story.setSummary(getStoryText($('.lg-container .story-summary')));
+	//set labels
+	story.setLabels(getStoryTextLabels($('.lg-container .story-summary')[0]));
   //setArticle
   if (article) {
 		story.setArticle(article.title,
@@ -1924,7 +1924,7 @@ function loadStoryTextBehaviours(element) {
                   if (storyTextElem.html() == '' || storyTextElem.html()== '<br>')
                     storyTextElem.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
                 })
-								.keyup(function() {
+								.keyup(function(e) {
 									var _this = $(this)[0];
 									caretPos = getCaretPosition(_this);
 									console.log(caretPos.nodeIndex + ',' + caretPos.offset);
@@ -1971,13 +1971,24 @@ function loadStoryTextBehaviours(element) {
 									_this.focus();
 
 									if (currentRange.startContainer.parentNode.nodeName == "SPAN") {
-										var bounding = currentRange.startContainer.parentNode.getBoundingClientRect();
-										$('<ul class="tag-list"/>').appendTo($('.lg-container .story-container-body'))
-																							.css({
-																								top:bounding.top + bounding.height - $(window).innerHeight() + storyContainersWrapperHeight,
-																								left:bounding.left
-																							});
-
+										var tagname = currentRange.startContainer.parentNode.innerText.replace('#','');
+										stud_findTagsStaringWith(tagname, function(result) {
+											$('.tag-list').remove();
+											if (result.length == 0) return;
+											var bounding = currentRange.startContainer.parentNode.getBoundingClientRect();
+											var taglist = $('<ul class="tag-list"/>').appendTo($('.lg-container .story-container-body'))
+																								.css({
+																									top:bounding.top + bounding.height - $(window).innerHeight() + storyContainersWrapperHeight,
+																									left:bounding.left + 8
+																								});
+											for (var r in result) {
+												$('<li class="tag-item" value="' + result[r] + '" >' + result[r] + '</li>').appendTo(taglist)
+													.click(function() {
+														currentRange.startContainer.parentNode.innerText = '#' + $(this).attr("value");
+														$('.tag-list').remove();
+													});
+											}
+										});
 									} else {
 										$('.tag-list').remove();
 									}
@@ -2007,10 +2018,6 @@ function getCaretPosition(element) {
 			caretOffset = 0;
 		} else if (caretNode.parentNode.nodeName == "SPAN") {
 			var child = caretNode.parentNode;
-			// if (caretOffset == caretNode.length) {
-			// 	nodeIndex++;
-			// 	caretOffset = 0;
-			// }
 		} else {
 			var child = caretNode;
 		}
@@ -2054,9 +2061,9 @@ function setStoryText(text,element) {
   if (!text)
     return;
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    element[0].innerHTML = text.replace(/\n/g,'<br>');
+    element[0].innerHTML = text.replace(/\n/g,'<br>').replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   } else {
-    element[0].innerText = text;
+    element[0].innerHTML = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   }
 }
 
@@ -2065,14 +2072,21 @@ function getStoryText(element) {
     return "";
   //element.find('.placeholder')[0].remove();
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    return element[0].innerHTML.replace(/<br>/g,'\n')
-                                    .replace(/&nbsp;/g,' ')
-                                    // .replace(/[^\x00-\x7F]/g, "")
-                                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+    return element[0].innerHTML.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+															 .replace(/<br>/g,'\n')
+                               .replace(/&nbsp;/g,' ')
+
   }
-  return element[0].innerText
-										// .replace(/[^\x00-\x7F]/g, "")
-                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+  return element[0].innerText.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+}
+
+function getStoryTextLabels(element) {
+	var labels = [];
+	for (var i in element.childNodes) {
+		if (element.childNodes[i].className == "hash-tag" )
+			labels.push(element.childNodes[i].innerText.replace('#',""));
+	}
+	return labels;
 }
 
 function getUrlFromText(text) {
@@ -2330,6 +2344,16 @@ function stud_highlightItem(itemId,itemType,success) {
 function stud_getHighlightedItems(success) {
 	$.ajax( {
 		url: "/highlighted",
+		type: 'GET',
+		dataType: "json",
+		contentType:"application/json",
+		success: success
+	});
+}
+
+function stud_findTagsStaringWith(value,success) {
+	$.ajax( {
+		url: "/tagsstartingwith=" + value,
 		type: 'GET',
 		dataType: "json",
 		contentType:"application/json",

@@ -37,17 +37,30 @@ h1, h2, h3, h4, p, a {
   padding: 1px 5px;
   border-radius: 7px;
   box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.4);
-  cursor: pointer;
 }
 
 .tag-list {
   position: absolute;
   min-width: 100px;
   max-width: 400px;
-  min-height: 100px;
   background-color: #fff;
-  border: 1px solid #000;
+  border: 1px solid #C3C3C3;
+  border-radius: 4px;
+  padding: 0px;
 }
+
+.tag-item {
+  display: block;
+  color: #aaa;
+  font-size: 12px;
+  padding: 0px 4px;
+  cursor: pointer;
+}
+
+.tag-item:hover {
+  background: #ddd;
+}
+
 /******************************************************************
 	Content Wrapper
 ******************************************************************/
