@@ -1643,6 +1643,8 @@ function editStory() {
   story_.setLocationName(storylocation.name);
 	//set summary
 	story_.setSummary(getStoryText($('.lg-container .story-summary')));
+	//set labels
+	story_.setLabels(getStoryTextLabels($('.lg-container .story-summary')[0]));
   //setArticle
   if (article) {
 		story_.setArticle(article.title,
