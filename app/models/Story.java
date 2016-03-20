@@ -473,6 +473,7 @@ public class Story extends Model {
 				articleAuthor,
 				articleLanguage,
 				location);
+		story.setLabels(labels);
 		story.save(DBConstants.lir_backoffice);
 		return story;
 	}
