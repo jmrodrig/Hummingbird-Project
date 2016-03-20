@@ -31,6 +31,23 @@ h1, h2, h3, h4, p, a {
     margin-bottom: 0px;
 }
 
+.hash-tag {
+  color: white;
+  background-color: #FF9393;
+  padding: 1px 5px;
+  border-radius: 7px;
+  box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.4);
+  cursor: pointer;
+}
+
+.tag-list {
+  position: absolute;
+  min-width: 100px;
+  max-width: 400px;
+  min-height: 100px;
+  background-color: #fff;
+  border: 1px solid #000;
+}
 /******************************************************************
 	Content Wrapper
 ******************************************************************/
@@ -1152,7 +1169,6 @@ h1, h2, h3, h4, p, a {
 
 .lg-container .summary-container.collapsed {
 	position: relative;
-	max-height: 100px;
 	overflow: hidden;
 }
 

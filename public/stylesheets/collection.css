@@ -1101,7 +1101,6 @@ h1, h2, h3, h4, p, a {
 
 .lg-container .summary-container.collapsed {
 	position: relative;
-	max-height: 100px;
 	overflow: hidden;
 }
 
