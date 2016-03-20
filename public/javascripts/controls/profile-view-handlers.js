@@ -31,8 +31,8 @@ var defaultAvatarPic = "/assets/images/user-avatar.jpg"
 
 var markerIcon;
 
-var libOpenWidth = .5;
-var mapOpenWidth = .9;
+var libOpenWidth = 0.5;
+var mapOpenWidth = 0.9;
 
 var fr = null;
 var saveimagefile = null;
@@ -307,7 +307,7 @@ function drawStoryGridLayout() {
   createStoryContainer.appendTo($('#column-' + columnCommuter));
 
   // Add remaining Story Containers
-  var stories = getStoriesWithinMapBounds(stories);
+  // var stories = getStoriesWithinMapBounds(stories);
   var stories = sortStoriesWithDate(stories);
 
   if(!stories || stories.length == 0) {

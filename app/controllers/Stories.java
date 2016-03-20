@@ -172,7 +172,6 @@ public class Stories extends Controller {
 		if (jsonStory.summary != null){
 			domainStory.setSummary(jsonStory.summary);
 		}
-		// String path = models.Story.saveDomainStory(domainStory);
 
 		models.Story story = models.Story.create(user,
 											jsonStory.title,
@@ -190,9 +189,8 @@ public class Stories extends Controller {
 											jsonStory.articleSource,
 											jsonStory.articleAuthor,
 											jsonStory.articleLanguage,
-											jsonStory.location);
-
-		// story.setDomainStory(domainStory);
+											jsonStory.location,
+											jsonStory.labels);
 
 		jsonStory = controllers.json.Story.getStory(story, user, true);
 		String json = new Gson().toJson(jsonStory);
@@ -552,6 +550,7 @@ public class Stories extends Controller {
 		} else {
 			collection = StoryCollection.create(currentUser,collectionName);
 		}
+		collection.setPublished(0); 
 		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
@@ -638,7 +637,6 @@ public class Stories extends Controller {
 				story.save();
 			}
 		}
-
 		return ok();
 	}
 
@@ -714,7 +712,6 @@ public class Stories extends Controller {
 		if (jsonStory.summary != null){
 			domainStory.setSummary(jsonStory.summary);
 		}
-		// String path = models.Story.saveDomainStory(domainStory);
 
 		models.Story story = models.Story.create(user,
 											jsonStory.title,
@@ -732,8 +729,8 @@ public class Stories extends Controller {
 											jsonStory.articleSource,
 											jsonStory.articleAuthor,
 											jsonStory.articleLanguage,
-											jsonStory.location);
-		// story.setDomainStory(domainStory);
+											jsonStory.location,
+											jsonStory.labels);
 
 		//Add to collection
 		storyCollection.addStoryToCollection(story);
@@ -745,4 +742,6 @@ public class Stories extends Controller {
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
+
+
 }

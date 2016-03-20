@@ -202,7 +202,7 @@ function drawStoryGridLayout() {
   columnCommuter = (counter++ % noColumns) + 1;
 
   // Add remaining Story Containers
-  var stories = getStoriesWithinMapBounds(stories);
+  // var stories = getStoriesWithinMapBounds(stories);
   var stories = sortStoriesWithDate(stories);
 
   if(!stories || stories.length == 0) {

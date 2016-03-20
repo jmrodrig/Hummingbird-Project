@@ -42,6 +42,9 @@ function newStoryObj(map){
 		this.domainStory.articleAuthor = author;
 	}
 
+	nStory.setLabels = function(labels){
+		this.domainStory.labels = labels;
+	}
 
 	nStory.setTitle = function(title){
 		this.domainStory.title = title;

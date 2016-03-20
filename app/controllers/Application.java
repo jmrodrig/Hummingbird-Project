@@ -174,12 +174,13 @@ public class Application extends Controller {
 	}
 
 	@SecuredAction
-	public static Result correctRadius() {
-		List<models.Location> locations = models.Location.findAll();
-		for (models.Location l : locations) {
-			l.setRadius(0.0);
-			l.save();
+	public static Result findLabelsStartingWith(String value) {
+		List<String> result = new ArrayList<String>();
+		List<models.Label> labels = models.Label.findByStartingWith(value);
+		for (models.Label label : labels) {
+			result.add(label.getName());
 		}
-		return ok();
+		String json = new Gson().toJson(result);
+		return ok(json);
 	}
 }

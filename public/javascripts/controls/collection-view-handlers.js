@@ -157,6 +157,7 @@ function intializeEvents() {
 				$('#story-grid-layout').scrollTop(0).animate({top: 0}, 300, "easeOutQuart");
 				$("#collection-map-details-container").addClass('sensible');
 				$("#content-wrapper").addClass('showing-map');
+				$('#search-and-controls-bar').animate({opacity: 1}, 300, "easeOutQuart");
 			});
 		}
   });
@@ -173,6 +174,7 @@ function intializeEvents() {
 			closeStoryView(true);
 			$('#story-grid-layout, #story-large-layout').css('top','100%');
 			$("#content-wrapper").removeClass('showing-map');
+			$('#search-and-controls-bar').animate({opacity: 0}, 300, "easeOutQuart");
 		});
 	});
 
@@ -283,6 +285,9 @@ function  initializeCollectionDetails() {
 	if (collection.published == 0) {
 		$('#private-status-btn').addClass('btn-danger  active');
 		$('#public-status-btn').removeClass('btn-danger active');
+	} else {
+		$('#private-status-btn').removeClass('btn-danger  active');
+		$('#public-status-btn').addClass('btn-danger active');
 	}
 
 	if (collection.currentUserFollows) {
@@ -394,6 +399,7 @@ function closeStoryView(keephidden) {
 	$('#map-region').removeClass('selected');
 	$('#story-large-layout-controllers').hide();
 	$('.marker-div').removeClass('highlighted');
+
 	map.panTo(collectionCenter);
 	map.setZoom(collectionZoom);
 	editingstory = null;
@@ -1538,8 +1544,8 @@ function fitStoryOnView(story,map) {
 
 //--- drawPublishedStoryMarkersOnMap method ---//
 function drawCollectionMarkersOnMap(stories,icon) {
-	if (stories.length == 0) return;
-  markerList  = new Hashtable();
+	markerList  = new Hashtable();
+	if (stories.length == 0) return markerList;
 
   var st_;
 	for ( var i = 0; i < stories.length; i++) {
@@ -1631,6 +1637,8 @@ function createStory() {
 	story.setLocationName(storylocation.name);
 	//set summary
 	story.setSummary(getStoryText($('.lg-container .story-summary')));
+	//set labels
+	story.setLabels(getStoryTextLabels($('.lg-container .story-summary')[0]));
   //setArticle
   if (article) {
 		story.setArticle(article.title,
@@ -2013,7 +2021,8 @@ function formatArticleSource(art) {
 }
 
 function loadStoryTextBehaviours(element) {
-  var storyTextElem = element;
+  var storyTextElem = element,
+	caretPos;
   element.attr('contenteditable', 'true')
 
   // elastic behaviour
@@ -2035,7 +2044,132 @@ function loadStoryTextBehaviours(element) {
                 .focusout(function() {
                   if (storyTextElem.html() == '' || storyTextElem.html()== '<br>')
                     storyTextElem.html('<span class="placeholder">' + placeholder + '</span>').addClass('empty');
-                  });
+                })
+								.keyup(function(e) {
+									var _this = $(this)[0];
+									caretPos = getCaretPosition(_this);
+									console.log(caretPos.nodeIndex + ',' + caretPos.offset);
+									var innerHTML = '';
+									for (var i in _this.childNodes) {
+										if (_this.childNodes[i].nodeName == "#text") {
+											var textnode = _this.childNodes[i].data.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>")
+											innerHTML = innerHTML + textnode;
+											if (textnode != _this.childNodes[i].data) {
+												caretPos.nodeIndex = caretPos.nodeIndex + 2;
+												caretPos.offset = 0;
+											}
+										} else if (_this.childNodes[i].nodeName == "SPAN") {
+											var textnode = _this.childNodes[i].innerHTML
+											if (textnode.indexOf('&nbsp;') > -1) {
+												innerHTML = innerHTML + "<span class='hash-tag'>" + textnode.replace('&nbsp;','') + "</span>&nbsp;";
+												caretPos.nodeIndex=caretPos.nodeIndex+2;
+												caretPos.offset = 0;
+											} else if (textnode.indexOf(' ') > -1) {
+												innerHTML = innerHTML + "<span class='hash-tag'>" + textnode.split(' ',2)[0] + "</span> " + textnode.split(' ',2)[1] ;
+												caretPos.nodeIndex++;
+												caretPos.offset = 0;
+											} else if (textnode.indexOf('#') != 0) {
+												innerHTML = innerHTML + textnode;
+												caretPos.nodeIndex++;
+												caretPos.offset = 0;
+											} else {
+												innerHTML = innerHTML + "<span class='hash-tag'>" + textnode + "</span>";
+											}
+										} else if (_this.childNodes[i].nodeName == "BR") {
+											innerHTML = innerHTML + '<br>';
+										} else if (_this.childNodes[i].nodeName == "DIV") {
+											var textnode = _this.childNodes[i].innerHTML.replace(/<font color="#\w+"><br><\/font>/ig,'<br>')
+																																	.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+																																	.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");
+											if (_this.childNodes[i].previousSibling && _this.childNodes[i].previousSibling.nodeName != "BR" && _this.childNodes[i].previousSibling.nodeName != "DIV")
+												innerHTML = innerHTML + '<br>' + textnode;
+											else
+												innerHTML = innerHTML + textnode;
+										}
+									}
+									_this.innerHTML = innerHTML;
+									var currentRange = setCaretToPos(caretPos,_this)
+									_this.focus();
+
+									if (currentRange.startContainer.parentNode.nodeName == "SPAN") {
+										var tagname = currentRange.startContainer.parentNode.innerText.replace('#','');
+										stud_findTagsStaringWith(tagname, function(result) {
+											$('.tag-list').remove();
+											if (result.length == 0) return;
+											var bounding = currentRange.startContainer.parentNode.getBoundingClientRect();
+											var taglist = $('<ul class="tag-list"/>').appendTo($('.lg-container .story-container-body'))
+																								.css({
+																									top:bounding.top + bounding.height - $(window).innerHeight() + storyContainersWrapperHeight,
+																									left:bounding.left + 8
+																								});
+											for (var r in result) {
+												$('<li class="tag-item" value="' + result[r] + '" >' + result[r] + '</li>').appendTo(taglist)
+													.click(function() {
+														currentRange.startContainer.parentNode.innerText = '#' + $(this).attr("value");
+														$('.tag-list').remove();
+													});
+											}
+										});
+									} else {
+										$('.tag-list').remove();
+									}
+                });
+}
+
+function getCaretPosition(element) {
+  var caretOffset = 0,
+	nodeIndex = 0;
+
+  if (window.getSelection) {
+    var selection = window.getSelection(),
+    range = selection.getRangeAt(0),
+		caretNode = selection.anchorNode;
+    caretOffset = range.endOffset;
+		if (caretNode.parentNode.nodeName == "DIV" && caretNode.parentNode != element && caretNode != element) {
+			var child = caretNode.parentNode;
+			nodeIndex++;
+		} else if (caretNode.nodeName == "DIV" && caretNode != element) {
+			var child = caretNode;
+			nodeIndex++;
+		} else if (caretNode == element) {
+			return {offset:0,nodeIndex:selection.anchorOffset}
+		} else if (caretNode.parentNode.nodeName == "SPAN" && caretNode.parentNode.parentNode != element) {
+			var child = caretNode.parentNode.parentNode;
+			nodeIndex++;
+			caretOffset = 0;
+		} else if (caretNode.parentNode.nodeName == "SPAN") {
+			var child = caretNode.parentNode;
+			// if (caretOffset == caretNode.length) {
+			// 	nodeIndex++;
+			// 	caretOffset = 0;
+			// }
+		} else {
+			var child = caretNode;
+		}
+		while( (child = child.previousSibling) != null )
+		  nodeIndex++;
+	}
+
+  return {offset:caretOffset,nodeIndex:nodeIndex}
+}
+
+function setCaretToPos(pos,element) {
+	if (window.getSelection) {
+    var selection = window.getSelection()
+    range = document.createRange();
+		if (element.childNodes.length == 0)
+    	range.setStart(element,0);
+		else if (pos.nodeIndex >= element.childNodes.length)
+    	range.setStartAfter(element.childNodes[element.childNodes.length-1]);
+		else if (element.childNodes[pos.nodeIndex].nodeName == "SPAN")
+			range.setStart(element.childNodes[pos.nodeIndex].firstChild,pos.offset);
+		else
+			range.setStart(element.childNodes[pos.nodeIndex],pos.offset);
+		range.collapse(true);
+		selection.removeAllRanges();
+		selection.addRange(range);
+		return range;
+	}
 }
 
 function unloadStoryTextBehaviours(element) {
@@ -2052,9 +2186,9 @@ function setStoryText(text,element) {
   if (!text)
     return;
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    element[0].innerHTML = text.replace(/\n/g,'<br>');
+    element[0].innerHTML = text.replace(/\n/g,'<br>').replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   } else {
-    element[0].innerText = text;
+    element[0].innerHTML = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   }
 }
 
@@ -2063,14 +2197,21 @@ function getStoryText(element) {
     return "";
   //element.find('.placeholder')[0].remove();
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    return element[0].innerHTML.replace(/<br>/g,'\n')
-                                    .replace(/&nbsp;/g,' ')
-                                    // .replace(/[^\x00-\x7F]/g, "")
-                                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+    return element[0].innerHTML.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+															 .replace(/<br>/g,'\n')
+                               .replace(/&nbsp;/g,' ')
+
   }
-  return element[0].innerText
-										// .replace(/[^\x00-\x7F]/g, "")
-                    // .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
+  return element[0].innerText.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+}
+
+function getStoryTextLabels(element) {
+	var labels = [];
+	for (var i in element.childNodes) {
+		if (element.childNodes[i].className == "hash-tag" )
+			labels.push(element.childNodes[i].innerText.replace('#',""));
+	}
+	return labels;
 }
 
 function getUrlFromText(text) {
@@ -2415,6 +2556,16 @@ function stud_followUser(numberId,unfollow,success) {
 		url: "/follow/user/" + numberId + "," + unfollow,
 		type: 'PUT',
 		dataType: "json",
+		success: success
+	});
+}
+
+function stud_findTagsStaringWith(value,success) {
+	$.ajax( {
+		url: "/tagsstartingwith=" + value,
+		type: 'GET',
+		dataType: "json",
+		contentType:"application/json",
 		success: success
 	});
 }

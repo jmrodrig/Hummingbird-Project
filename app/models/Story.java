@@ -84,6 +84,9 @@ public class Story extends Model {
 	@OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
 	private List<UserStory> userStories;
 
+	@OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
+	private List<StoryLabel> storylabels;
+
 	@OneToMany(mappedBy = "story", cascade=CascadeType.ALL)
 	private List<Like> likes;
 
@@ -117,10 +120,6 @@ public class Story extends Model {
 	@Column(name = "article_language")
 	private String articleLanguage;
 
-	@ManyToMany
-	@JoinTable(name = "stories_labels", joinColumns = { @JoinColumn(name = "story_id", referencedColumnName = "id") }, inverseJoinColumns = { @JoinColumn(name = "label_id", referencedColumnName = "id") })
-	private List<Label> labels;
-
 	@Transient
 	private com.lir.library.domain.Story domainStory;
 
@@ -138,14 +137,6 @@ public class Story extends Model {
 
 	public void setId(long id) {
 		this.id = id;
-	}
-
-	public List<Label> getLabels() {
-		return labels;
-	}
-
-	public void setLabels(List<Label> labels) {
-		this.labels = labels;
 	}
 
 	public String getTitle() {
@@ -251,6 +242,17 @@ public class Story extends Model {
 
 	public void setPlace(Place place) {
 		this.place = place;
+	}
+
+	public List<StoryLabel> getLabels() {
+		return this.storylabels;
+	}
+
+	public void setLabels(List<String> labels) {
+		System.out.println("StoryId -story: " + this.getId());
+		for (String labelname : labels) {
+			StoryLabel.create(this,Label.create(labelname));
+		}
 	}
 
 	public String getArticleTitle() { return articleTitle; }
@@ -413,7 +415,8 @@ public class Story extends Model {
 	public static Story create(User user, String title, String summary, String content, double cost, Boolean published, String filePath,
 								String locationName,
 								String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage,
-								controllers.json.Location location)
+								controllers.json.Location location,
+								List<String> labels)
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
 		Story story = Story.findByUserAndTitle(user, title); //search for a story with the same title. If found, updates that story
@@ -427,7 +430,8 @@ public class Story extends Model {
 																				articleSource,
 																				articleAuthor,
 																				articleLanguage,
-																				location);
+																				location,
+																				labels);
 		}
 		story = new Story();
 		setStory(story,
@@ -450,10 +454,11 @@ public class Story extends Model {
 		// System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
+		story.setLabels(labels);
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String content, Double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String content, Double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();

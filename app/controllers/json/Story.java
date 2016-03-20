@@ -36,6 +36,7 @@ public class Story implements Comparable<Story> {
 	public Integer noUsers;
 	public Integer noFollowers;
 	public List<StoryCollection> collections;
+	public List<String> labels;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
