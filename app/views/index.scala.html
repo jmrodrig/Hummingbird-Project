@@ -34,7 +34,9 @@
 		<meta property="og:type" content="article" />
 		<meta property="og:url" content="www.lostinreality.io/@@@location.latitude,@location.longitude,@location.zoom"/>
 
-	} else {
+	}
+
+	@if(story == null && location == null) {
 
 		<title>LIR | location-based storytelling</title>
 		<meta name="description" content="Explore the places around you with a map of stories. Sign up, download the app and start discovering." />
