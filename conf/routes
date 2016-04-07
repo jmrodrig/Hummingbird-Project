@@ -3,7 +3,7 @@
 # ~~~~
 
 # pages
-GET     	/                       			controllers.Application.index()
+GET     /                       			controllers.Application.index()
 GET			/dashboards							controllers.Application.dashboards()
 GET			/library							controllers.Application.library()
 GET			/read/:storyId						controllers.Application.read(storyId: Long)
@@ -12,7 +12,8 @@ GET 		/profile							controllers.Application.profile()
 GET 		/profile/:numberId  	controllers.Application.publicProfile(numberId: Long)
 GET     /scraper              controllers.Application.scraper()
 GET	    /collection/:collectionId											controllers.Application.openCollectionView(collectionId: Long)
-GET		/story/:storyId												controllers.Application.story(storyId: Long)
+GET		  /@:tag										              controllers.Application.handleTagsIndex(tag: String)
+#GET		/collection/:collectionId/@:tag				controllers.Application.handleTagsCollection(tag: String)
 
 
 

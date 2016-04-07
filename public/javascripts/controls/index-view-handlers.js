@@ -38,6 +38,7 @@ var isgrabWebsiteMetadataBusy = false;
 
 var animationBusy = false;
 var isStoryViewOpen = false;
+var openingtarget = null;
 
 var locationSetMode = 'pinpoint';
 
@@ -215,9 +216,31 @@ function intializeEvents() {
 
   $('[data-toggle="tooltip"]').tooltip({delay: { "show": 1500, "hide": 100 }})
 
-setTimeout(function () {
+	setTimeout(function () {
 		$('#scroll-down-indicator').animate({opacity: 0.8, bottom:20}, 800, "easeOutBounce");
 	}, 2000);
+
+	window.onpopstate = function(e){
+    if(e.state){
+			var center = new google.maps.LatLng(e.state.latitude,e.state.longitude);
+			fitPositionOnView(e.state.latitude,e.state.longitude,e.state.zoom,map);
+			loadStories(null,function(stories) {
+				if (e.state.story)
+					drawStoryLargeLayout(e.state.story);
+				else
+					drawLayout(stories);
+			});
+    } else {
+			closeStoryLayoutView();
+		}
+	};
+
+	$('#create-story-btn').click(function() {
+		if (user)
+			openCreateStoryView();
+		else
+			displayAlertMessage('You must login to create a story.')
+	});
 }
 
 /******************************************************************
@@ -227,32 +250,30 @@ setTimeout(function () {
 function openStoryLayoutView() {
 	$("#content-wrapper").addClass('showing-map');
 	$('#index-heros').animate({top: '100%'}, 300,"easeOutQuart")
-	$('#search-and-controls-bar, #create-story').show().animate({opacity: 1}, 300, "easeOutQuart");
-	$('#create-story').click(function() {
-		if (user)
-			openCreateStoryView();
-		else
-			displayAlertMessage('You must login to create a story.')
-	});
+	$('#search-and-controls-bar, #create-story-btn').show().animate({opacity: 1}, 300, "easeOutQuart");
+}
+
+function closeStoryLayoutView() {
+	$("#content-wrapper").removeClass('showing-map');
+	$('#story-grid-layout, #story-large-layout')
+		.removeClass('active')
+		.animate({top: '100%'}, 300, "easeOutQuart");
+	$('#index-heros').animate({top: '0%'}, 300,"easeOutQuart");
+	$('#search-and-controls-bar, #create-story-btn').animate({opacity: 0}, 300, "easeOutQuart");
 }
 
 function drawLayout(stories,options) {
 	if (!options) var options = {keephidden:false}
 	if (!$("#content-wrapper").hasClass('showing-map'))
 		openStoryLayoutView();
-	//timeout for performance reasons
-	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
 	$('#story-grid-layout').scrollTop(0);
-	if (stories.length == 0) return;
-	setTimeout(function() {
-		drawStoryGridLayout(stories);
-		setTimeout(function () {
-			if (!options.keephidden) $('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
+	drawStoryGridLayout(stories);
+	if (!$('#story-grid-layout').hasClass('active'))
+		if (!options.keephidden)
+			$('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
 				$('#story-large-layout').removeClass('active')
 				$('#story-grid-layout').addClass('active')
 			});
-		}, 400);
-	}, 100);
 }
 
 function drawStoryGridLayout(stories) {
@@ -288,8 +309,8 @@ function drawStoryGridLayout(stories) {
 }
 
 function drawStoryLargeLayout(story,options) {
-	if (!options) var options = {loadstories:false}
-	if (options.loadstories) {
+	if (!options) var options = {loadstoriesfirst:false}
+	if (options.loadstoriesfirst) {
 		loadStories(null,function(stories) {
 			drawLayout(stories,{keephidden:true})
 			drawStoryLargeLayout(story);
@@ -304,7 +325,7 @@ function drawStoryLargeLayout(story,options) {
 	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 	$('#story-large-layout-controllers').show();
 
-	//fir story on map
+	//fit story on map
 	previousCenter = map.getCenter();
 	previousZoom = map.getZoom();
 	fitStoryOnView(story,map);
@@ -315,6 +336,8 @@ function drawStoryLargeLayout(story,options) {
 		$('#story-large-layout').addClass('active')
 		$('#story-grid-layout').removeClass('active')
 	});
+
+	updatePageHistory(story);
 }
 
 function openCreateStoryView() {
@@ -428,7 +451,7 @@ function buildStorySmallContainer(story,options) {
 																																			openStoryLayoutView();
 																																			$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
 																																			fitStoryOnView(story,map);
-																																			drawStoryLargeLayout(story,{loadstories:true});
+																																			drawStoryLargeLayout(story,{loadstoriesfirst:true});
 																																		} else
                                                                     	drawStoryLargeLayout(story);
                                                                   });
@@ -463,20 +486,20 @@ function buildStorySmallContainer(story,options) {
   //Story Options Dropdown container
   var optionsList = $('<ul class="options-list dropdown-menu" aria-labelledby="dropdownMenu1"/>').appendTo(optionsBtnContainer);
 
-  $('<li class="option-open"><a href="#">Open</a></li>').appendTo(optionsList)
+  $('<li class="option-open"><a>Open</a></li>').appendTo(optionsList)
                                     .click(function() {
                                       drawStoryLargeLayout(story);
                                     });
 
 
-	var editStoryBtn = $('<li class="option-edit"><a href="#">Edit Story</a></li>').appendTo(optionsList)
+	var editStoryBtn = $('<li class="option-edit"><a>Edit Story</a></li>').appendTo(optionsList)
                                             .click(function() {
 																							openEditStoryView(story);
                                             });
 	if (storyBelongsToCurrentUser(story)) editStoryBtn.css('display','block');
 
   $('<li class="divider"></li>').appendTo(optionsList);
-  $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
+  $('<li> <a>Add to</a></li>').appendTo(optionsList)
                                         .click(function() {
 																					if (user)
                                           	openChooseCollectionView(story);
@@ -1185,7 +1208,18 @@ function initiateMap() {
 			loadStories(null,function(stories) {
 				drawLayout(stories);
 			});
+			updatePageHistory();
 		});
+		// If opening page with a story/location target
+		if (openingtarget) {
+			fitPositionOnView(openingtarget.latitude,openingtarget.longitude,openingtarget.zoom,map)
+			loadStories(null,function(stories) {
+				if (openingtarget.storyid)
+					drawStoryLargeLayout(getStoryById(openingtarget.storyid,stories));
+				else
+					drawLayout(stories);
+			});
+		}
 		google.maps.event.removeListener(listener);
 	});
 
@@ -1203,6 +1237,7 @@ function initiateMap() {
   herosearchBox.addListener('places_changed', function() {
 		$('#search-input').val($('#hero-search-input').val());
     searchBoxGetPlaces(this);
+		setTimeout(function() { updatePageHistory() },200);
 		openStoryLayoutView();
   });
 
@@ -1219,6 +1254,7 @@ function initiateMap() {
   hero5searchBox.addListener('places_changed', function() {
 		$('#search-input').val($('#hero-search-input').val());
     searchBoxGetPlaces(this);
+		setTimeout(function() { updatePageHistory() },200);
 		openStoryLayoutView();
   });
 
@@ -1234,6 +1270,7 @@ function initiateMap() {
   });
   mapsearchBox.addListener('places_changed', function() {
     searchBoxGetPlaces(this);
+		updatePageHistory();
   });
 }
 
@@ -1369,7 +1406,7 @@ function getMapCenterOnLayout(map) {
 	longitude = east - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom),
 	latitude = (north + south)/2,
 	center = new google.maps.LatLng(latitude,longitude);
-  map.setCenter(center);
+  // map.setCenter(center);
 	return center;
 }
 
@@ -1489,6 +1526,15 @@ function fitStoryOnView(story,map) {
 		map.panTo(center);
 		return {zoom:zoom, center:center}
 	}
+}
+
+function fitPositionOnView(lat,lng,zoom,map) {
+	width_pix = $('#map-viewport').innerWidth(),
+	delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
+	center = new google.maps.LatLng(lat, lng - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+	map.setZoom(zoom);
+	map.panTo(center);
+	return {zoom:zoom, center:center}
 }
 
 //--- drawPublishedStoryMarkersOnMap method ---//
@@ -1775,10 +1821,8 @@ function setLayoutDimensions(stories) {
 		noColumns = 1
 	else if (stories.length < 10)
 		noColumns = 2
-	else if (stories.length < 20)
+	else if (stories.length >= 10)
 		noColumns = 3
-	else if (stories.length >= 20)
-		noColumns = 4
 
 
 	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + paddingright + paddingleft;
@@ -2063,9 +2107,9 @@ function setStoryText(text,element) {
   if (!text)
     return;
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
-    element[0].innerHTML = text.replace(/\n/g,'<br>').replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
+    element[0].innerHTML = text.replace(/\n/g,'<br>').replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");
   } else {
-    element[0].innerHTML = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
+    element[0].innerText = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");
   }
 }
 
@@ -2076,10 +2120,10 @@ function getStoryText(element) {
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
     return element[0].innerHTML.replace('<span class="hash-tag">'," ").replace('</span>'," ")
 															 .replace(/<br>/g,'\n')
-                               .replace(/&nbsp;/g,' ')
+                               .replace(/&nbsp;/g,' ');
 
   }
-  return element[0].innerText.replace('<span class="hash-tag">'," ").replace('</span>'," ")
+  return element[0].innerText.replace('<span class="hash-tag">'," ").replace('</span>'," ");
 }
 
 function getStoryTextLabels(element) {
@@ -2172,6 +2216,36 @@ function displayAlertMessage(msg,container,delay) {
 			$('.alert-message').animate({opacity: 0}, 500,"easeOutQuart");
 		}, delay);
 	});
+}
+
+function updatePageHistory(story) {
+	var center = getMapCenterOnLayout(map),
+	zoom = map.getZoom();
+	stateObj = {"latitude":center.lat(),"longitude":center.lng(),"zoom":zoom};
+	if (story) {
+		stateObj.story = story;
+		var stateUrl = document.URL.split('@',2)[0] + '@storyid=' + story.id;
+		window.history.pushState(stateObj,"", stateUrl);
+	} else {
+		var stateUrl = document.URL.split('@',2)[0] + '@' + center.lat() + ',' + center.lng() + ',' + zoom;
+		stud_nominatimReverseGeoCoding(center.lat(),center.lng(),zoom, function(data) {
+			if (!data.error) {
+				// var city = (data.address.city) ? data.address.city + ", " : "";
+				// var state = (data.address.state) ? data.address.state + ", " : "";
+				// var country = (data.address.country) ? data.address.country : "";
+				stateUrl = stateUrl + '&addr=' + data.display_name;
+			}
+			window.history.pushState(stateObj,"", stateUrl);
+		}, function() {
+			window.history.pushState(stateObj,"", stateUrl);
+		})
+	}
+}
+
+function openPageOnTarget(target) {
+	console.log("opening storyid " + target.storyid);
+	openStoryLayoutView();
+	openingtarget = target;
 }
 
 /******************************************************************
@@ -2313,9 +2387,9 @@ function stud_readPublicStoriesWithinBounds(w, n, e, s, limit, success, error){
 	});
 }
 
-function stud_readLocationInfoNominatimOSM(locationName, success, error){
+function stud_nominatimReverseGeoCoding(lat,lng,zoom, success, error){
 	$.ajax({
-		url: "http://nominatim.openstreetmap.org/?format=json&q=" + encodeURIComponent(locationName) + "&limit=1",
+		url: "http://nominatim.openstreetmap.org/reverse?format=json&lat=" + lat + "&lon=" + lng + "&zoom=" + zoom + "&addressdetails=1",
 		type: "GET",
     dataType: "json",
 		success: success,

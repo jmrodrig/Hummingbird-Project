@@ -438,7 +438,7 @@ h1, h2, h3, h4, p, a {
 #search-input {
 }
 
-#search-and-controls-bar #create-story {
+#search-and-controls-bar #create-story-btn {
   position: absolute;
   display: none;
   right: -20px;
@@ -456,7 +456,7 @@ h1, h2, h3, h4, p, a {
   outline: none;
 }
 
-#search-and-controls-bar #connect-stories {
+#search-and-controls-bar #connect-stories-btn {
   position: absolute;
   display: none;
   right: -20px;

@@ -1,6 +1,7 @@
 package controllers;
 
 import java.io.IOException;
+import java.lang.NumberFormatException;
 import org.w3c.dom.Document;
 
 import play.mvc.Controller;
@@ -51,7 +52,7 @@ public class Application extends Controller {
 	}
 
 	public static Result index() {
-		return ok(views.html.index.render());
+		return ok(views.html.index.render(null,null));
 	}
 
 	public static Result dashboards() {
@@ -182,5 +183,28 @@ public class Application extends Controller {
 		}
 		String json = new Gson().toJson(result);
 		return ok(json);
+	}
+
+	public static Result handleTagsIndex(String tag) {
+		if (tag.contains("story")) {
+			Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
+			Story story = Story.findById(storyId);
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+			return ok(views.html.index.render(jsonStory,jsonStory.location));
+		} else {
+			String[] tags = tag.replace("@","").split("&",2);
+			controllers.json.Location location = new controllers.json.Location();
+			try {
+				location.latitude = Double.parseDouble(tags[0].split(",",3)[0]);;
+				location.longitude = Double.parseDouble(tags[0].split(",",3)[1]);
+				if ( Double.isNaN(location.longitude*location.latitude) )
+					throw new NumberFormatException();
+				location.zoom = Integer.parseInt(tags[0].split(",",3)[2]);
+				location.name = tags[1].replace("addr=","");
+				return ok(views.html.index.render(null,location));
+			} catch (NumberFormatException e) {
+				return ok(views.html.index.render(null,null));
+			}
+		}
 	}
 }

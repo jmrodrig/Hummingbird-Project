@@ -16,8 +16,8 @@ ALTER TABLE `lir_backoffice`.`stories_labels`
 
 ALTER TABLE `lir_backoffice`.`stories_labels`
 DROP COLUMN `id`,
-CHANGE COLUMN `story_id` `story_id` BIGINT(20) NOT NULL DEFAULT NULL ,
-CHANGE COLUMN `label_id` `label_id` BIGINT(20) NOT NULL DEFAULT NULL ,
+CHANGE COLUMN `story_id` `story_id` BIGINT(20) NOT NULL ,
+CHANGE COLUMN `label_id` `label_id` BIGINT(20) NOT NULL ,
 DROP PRIMARY KEY,
 ADD PRIMARY KEY (`story_id`, `label_id`);
 ALTER TABLE `lir_backoffice`.`stories_labels`

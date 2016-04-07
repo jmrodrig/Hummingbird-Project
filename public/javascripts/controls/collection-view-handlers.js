@@ -1351,7 +1351,7 @@ function searchBoxGetPlaces() {
 		displayAlertMessage('No places found!')
 		return;
 	}
-	if (places[0].geometry.viewport.R) {
+	if (places[0].geometry.viewport) {
 		var bounds = {
 			north:places[0].geometry.viewport.R.R,
 			east:places[0].geometry.viewport.j.R,
@@ -1812,10 +1812,8 @@ function setLayoutDimensions(stories) {
 		noColumns = 1
 	else if (stories.length < 10)
 		noColumns = 2
-	else if (stories.length < 20)
+	else if (stories.length >= 10)
 		noColumns = 3
-	else if (stories.length >= 20)
-		noColumns = 4
 
 
 	storiesGridListContainerWidth = noColumns*(columnWidth + columnMargin) + paddingright + paddingleft;
@@ -2190,7 +2188,7 @@ function setStoryText(text,element) {
   if(navigator.userAgent.toLowerCase().indexOf('firefox') > -1) {
     element[0].innerHTML = text.replace(/\n/g,'<br>').replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   } else {
-    element[0].innerHTML = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
+    element[0].innerText = text.replace(/(^|\s)([#][a-z\d-]+)/ig, "$1<span class='hash-tag'>$2</span>");;
   }
 }
 
