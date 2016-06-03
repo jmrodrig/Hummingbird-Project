@@ -135,6 +135,7 @@ POST    /password                   securesocial.controllers.PasswordChange.hand
 
 
 # Providers entry points
-GET     /authenticate/:provider     securesocial.controllers.ProviderController.authenticate(provider)
-POST    /authenticate/:provider     securesocial.controllers.ProviderController.authenticateByPost(provider)
-GET     /not-authorized             securesocial.controllers.ProviderController.notAuthorized
+GET     /authenticate/:provider       securesocial.controllers.ProviderController.authenticate(provider)
+POST    /authenticate/:provider       securesocial.controllers.ProviderController.authenticateByPost(provider)
+GET     /not-authorized               securesocial.controllers.ProviderController.notAuthorized
+POST    /authenticateMobile/:provider @controllers.auth.AuthController.authenticateMobile(provider)
