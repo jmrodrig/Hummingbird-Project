@@ -11,6 +11,7 @@ import models.Story;
 import models.StoryCollection;
 import models.HighlightedItem;
 import models.exceptions.ModelAlreadyExistsException;
+import models.exceptions.ModelNotFountException;
 
 import com.google.gson.Gson;
 import com.typesafe.plugin.*;
@@ -106,9 +107,20 @@ public class Application extends Controller {
 		return ok(views.html.collection.render(jsonCollection));
 	}
 
+	@SecureSocial.SecuredAction
+	public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+		User user = getCurrentUser();
+		models.Story story = models.Story.create(user);
+		System.out.println("redirecting...");
+		return redirect("/publisher/create/" + story.getId());
+	}
+
 	@SecuredAction
-	public static Result create(Long storyId) {
-		return ok(views.html.create.render(storyId));
+	public static Result editStory(Long storyId) {
+		//TODO: validate if user has priviliges to edit the story
+		Story story = Story.findById(storyId);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,false);
+		return ok(views.html.create.render(jsonStory));
 	}
 
 	public static Result validInvite(String invitationCode) {
@@ -156,23 +168,23 @@ public class Application extends Controller {
 		return ok();
 	}
 
-	public static Result getHighlightedItems() {
-		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
-		List<HighlightedItem> hitems = HighlightedItem.findAll();
-		for (HighlightedItem item : hitems) {
-			controllers.json.Story jsonStory;
-			if (item.getType() == 0) {
-				Story story = Story.findById(item.getItemId());
-				jsonStory = controllers.json.Story.getStory(story, false);
-			} else {
-				StoryCollection collection = StoryCollection.findCollectionById(item.getItemId());
-				jsonStory = controllers.json.Story.getCollectionAsStory(collection);
-			}
-			result.add(jsonStory);
-		}
-		String json = new Gson().toJson(result);
-		return ok(json);
-	}
+	// public static Result getHighlightedItems() {
+	// 	List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+	// 	List<HighlightedItem> hitems = HighlightedItem.findAll();
+	// 	for (HighlightedItem item : hitems) {
+	// 		controllers.json.Story jsonStory;
+	// 		if (item.getType() == 0) {
+	// 			Story story = Story.findById(item.getItemId());
+	// 			jsonStory = controllers.json.Story.getStory(story, false);
+	// 		} else {
+	// 			StoryCollection collection = StoryCollection.findCollectionById(item.getItemId());
+	// 			jsonStory = controllers.json.Story.getCollectionAsStory(collection);
+	// 		}
+	// 		result.add(jsonStory);
+	// 	}
+	// 	String json = new Gson().toJson(result);
+	// 	return ok(json);
+	// }
 
 	@SecuredAction
 	public static Result findLabelsStartingWith(String value) {
@@ -185,26 +197,35 @@ public class Application extends Controller {
 		return ok(json);
 	}
 
-	public static Result handleTagsIndex(String tag) {
-		if (tag.contains("story")) {
-			Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
-			Story story = Story.findById(storyId);
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			return ok(views.html.index.render(jsonStory,jsonStory.location));
-		} else {
-			String[] tags = tag.replace("@","").split("&",2);
-			controllers.json.Location location = new controllers.json.Location();
-			try {
-				location.latitude = Double.parseDouble(tags[0].split(",",3)[0]);;
-				location.longitude = Double.parseDouble(tags[0].split(",",3)[1]);
-				if ( Double.isNaN(location.longitude*location.latitude) )
-					throw new NumberFormatException();
-				location.zoom = Integer.parseInt(tags[0].split(",",3)[2]);
-				location.name = tags[1].replace("addr=","");
-				return ok(views.html.index.render(null,location));
-			} catch (NumberFormatException e) {
-				return ok(views.html.index.render(null,null));
-			}
+	// public static Result handleTagsIndex(String tag) {
+	// 	if (tag.contains("story")) {
+	// 		Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
+	// 		Story story = Story.findById(storyId);
+	// 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+	// 		return ok(views.html.index.render(jsonStory,jsonStory.location));
+	// 	} else {
+	// 		String[] tags = tag.replace("@","").split("&",2);
+	// 		controllers.json.Location location = new controllers.json.Location();
+	// 		try {
+	// 			location.latitude = Double.parseDouble(tags[0].split(",",3)[0]);;
+	// 			location.longitude = Double.parseDouble(tags[0].split(",",3)[1]);
+	// 			if ( Double.isNaN(location.longitude*location.latitude) )
+	// 				throw new NumberFormatException();
+	// 			location.zoom = Integer.parseInt(tags[0].split(",",3)[2]);
+	// 			location.name = tags[1].replace("addr=","");
+	// 			return ok(views.html.index.render(null,location));
+	// 		} catch (NumberFormatException e) {
+	// 			return ok(views.html.index.render(null,null));
+	// 		}
+	// 	}
+	// }
+
+	private static User getCurrentUser() {
+		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		if (identity==null) {
+			return null;
 		}
+		User user = User.findByIdentityId(identity.identityId());
+		return user;
 	}
 }

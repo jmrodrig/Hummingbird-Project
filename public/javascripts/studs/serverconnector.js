@@ -11,6 +11,15 @@ function stud_createStory(story, success, error){
 	});
 }
 
+function stud_publisherCreateStory(success, error){
+	$.ajax({
+		url: "/story/create",
+		type: "POST",
+		success: success,
+		error: error
+	});
+}
+
 function stud_updateStory(story, success, error){
 	$.ajax({
 		url: "/story/" + story.id,
@@ -240,4 +249,18 @@ function stud_fetchHtml(url,success, error){
 		success: success,
 		error: error
 	});
+}
+
+function stud_uploadStoryImage(imageData,storyId,onFinished) {
+	url = '/story/'+storyId+'/uploadimage';
+	//var imageData = new FormData($('.lg-container #image-upload-form')[0]);
+	$.ajax( {
+	  url: url,
+	  type: 'POST',
+	  data:  imageData,
+	  processData: false,
+	  contentType: false,
+    dataType: "json",
+	  success: onFinished
+	} );
 }

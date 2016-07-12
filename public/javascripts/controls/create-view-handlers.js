@@ -1,850 +1,668 @@
-
-//--- initialize global variables ---//
-
-var map;
-var helpOn = true;
-var story;
-var defaultLocation = new google.maps.LatLng(38.711652, -9.131238);
-var fitZoom;
-
-var user;
-var posts;
-var enablePostCreation;
-var previousPostId;
-var nextPostId;
-
-var defaultStoryMapCss
-var defaultStoryMapColapseCss
-var openStoryMapCss
-var openStoryMapColapseCss
-
-//--- Listener for window ---//
-google.maps.event.addDomListener(window, 'load', initialize);
-
-//--- initialize method ---//
-function initialize() {
+var STORY_TEXT = 10;
+var PICTURE_CONTAINER = 11;
 
 
-	user = newUserObj();
-	user.constructor();
-	user.readLoggedUser(function (user){
-			if (user.getAvatarUrl())
-				avatarUrl = user.getAvatarUrl();
-			else
-				avatarUrl = ""
-			$('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
-							.css('display' , 'block' );
-			$('#user-link div').css('background-image','url(' + avatarUrl + ')');
-			if (avatarUrl) $('#user-link').addClass('with-avatar');
-
-			$('#publish-link, #delete-link').css('display','block');
-		}
-	);
+var ctrlDown = false,
+        ctrlKey = 17,
+        cmdKey = 91,
+        vKey = 86,
+        cKey = 67,
+        returnKey = 13,
+        backspacekey = 8,
+        arrowUpKey = 38,
+        arrowDownKey = 40,
+        arrowLeftKey = 37,
+        arrowRightKey = 39;
 
 
-	initiateMap();
-	storyId = document.URL.split("/create/")[1];
-
-	story = new newStoryObj(map);
-	story.constructorId(storyId);
-	story.readStory( function(s) {
-		s.loadStoryElements(true,false,true, function(s){
-			if (story.getAuthor().email != user.getEmail() || !story.getAuthor().email.indexOf("@lostinreality.net")) {
-				alert('This Story does not belong to you or you are not allowed to edit.');
-				document.location.href = '/profile';
-				return;
-			}
-			posts = story.getOrderedPosts();
-			//posts = story.getPosts();
-			document.title = story.getTitle();
-			$('#publish-link, #delete-link').css('display' , 'block' );
-			if (story.isPublished()) $('#publish-link').removeClass('ga-event-maker-publish').addClass('published');
-			buildStoryBody();
-			buildStoryPostList();
-			fitStoryOnView(s.getMarkers());
-		});
-	});
-
-	//initialize events
-	intializeEvents();
-	//loadGaEvents();
+function getElementAtCursorPosition() {
+  if (window.getSelection) {
+    var selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      var element = selection.getRangeAt(0).startContainer;
+      if (element.nodeName == "#text") //if is a textnode
+        element = element.parentNode;
+    }
+    console.log(element);
+    return element;
+  }
 }
 
-function intializeEvents() {
-	//----------------
-	$('#content-wrapper').css({ height: $(window).innerHeight() - $('.navbar').outerHeight(true)});
-
-	//----------------
-	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
-	updateMapContainerSize();
-
-	//----------------
-	$('#btn-show-map').click(function() {
-		$('#content-wrapper').removeClass('posts-open');
-		$('#content-wrapper').toggleClass('map-open');
-		toggleMapContainerState()
-	});
-
-	$('#btn-show-posts').click(function() {
-		$('#content-wrapper').removeClass('map-open');
-		$('#content-wrapper').toggleClass('posts-open');
-	});
-
-	$('#story-menu').hover(function() {
-		if ($('#content-wrapper').hasClass('container-collapsed')) return;
-		$('#content-wrapper').removeClass('map-open');
-		$('#content-wrapper').toggleClass('posts-open');
-	});
-
-	//----------------
-	$(window).resize(function() {
-		$('#content-wrapper').css({ height: $(window).innerHeight() - $('.navbar').outerHeight(true) });
-		$('#content-wrapper').removeClass('map-open');
-		updateMapContainerSize();
-		if ($(window).innerWidth() < 768)
-			$('#content-wrapper').addClass('container-collapsed');
-		else
-			$('#content-wrapper').removeClass('container-collapsed');
-	});
-
-	//----------------
-	$('#story-map').hover(function() {
-		// if ($('#content-wrapper').hasClass('map-open')) return;
-		// toggleOpenMap()
-	});
-
-
-
+function getSectionAtCursorPosition() {
+  var currentelement = getElementAtCursorPosition();
+  if ($(currentelement).is('.section'))
+    return currentelement;
+  else {
+    return $(currentelement).closest('.section')[0];
+  }
 }
 
-function updateMapContainerSize() {
-	var wS = $('#content-wrapper').innerWidth();
-	var hS = $('#content-wrapper').innerHeight();
-	if ($('#content-wrapper').hasClass('map-open')) {
-		if ($('#content-wrapper').hasClass('container-collapsed'))
-			size = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
-		else
-			size = { left:.40*wS , top:0*hS, width:.60*wS , height:1.00*hS, borderRadius:0 }
-	} else {
-		if ($('#content-wrapper').hasClass('container-collapsed'))
-			size = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
-		else
-			size = { left:.88*wS , top:0*hS, width:.12*wS , height:1.00*hS, borderRadius:0  }
-	}
-	$('#story-map').css(size)
-	$('#map-canvas').css({width:size.width, height:size.height})
-	google.maps.event.trigger(map, 'resize');
+function addSectionWithLocation() {
+  var locationSection = $("<div class='section location-section'/>");
+  buildMapContainer(location).appendTo(locationSection);
+  var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
+  locationSection.insertAfter($(getSectionAtCursorPosition()));
+  resetCaretPositionOnElement(firstp[0],0);
 }
 
-function toggleMapContainerState() {
-	var wS = $('#content-wrapper').innerWidth();
-	var hS = $('#content-wrapper').innerHeight();
-	defaultStoryMapCss = { left:.88*wS , top:0*hS, width:.12*wS , height:1.00*hS, borderRadius:0  }
-	defaultStoryMapColapseCss = { left:.95*wS-50 , top:.95*hS-50, width:50 , height:50, borderRadius:25  }
-	openStoryMapCss = { left:.40*wS , top:0*hS, width:.60*wS , height:1.00*hS, borderRadius:0 }
-	openStoryMapColapseCss = { left:.10*wS , top:0*hS, width:.90*wS , height:1.00*hS, borderRadius:0 }
+function buildMapContainer(location) {
+  var map;
 
-	if ($('#content-wrapper').hasClass('map-open')) {
-		if ($('#content-wrapper').hasClass('container-collapsed'))
-			resizeMap(defaultStoryMapColapseCss,openStoryMapColapseCss,true);
-		else
-			resizeMap(defaultStoryMapCss,openStoryMapCss,true);
-	} else {
-		if ($('#content-wrapper').hasClass('container-collapsed'))
-			resizeMap(openStoryMapColapseCss,defaultStoryMapColapseCss,false);
-		else
-			resizeMap(openStoryMapCss,defaultStoryMapCss,false);
-	}
+  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
+  addLocationDataAttrOnElement(locationBanner,location)
+  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
+  var locationNameelem = $('<p class="location-name">' + location.locationName + '</p>').appendTo(locationBanner);
+  var deleteLocationBtn = $('<button type="button" class="delete-location close"><span>&times;</span></button>').appendTo(locationBanner);
+
+  // map popover
+  var mapContainer = $("<div class='map-container' contenteditable='false'/>");
+  var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
+  var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
+  var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
+  searchboxelem.val(location.locationName);
+  var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
+  var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
+  $('<div class="map-sight"/>').appendTo(mapContainer);
+
+
+  locationBanner.popover({
+    html: true,
+    content: mapContainer,
+    placement: 'bottom',
+    animation: true,
+    trigger: 'manual'
+  })
+    .on('shown.bs.popover', function () {
+      var coords = new Object();
+      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
+      coords.zoom = parseFloat(location.zoom);
+      if (!map)
+        map = initiateMap(mapelem[0],searchboxelem[0],coords);
+  })
+
+  locationNameelem.click(function() {
+      locationBanner.popover('show');
+  })
+
+  cancelLocationSelection.click(function() {
+    locationBanner.popover('hide');
+  })
+
+  confirmLocationSelection.click(function() {
+    location.latitude = map.getCenter().lat();
+    location.longitude = map.getCenter().lng();
+    location.locationName = searchboxelem.val();
+    location.zoom = map.getZoom();
+    addLocationDataAttrOnElement(locationBanner,location);
+    if (!map.marker)
+      map.marker = new google.maps.Marker({map: map});
+    map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
+    locationNameelem.text(location.locationName)
+    locationBanner.popover('hide');
+  })
+
+  deleteLocationBtn.click(function() {
+    deleteLocationSection(locationBanner.parent());
+  })
+
+  return locationBanner;
 }
 
-function toggleOpenMap() {
-	$('#content-wrapper').removeClass('posts-open');
-	$('#content-wrapper').toggleClass('map-open');
-	toggleMapContainerState()
+function deleteLocationSection(sectionNode) {
+  sectionNode.find('.location-banner').remove();
+  prevSection = sectionNode.prev();
+  if (!prevSection || prevSection.hasClass('location-section') || prevSection.hasClass('title')) {
+    sectionNode.removeClass('location-section')
+  } else {
+    sectionNode.children().each(function() {
+      $(this).appendTo(prevSection);
+    });
+    sectionNode.remove();
+  }
+  updateSectionDistribution();
 }
 
-function buildStoryBody() {
-	storyBody = $("#story-body");
-	storyHeader = $('<div/>').attr('id', 'post-' + story.getInitPost().getPostId())
-							.addClass('story-header')
-							.addClass('post-node');
-
-	//Prologue/Intro Image - !!! FALTA ADICIONAR O IMAGE CONTROL
-	var imageContainer = $('<div class="image-container no-image"/>').attr('id', 'image-post-' + story.getInitPost().getPostId())
-							.append('<img atl="image for ' + story.getInitPost().getTitle() + '">');
-	var imageOverlay = $('<div class="image-overlay no-image"></div>').appendTo(imageContainer);
-	var removeImageButton = $('<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
-							.appendTo(imageOverlay);
-	var fileinputButton = $('<span class="btn fileinput-button"><span class="glyph-icon icon-medium flaticon-picture11"></span> Place a location image</span>')
-							.appendTo(imageOverlay);
-	var fileUploadInputElem = $('<input type="file" name="files[]" multiple>')
-							.appendTo(fileinputButton);
-	setupImageUploadOnElement(fileUploadInputElem);
-
-	imageContainer.find('img').load(function() {
-		if (story.getInitPost().getImageUrl() && story.getInitPost().getImageUrl().length > 0)
-			imageContainer.removeClass('no-image').addClass('image');
-		else
-			imageContainer.removeClass('image').addClass('no-image');
-		$(this).unbind();
-	});
-	imageContainer.find('img').attr('src',story.getInitPost().getImageUrl())
-
-	// remove post image
-	removeImageButton.click(function() {
-		story.getInitPost().setImageUrl(null);
-		story.setThumbnail(null);
-		story.getInitPost().updatePost(function() {
-			story.updateStory(function() {
-				imageContainer.removeClass('image').addClass('no-image');
-				imageContainer.find('img').attr('src','');
-				$('#story-body').scrollspy('refresh');
-			});
-		});
-	});
-
-	storyHeader.append(imageContainer);
-
-	//Location
-	addressInput = $('<input class="post-location"/>')
-				.attr('placeholder','LOCATION')
-				.change(function() {
-					var address = addressInput.val();
-					story.setLocationName(address);
-					story.updateStory(function() {});
-				});
-
-	if (story.getLocationName() && story.getLocationName().length > 0)
-		addressInput.val(story.getLocationName());
-	else
-		addressInput.val('');
-
-	storyHeader.append(addressInput);
-
-	//Title
-	titleInput = $('<input class="post-title"/>')
-				.attr('placeholder','Story Title')
-				.change(function() {
-					var newtitle = titleInput.val();
-					// need to validate
-					story.setTitle(newtitle);
-					story.getInitPost().setTitle(newtitle);
-					story.getInitPost().updatePost(function() {
-						story.updateStory(function() {
-							$('#post-list a[href="#post-' + story.getInitPost().getPostId() + '"]').html(story.getTitle());
-							document.title = story.getTitle();
-						});
-					});
-				});
-
-	if (story.getTitle() && story.getTitle().length > 0)
-		titleInput.val(story.getTitle());
-	else
-		titleInput.val('');
-
-	storyHeader.append(titleInput);
-
-	//Author
-	storyHeader.append("<div class='post-author'><em>by " + story.getAuthor().fullName + "</em></div>");
-
-	//Summary/ Intro Text
-	var textAreaInput = $('<textarea class="post-text" type="text" maxlength="255"/>')
-						.attr('placeholder','...')
-						.change(function() {
-							var newtext = textAreaInput.val();
-							// need to validate
-							story.getInitPost().setText(newtext);
-							story.setSummary(newtext);
-							story.updateStory(function() {
-								story.getInitPost().updatePost()
-							});
-						});
-
-	if (story.getInitPost().getText() && story.getInitPost().getText().length > 0)
-		textAreaInput.val(story.getInitPost().getText());
-	else
-		textAreaInput.val('');
-
-	storyHeader.append(textAreaInput);
-
-	//Post Overlay
-	storyHeader.append("<div class='post-overlay'/>");
-
-	//Add Location Button
-	$("<div class='add-location-button'>+ Add Location</div>").appendTo(storyHeader)
-		.click(function() {
-			var previousPostId = parseInt($(this).parent().attr('id').replace('post-',''))
-			if ($(this).parent().next().hasClass('post-node'))
-				var nextPostId = parseInt($(this).parent().next().attr('id').replace('post-',''));
-			else
-				var nextPostId = null;
-			setNewPostPosition(previousPostId,nextPostId);
-			enableCreatePost();
-		});
-
-	storyHeader.resize(function() {
-		console.log('post-node resized')
-	});
-
-	storyHeader.appendTo(storyBody);
-
-
-	//Posts
-	posts.forEach(function(p) {
-		if (!p.isInitPost())
-			buildPostDomElementsEdit(p).appendTo(storyBody);
-	});
-
-	$('.post-text').elastic();
-
-	$('.post-text').keydown(function() {
-		$('#story-body').scrollspy('refresh');
-	});
-
-	$('img').load(function() {
-		console.log('scrollspy refresh')
-		$('#story-body').scrollspy('refresh');
-	});
-
-};
-
-//--- Method buildPostDomElementsEdit ---//
-function buildPostDomElementsEdit(post) {
-	var postDomElement = $('<div/>').attr('id', 'post-' + post.getPostId())
-								.addClass('post-node')
-								.addClass('story-post');
-
-	//Title
-	var titleInput = $('<input/>')
-		.attr('placeholder','New Location')
-		.change(function() {
-			var newtitle = titleInput.val();
-			// missing validation
-			post.setTitle(newtitle);
-			post.updatePost(function() {
-				changePostListItemTitle(post);
-			});
-		});
-
-	if (post.getTitle() && post.getTitle().length > 0)
-		titleInput.val(post.getTitle());
-	else
-		titleInput.val('');
-
-	$('<div class="post-title" />').append('<span class="glyph flaticon-facebook30"></span>')
-										.append(titleInput)
-										.appendTo(postDomElement)
-
-	//Post Image - !!! FALTA ADICIONAR O IMAGE CONTROL
-	var imageContainer = $('<div class="image-container no-image"/>').attr('id', 'image-post-' + post.getPostId())
-							.append('<img atl="image for ' + post.getTitle() + '">');
-	var imageOverlay = $('<div class="image-overlay"></div>').appendTo(imageContainer)
-	var removeImageButton = $('<button type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
-							.appendTo(imageOverlay);
-	var fileinputButton = $('<span class="btn fileinput-button"><span class="glyph-icon icon-medium flaticon-picture11"></span> Place a location image</span>')
-							.appendTo(imageOverlay);
-	var fileUploadInputElem = $('<input type="file" name="files[]" multiple>')
-							.appendTo(fileinputButton);
-	setupImageUploadOnElement(fileUploadInputElem);
-
-	imageContainer.find('img').load(function() {
-		if (post.getImageUrl() && post.getImageUrl().length > 0)
-			imageContainer.removeClass('no-image').addClass('image');
-		else
-			imageContainer.removeClass('image').addClass('no-image');
-		$(this).unbind();
-	});
-	imageContainer.find('img').attr('src',post.getImageUrl())
-
-	// remove post image
-	removeImageButton.click(function() {
-		post.setImageUrl(null);
-		post.updatePost(function() {
-			imageContainer.addClass('no-image').removeClass('image');
-			imageContainer.find('img').attr('src','');
-		});
-	});
-
-	postDomElement.append(imageContainer);
-
-	//Text
-	var textAreaInput = $('<textarea class="post-text"/>')
-		.attr('placeholder','...')
-		.change(function() {
-			var newtext = textAreaInput.val();
-			// missing validation
-			post.setText(newtext);
-			post.updatePost();
-		});
-
-	if (post.getText() && post.getText().length > 0)
-		textAreaInput.val(post.getText());
-	else
-		textAreaInput.val('');
-
-	postDomElement.append(textAreaInput);
-
-	//Post Overlay
-	postDomElement.append("<div class='post-overlay'/>");
-
-	//Delete Location Button
-	$("<div class='delete-location-button'>- Delete Location</div>").appendTo(postDomElement)
-		.click(function() {
-			removePost(post);
-		});
-
-	//Add Location Button
-	$("<div class='add-location-button'>+ Add Location</div>").appendTo(postDomElement)
-		.click(function() {
-			var previousPostId = parseInt($(this).parent().attr('id').replace('post-',''));
-			if ($(this).parent().next().hasClass('post-node'))
-				var nextPostId = parseInt($(this).parent().next().attr('id').replace('post-',''));
-			else
-				var nextPostId = null;
-			setNewPostPosition(previousPostId,nextPostId);
-			enableCreatePost();
-		});
-
-	return postDomElement
+function updateSectionDistribution() {
+  var sectionsNodes = $('#story-content').find('.section')
+  sectionsNodes.each(function() {
+    var _this = $(this);
+    if (!_this.hasClass('location-section')) {
+      var nextSectionSibling = _this.next();
+      while (nextSectionSibling.length > 0 && !nextSectionSibling.hasClass('location-section')) {
+        nextSectionSibling.children().appendTo(_this);
+        nextSectionSibling = nextSectionSibling.next();
+      }
+    }
+  });
+  $(".section:empty").remove();
 }
 
-//--- Method buildStoryPostList ---//
-function buildStoryPostList() {
-	storyMenu = $("#story-menu");
-	postList = $('<ul id="post-list" class="nav nav-pills nav-stacked"/>');
+function addLocationDataAttrOnElement(element,location) {
+  location.latitude = (location.latitude) ? location.latitude : 0;
+  location.longitude = (location.longitude) ? location.longitude : 0;
+  location.radius = (location.radius) ? location.radius : 0;
+  location.zoom = (location.zoom) ? location.zoom : 0;
+  location.locationName = (location.locationName) ? location.locationName : "choose location";
 
-	//Intro item
-	postItem = $('<li/>');
-	postItem.append($('<a/>').attr('href','#post-' + story.getInitPost().getPostId())
-			.addClass('post-title')
-			.append(story.getTitle())
-	);
-
-	postItem.appendTo(postList);
-
-	//Post items
-	posts.forEach(function(p) {
-		if (!p.isInitPost())
-			buildPostListItem(p).appendTo(postList);
-	});
-
-	postList.appendTo(storyMenu);
-
-	// Events
-
-	$('#story-body').scrollspy({
-		target: '#story-menu',
-		offset: 200
-	});
-
-	$('#story-menu').on('activate.bs.scrollspy', function () {
-		activePost = $( "#story-menu li.active a").attr('href');
-
-		//$( "#story-body " + activePost + " .post-overlay" ).hide();
-		//$( "#story-body :not(" + activePost + ") .post-overlay" ).show();
-
-		postId = parseInt(activePost.replace('#post-',''));
-		if (activePost == '#story-header')
-			fitStoryOnView(story.getMarkers());
-		else
-			focusOnPostMarker(story.getPostFromId(postId));
-
-		//########################################
-
-		// var plist = []
-		// var post = story.getPostFromId(postId);
-		// post.getPreviousPosts().forEach(function(p) {
-			// plist.push(p.getTitle());
-		// })
-		// console.log(post.getTitle() + '\'s previous Posts: ' + plist);
-		// var plist = []
-		// post.getNextPosts().forEach(function(p) {
-			// plist.push(p.getTitle());
-		// })
-		// console.log(post.getTitle() + '\'s next Posts: ' + plist);
-
-		//########################################
-	});
-};
-
-//--- buildPostListItem method ---//
-function buildPostListItem(post) {
-	postItem = $('<li/>');
-	//Post Title
-	var title;
-	if (!post.getTitle() || post.getTitle().length == 0)
-		title = 'New Location'
-	else
-		title = post.getTitle();
-
-	postItem.append($('<a/>').attr('href','#post-' + post.getPostId())
-			.addClass('post-title')
-			.append('<span class="glyph flaticon-facebook30"></span>' + title)
-			// .append(title)
-	);
-
-	//click event
-	postItem.click(function() {});
-
-	return postItem
+  element.attr('lat',location.latitude);
+  element.attr('lng',location.longitude);
+  element.attr('radius',location.radius);
+  element.attr('zoom',location.zoom);
+  element.attr('locationName',location.locationName);
 }
 
-//--- addPostItemToPostList method ---//
-function addPostItemToPostList(post) {
-	$("#post-list").append(buildPostListItem(post));
-	$('#story-body').scrollspy('refresh');
+function readLocationDataAttrOnElement(element) {
+  var location = new Object();
+  location.latitude = parseFloat(element.attr('lat'));
+  location.longitude = parseFloat(element.attr('lng'));
+  location.radius = parseFloat(element.attr('radius'));
+  location.zoom = parseFloat(element.attr('zoom'));
+  location.locationName = element.attr('locationName');
+  return location;
 }
 
-//--- changePostListItemText method ---//
-function changePostListItemTitle(post) {
-	var postId = post.getPostId();
-	newtitle = post.getTitle()
-	$('#post-list a[href="#post-' + postId + '"]').html('<span class="glyph flaticon-facebook30"></span>' + newtitle);
+function addSection() {
+  var section = $("<div class='section'/>");
+  var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
+  section.insertAfter($(getSectionAtCursorPosition()));
+  resetCaretPositionOnElement(firstp[0],0);
+}
+
+function toggleTextSize() {
+  var currentElement = getElementAtCursorPosition();
+  $(currentElement).toggleClass("text-title-size");
+}
+
+function resetCaretPositionOnElement(el,offset) {
+  var range = document.createRange();
+  var sel = window.getSelection();
+  range.setStart(el, offset);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  $(el).focus();
+}
+
+function resetCaretPosition() {
+  var el = $("#story-content :first-child")[0];
+  var range = document.createRange();
+  var sel = window.getSelection();
+  range.setStart(el, 0);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  $(el).focus();
+}
+
+function buildPictureFrame(link,pos) {
+  var picContainer = $("<div class='section-item picture-container' contenteditable='true'/>");
+  var position = (pos) ? pos : "center"
+  var picFrame = $("<div class='picture-frame' position='" + position + "' contenteditable='false'/>").appendTo(picContainer);
+  $('<img src=' + link + '>').appendTo(picFrame);
+  var picControlers = $("<div class='picture-controls btn-group' />").appendTo(picFrame);
+  $("<a class='btn btn-default picture-position'>Left</a>").click(function() {
+                                                              picFrame.attr('position','left');
+                                                            })
+                                                            .appendTo(picControlers);
+  $("<a class='btn btn-default picture-position'>Center</a>").click(function() {
+                                                              picFrame.attr('position','center');
+                                                            })
+                                                            .appendTo(picControlers);
+  $("<a class='btn btn-default picture-position'>Right</a>").click(function() {
+                                                              picFrame.attr('position','right');
+                                                            })
+                                                            .appendTo(picControlers);
+  $("<a class='btn btn-default picture-position'>Cover</a>").click(function() {
+                                                              picFrame.attr('position','cover');
+                                                            })
+                                                            .appendTo(picControlers);
+  $("<a class='btn btn-default'>Delete</a>").click(function() {
+                                                              //TODO: delete image on server
+                                                              picContainer.remove();
+                                                            })
+                                                            .appendTo(picControlers);
+  $("<p class='picture-caption' contenteditable='true'/>").appendTo(picFrame);
+  return picContainer;
 }
 
 //--- initiateMap method ---//
-function initiateMap() {
+function initiateMap(mapelem,searchboxelem,coords) {
+
 	var mapOptions = {
-		zoom : 12,
-		streetViewControl: false,
+		zoom : 2,
+		streetViewControl: true,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-		panControl : false,
-		panControlOptions : {position: google.maps.ControlPosition.RIGHT_CENTER},
-		zoomControl : false,
+    scaleControl : true,
+		zoomControl : true,
 		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
 		mapTypeId : google.maps.MapTypeId.ROADMAP,
 		mapTypeControl : true,
-		center : defaultLocation,
-		styles: mapstyles
+		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
 	}
 
-	map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
+  var map = new google.maps.Map(mapelem,mapOptions);
 
-	//--- Map Event Handlers ---//
-	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-		google.maps.event.addListener(map, 'click', mapLeftClicked);
-		//$('#map-canvas').addClass('retracted');
-		//fitStoryOnView(story.getMarkers());
-		google.maps.event.removeListener(listener);
-	});
+  if (!coords) {
+    var coords = new Object();
+    coords.position = new google.maps.LatLng(37, -20);
+    coords.zoom = 4;
+  } else {
+    map.marker = new google.maps.Marker({map: map, position:coords.position});
+  }
+  map.setZoom(coords.zoom);
+  map.setCenter(coords.position);
+
+
+  //-- SearchBox --//
+  var searchBox = new google.maps.places.SearchBox(searchboxelem);
+  // map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchboxelem);
+  //Bias the SearchBox results towards current map's viewport.
+  searchBox.setBounds(map.getBounds());
+  map.addListener('bounds_changed', function() {
+    searchBox.setBounds(map.getBounds());
+  });
+  searchBox.addListener('places_changed', function() {
+    var places = searchBox.getPlaces();
+    if (places.length == 0)
+      return;
+    map.setCenter(places[0].geometry.location);
+    map.setZoom(8);
+  });
+
+  return map;
 }
 
-//--- method resizeMap ---//
-function resizeMap(oldState,newState,isExpand) {
-	if (!map) return;
-	if (isExpand) {
-		$('#story-map').animate(newState, 500, 'easeOutCubic');
-		$('#map-canvas').css( {width: newState.width, height: newState.height});
-		google.maps.event.trigger(map, 'resize');
-	} else {
-		$('#story-map').animate( newState, 500, 'easeOutCubic', function() {
-			$('#map-canvas').css( {width: newState.width, height: newState.height});
-			google.maps.event.trigger(map, 'resize');
-		});
-	}
-	panX = (oldState.width-newState.width)/2;
-	panY = (oldState.height-newState.height)/2;
-	map.panBy(panX,panY);
+function isBeginingOfFirstChild() {
+  if (window.getSelection) {
+    var selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      var element = selection.getRangeAt(0).startContainer;
+      var offset = selection.getRangeAt(0).startOffset;
+      var isCollapsed = selection.getRangeAt(0).collapsed;
+      var firstchildOfCurrentSection = $(element).closest('.section :first-child')[0];
+      if (element === firstchildOfCurrentSection && offset==0 && isCollapsed)
+        return true;
+    }
+  }
+  return false;
 }
 
-//--- focusOnPostMarker ---//
-function focusOnPostMarker(post) {
-	if (!post.getMarker()) return;
+function isBeforePictureFrame() {
+  var currentelement = getElementAtCursorPosition();
+  if ($(currentelement).prev().is('.picture-container'))
+    return $(currentelement).prev();
+  return false;
+}
 
-	var latlng = post.getMarker().getPosition();
-	//fitStoryOnView(story.getMarkers())
-	map.panTo(latlng);
-	map.setZoom(20);
+function isCaretAtBegining() {
+  if (window.getSelection) {
+    var selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      var offset = selection.getRangeAt(0).startOffset;
+      var isCollapsed = selection.getRangeAt(0).collapsed;
+      if (offset==0 && isCollapsed)
+        return true;
+    }
+  }
+  return false;
+}
 
-    // if (map) map.setOptions({
-			// center: latlng,
-			// zoom : 13
-		// });
+function convertStoryContentToObject() {
+  var contentObject = [];
+  $('.section').each(function() {
+    var sectionObj = new Object();
+    var _thissection = $(this);
+    if (_thissection.hasClass('location-section')) {
+      sectionObj.type = 'location-section';
+      sectionObj.location = readLocationDataAttrOnElement(_thissection.find('.location-banner').first());
+    } else {
+      sectionObj.type = 'section';
+    }
+    sectionObj.content = [];
+    _thissection.children().each(function() {
+      var _thischild = $(this);
+      var itemObj = new Object();
+      if (_thischild.hasClass('story-text')) {
+        itemObj.type = STORY_TEXT
+        itemObj.text = _thischild.text();
+      }
+      if (_thischild.hasClass('picture-container')) {
+        itemObj.type = PICTURE_CONTAINER
+        itemObj.link = _thischild.find('img').attr('src')
+        itemObj.position = _thischild.find('.picture-frame').attr('position')
+      }
+      if (_thischild.hasClass('media-container')) {
+        itemObj.type = MEDIA_CONTAINER
+        itemObj.link = _thischild.find('.media-frame').attr('src')
+        itemObj.position = _thischild.find('.media-frame').attr('position');
+      }
+      if (_thischild.hasClass('ad-container')) {
+        itemObj.type = MEDIA_CONTAINER
+        itemObj.position = _thischild.find('.ad-frame').attr('position');
+      }
+      sectionObj.content.push(itemObj);
+    });
+    contentObject.push(sectionObj);
+  });
+  return contentObject;
+}
+
+/*------------------------
+      image controls
+-------------------------*/
+
+function positionPictureFrame(position) {
 
 }
 
-//--- fitStoryOnView ---//
-function fitStoryOnView(markers) {
-	//if (!story) return;
-	var bound = new google.maps.LatLngBounds();
-	if (markers.length == 0) {
-		if (map) centerOnUserLocation();
-	}
-	else if (markers.length == 1) {
-		if (map) map.setOptions({
-			center: markers[0].getPosition(),
-			zoom : 16 });
-	}
-	else {
-		for (var i = 0; i < markers.length; i++) {
-				bound.extend( markers[i].getPosition() );
-		}
-		if (map) map.fitBounds(bound);
-	}
+function uploadImageToServer(onFinished) {
+  var imageData = new FormData($('#image-upload-form')[0]);
+  stud_uploadStoryImage(imageData,story.id,function(data) {
+    console.log('picture-saved: ' + data);
+    if (onFinished) {
+      onFinished(data);
+    }
+  });
 }
 
-//--- toggleStatusIndicator method ---//
-function toggleStatusIndicator() {
-	$('#status').show();
-	setTimeout(function() {
-		$('#status').fadeOut(200);
-	}, 1000);
+/*------------------------
+      initialization
+-------------------------*/
+
+$(function() {
+  $('#image-upload-input').change(function(ev) {
+    var saveimagefile = ev.target.files[0];
+    var fileReader = new FileReader();
+    var cursorPosition = getElementAtCursorPosition();
+
+    fileReader.onload = function(ev2) {
+      uploadImageToServer(function(imageurl) {
+        buildPictureFrame(imageurl).insertBefore(cursorPosition);
+      });
+    };
+    fileReader.readAsDataURL(saveimagefile);
+
+  });
+
+  /* Set caret position at the firstchild of the article has the article is loaded */
+  resetCaretPosition();
+
+  // Overrides the return comand on the editable div
+  $('div[contenteditable]').keydown(function(e) {
+    // trap the return key being pressed
+    if (e.keyCode === 13) {
+      e.stopPropagation();
+      var currentelement = getElementAtCursorPosition();
+      if ($(currentelement).is('#story-content .title'))
+        return false;
+    }
+
+    // trap the back key being pressed
+    if (e.keyCode === 8) {
+      e.stopPropagation();
+      if (isBeginingOfFirstChild()) {
+        return false;
+      }
+      if (isBeforePictureFrame() && isCaretAtBegining()) {
+        isBeforePictureFrame().addClass('onfocus');
+        return false;
+      }
+    }
+  });
+
+  readStoryDataAndLoadOnDOM(story)
+
+
+  $(window).bind("wheel", function(event) {
+		var scrollTop = $(window).scrollTop();
+    $('#content-tools').css('top',scrollTop+200);
+  });
+
+  $(window).resize(function() {
+		var scrollTop = $(window).scrollTop();
+    $('#content-tools').css('top',scrollTop+200);
+  });
+
+  $('#story-content').mouseup(function(e) {
+    $('#floating-new-location-section-button').remove();
+    var selection = window.getSelection();
+    if (selection.rangeCount > 0) {
+      var range = selection.getRangeAt(0);
+      if (!range.collapsed) {
+        var floatingbutton = $('<button id="floating-new-location-section-button"/>');
+        $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(floatingbutton)
+        floatingbutton.appendTo($('#content-wrapper'));
+        floatingbutton.click(function() {
+          addNewLocationSectionFromSelection(range);
+          $('#floating-new-location-section-button').remove();
+          selection.removeAllRanges();
+        })
+        var bounding = range.getBoundingClientRect(),
+        top = bounding.bottom - $('#content-wrapper').offset().top + $(window).scrollTop(),
+        left = bounding.left - $('#content-wrapper').offset().left + bounding.width/2 - 20;
+        if (left < 0)
+          left = 0
+        else if (left > $(window).innerWidth() - 240)
+          left = $(window).innerWidth() - 240;
+        floatingbutton.css({ top:top, left:left});
+      }
+    }
+  });
+
+  $("#publish-link").click(function() {
+    populateStoryDetailsButton();
+    $('#story-details-modal').modal('show');
+  })
+});
+
+function populateStoryDetailsButton() {
+  var thumbnailscr = $(".picture-container img").first().attr("src"),
+  storytitle = $("#title").text(),
+  description = $(".story-text").first().text().substring(0,500)
+  loc = readLocationDataAttrOnElement($(".location-banner").first()),
+  $("#story-details-modal img#story-thumbnail").attr('src',thumbnailscr)
+  $("#story-details-modal #story-title").text(storytitle)
+  $("#story-details-modal #story-description").val(description)
+  $("#story-details-modal #story-location").empty();
+  buildLocationBannerForStoryDetailsModal(loc).appendTo($("#story-details-modal #story-location"))
+  $("#story-details-modal #story-tags")
+  $("#story-details-modal #story-external-link")
 }
 
-//--- mapLeftClicked method ---//
-function mapLeftClicked(mouseEvent) {
-	if (!story) return;
-	// random click does nothing
-	if (!enablePostCreation) {
-		return;
-	}
-
-	// create post if PostCreation is enabled
-	var clickedLocation = mouseEvent.latLng;
-	addNewPost(clickedLocation);
-
-	disableCreatePost();
+function toggleExternalLink() {
+  if ($("#story-details-modal #external-link-checkbox")[0].checked) {
+    $("#story-details-modal #story-external-link").removeAttr('disabled')
+  } else {
+    $("#story-details-modal #story-external-link").attr('disabled','')
+  }
 }
 
-//--- addNewPost method ---//
-function addNewPost(latLng) {
-	if (!story || previousPostId == null) return;
-	var newPost = newPostObj(map);
-	newPost.constructorStoryLatLngRadius(story, latLng.lat(), latLng.lng(), 5.0);
-	var previousPost = story.getPostFromId(previousPostId);
-	if (nextPostId) var nextPost = story.getPostFromId(nextPostId);
-	if (nextPostId) {
-		// delete previous transition
-		previousPost.getTransitionByEndPost(nextPost).deleteTransitionSimple(function() {
-			console.log('transition deleted');
-			newPost.createPost(function() {
-				story.addPost(newPost);
-				newPost.drawMarker();
-				// create new transitions
-				previousPost.createTransition(newPost,true);
-				newPost.createTransition(nextPost,true);
-				$("#post-" + previousPostId).after(buildPostDomElementsEdit(newPost));
-				$('.post-text').elastic()
-				$('#post-list a[href="#post-' + previousPostId + '"]').parent().after(buildPostListItem(newPost));
-				$('#story-body').scrollspy('refresh');
-				setNewPostPosition(null,null);
-				story.updateStory(function() {});
-			});
-		});
-	} else {
-		newPost.createPost(function() {
-			story.addPost(newPost);
-			newPost.drawMarker();
-			// create new transitions
-			previousPost.createTransition(newPost,true);
-			$("#post-" + previousPostId).after(buildPostDomElementsEdit(newPost));
-			$('.post-text').elastic()
-			$('#post-list a[href="#post-' + previousPostId + '"]').parent().after(buildPostListItem(newPost));
-			$('#story-body').scrollspy('refresh');
-			setNewPostPosition(null,null);
-			story.updateStory(function() {});
-		});
-	}
+function nextThumbnailOnStoryDetailsModal() {
+  changeThumbnailOnStoryDetailsModal('next')
 }
 
-function removePost(post) {
-	if (post.getNextPosts()[0]) {
-		previousPost = post.getPreviousPosts()[0]
-		nextPost = post.getNextPosts()[0];
-		story.removePost(post,function() {
-			console.log('post removed')
-			previousPost.createTransition(nextPost,true);
-			//remove post html elements
-			$('#story-body #post-' + post.getPostId()).remove();
-			$('#post-list a[href="#post-' + post.getPostId() + '"]').parent().remove();
-			$('#story-body').scrollspy('refresh');
-		})
-	} else {
-		story.removePost(post,function() {
-			console.log('last post deleted')
-			//remove post html elements
-			$('#story-body #post-' + post.getPostId()).remove();
-			$('#post-list a[href="#post-' + post.getPostId() + '"]').parent().remove();
-			$('#story-body').scrollspy('refresh');
-		})
-	}
+function previousThumbnailOnStoryDetailsModal() {
+  changeThumbnailOnStoryDetailsModal('previous')
 }
 
-//--- enableCreatePost method ---//
-function enableCreatePost(){
-	enablePostCreation = true;
-	map.setOptions({draggableCursor:'crosshair'});
-	toggleOpenMap();
+function changeThumbnailOnStoryDetailsModal(direction) {
+  var imagesrc=[],
+  currentSrc = $("#story-details-modal img#story-thumbnail").attr('src');
+  $(".picture-container img").each(function() {
+    imagesrc.push($(this).attr('src'));
+  });
+  var index = imagesrc.indexOf(currentSrc);
+  if (direction=="previous" && index > 0) {
+    $("#story-details-modal img#story-thumbnail").attr('src',imagesrc[--index])
+  } else if (direction=="next" && index < imagesrc.length-1) {
+    $("#story-details-modal img#story-thumbnail").attr('src',imagesrc[++index])
+  }
 }
 
-//--- disableCreatePost method ---//
-function disableCreatePost() {
-	enablePostCreation = false;
-	map.setOptions({draggableCursor: null });
-	toggleOpenMap();
+function buildLocationBannerForStoryDetailsModal(location) {
+  var map;
+
+  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
+  addLocationDataAttrOnElement(locationBanner,location)
+  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
+  var locationNameelem = $('<p class="location-name">' + location.locationName + '</p>').appendTo(locationBanner);
+
+  // map popover
+  var mapContainer = $("<div class='map-container' contenteditable='false'/>");
+  var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
+  var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
+  var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
+  searchboxelem.val(location.locationName);
+  var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
+  var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
+  $('<div class="map-sight"/>').appendTo(mapContainer);
+
+
+  locationBanner.popover({
+    html: true,
+    content: mapContainer,
+    placement: 'bottom',
+    animation: true,
+    trigger: 'manual'
+  })
+    .on('shown.bs.popover', function () {
+      var coords = new Object();
+      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
+      coords.zoom = parseFloat(location.zoom);
+      if (!map)
+        map = initiateMap(mapelem[0],searchboxelem[0],coords);
+  })
+
+  locationNameelem.click(function() {
+      locationBanner.popover('show');
+  })
+
+  cancelLocationSelection.click(function() {
+    locationBanner.popover('hide');
+  })
+
+  confirmLocationSelection.click(function() {
+    location.latitude = map.getCenter().lat();
+    location.longitude = map.getCenter().lng();
+    location.locationName = searchboxelem.val();
+    location.zoom = map.getZoom();
+    addLocationDataAttrOnElement(locationBanner,location);
+    if (!map.marker)
+      map.marker = new google.maps.Marker({map: map});
+    map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
+    locationNameelem.text(location.locationName)
+    locationBanner.popover('hide');
+  })
+
+  return locationBanner;
 }
 
-function setNewPostPosition(pPI,nPI) {
-	previousPostId = pPI;
-	nextPostId = nPI;
+function addNewLocationSectionFromSelection(range) {
+  var locationSection = $("<div class='section location-section'/>");
+  buildMapContainer(location).appendTo(locationSection);
+  var lastchild = $(range.endContainer).parents('.section-item')[0],
+  child = $(range.startContainer).parents('.section-item')[0],
+  parent = $(range.startContainer).parents('.section')[0],
+  // grab selected nodes
+  children = [child];
+  while (child != lastchild) {
+    child = child.nextSibling
+    children.push(child)
+    console.log(children);
+  }
+  // grab nodes after selection
+  lastchild = parent.children[parent.children.length-1];
+  var childrenAfterSelection = [child.nextSibling];
+  while (child != lastchild) {
+    child = child.nextSibling
+    childrenAfterSelection.push(child)
+    console.log(childrenAfterSelection);
+  }
+  // insert Selection nodes on a new section
+  children.forEach(function(elem) {
+    locationSection.append(elem);
+  });
+  if (locationSection.find('.story-text').length == 0)
+    $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
+  locationSection.insertAfter($(parent));
+  // insert remaining nodes after selection
+  // on a new section after the previously
+  // created section
+  var remainingNodesSection = $("<div class='section'/>");
+  childrenAfterSelection.forEach(function(elem) {
+    remainingNodesSection.append(elem);
+  });
+  remainingNodesSection.insertAfter(locationSection);
+
+  updateSectionDistribution();
 }
 
-function setupImageUploadOnElement(element) {
-	var imageContainer = element.parent().parent().parent();
-	var storyId = story.getStoryId();
-	var postId = parseInt(imageContainer.attr('id').replace('image-post-',''));
-	var post = story.getPostFromId(postId)
-	element.fileupload({
-        url: '/story/'+storyId+'/post/'+postId+'/uploadimage',
-        dataType: 'json',
-        //autoUpload: false,
-        acceptFileTypes: /(\.|\/)(gif|jpe?g|png)$/i,
-        maxFileSize: 5000000, // 5 MB
-        // Enable image resizing, except for Android and Opera,
-        // which actually support image resizing, but fail to
-        // send Blob objects via XHR requests:
-        // disableImageResize: /Android(?!.*Chrome)|Opera/
-        // .test(window.navigator.userAgent),
-        // previewMaxWidth: 100,
-        // previewMaxHeight: 100,
-        // previewCrop: true,
-		done: function (e, data) {
-			if (data.result.image && data.result.image.imageUrl != post.getImageUrl()) {
-				post.setImageUrl(data.result.image.imageUrl);
-				if (post.isInitPost()) {
-					story.setThumbnail(data.result.image.imageUrl);
-					story.updateStory();
-				}
-				imageContainer.addClass('no-image').removeClass('image')
-					.find('img')
-					.load(function() {
-						post.setImageWidth($(this).width())
-						post.setImageHeight($(this).height())
-						post.updatePost(function() {
-							imageContainer.removeClass('no-image').addClass('image')
-							$('#story-body').scrollspy('refresh');
-						});
-						$(this).unbind();
-					})
-					.attr('src',post.getImageUrl())
-			}
-		}
-	});
+function readStoryDataAndLoadOnDOM(story) {
+  var contentElement = $('#story-content');
+  $("#title").text(story.title);
+  story.content.forEach(function(sectionObj) {
+    if (sectionObj.type == "location-section") {
+      var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
+      buildMapContainer(sectionObj.location).appendTo(sectionElem)
+      if (sectionObj.content) {
+        sectionObj.content.forEach(function(itemObj) {
+          switch (itemObj.type) {
+            case STORY_TEXT:
+              $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
+            case PICTURE_CONTAINER:
+              buildPictureFrame(itemObj.link,itemObj.position).appendTo(sectionElem);
+              break;
+          }
+        });
+      } else {
+        $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
+      }
+    } else {
+      var sectionElem = $("<div class='section'/>").appendTo(contentElement);
+      if (sectionObj.content) {
+        sectionObj.content.forEach(function(itemObj) {
+          switch (itemObj.type) {
+            case STORY_TEXT:
+              $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
+            case PICTURE_CONTAINER:
+              buildPictureFrame(itemObj.link,itemObj.position).appendTo(sectionElem);
+              break;
+          }
+        });
+      } else {
+        $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
+      }
+    }
+  });
 }
 
-function centerOnUserLocation() {
-	if (navigator.geolocation) {
-		navigator.geolocation.getCurrentPosition(function(position) {
-			var user_location = new google.maps.LatLng(position.coords.latitude, position.coords.longitude);
-			var mapOptions = {center : user_location,};
-		}, function(){
-			var mapOptions = {center : defaultLocation};
-			map.setOptions(mapOptions);
-		});
-	} else {
-		var mapOptions = {center : defaultLocation};
-		map.setOptions(mapOptions);
-	}
+function saveStoryOnServer(published) {
+  var storycontent = convertStoryContentToObject();
+  story.title = $("#title").text();
+  story.summary = $("#story-details-modal #story-description").val();
+  story.thumbnail = $("#story-details-modal img#story-thumbnail").attr('src');
+  story.published = published;
+  story.content = JSON.stringify(storycontent)
+  var firstlocation = readLocationDataAttrOnElement($("#story-details-modal .location-banner"));
+  story.locations = [firstlocation];
+  // storycontent.forEach(function(sectionObj) {
+  //   story.locations.push(sectionObj.location);
+  // });
+
+  story.labels = [];
+
+  stud_updateStory(story, function(data) {
+    console.log('story saved');
+    console.log(data);
+  });
 }
 
-//--- deleteStory method ---//
-function deleteStory() {
-	if (story) story.deleteStory(function(story) {
-		document.location.href = '/profile';
-	});
-}
-
-//--- publishCurrentStory method ---//
 function publishStory() {
-	if (story) {
-		story.publishStory('1',function(s) {
-			$('#publish-dialogue').fadeOut(200);
-			$('#share-dialogue').fadeIn(200);
-		});
-	}
+  saveStoryOnServer(true);
 }
 
-//--- unpublishCurrentStory method ---//
-function unpublishStory() {
-	if (story) {
-		story.publishStory('0', function(s) {
-			$('#share-dialogue').fadeOut(200);
-		});
-	}
-}
-
-function openPublishDialog() {
-	if (story.isPublished())
-		$('#share-dialogue').fadeIn(200);
-	else
-		$('#publish-dialogue').fadeIn(200);
-}
-
-//--- Convert latLng in readable address ---//
-function getStoryAddress(story,latlng,onFinished) {
-	var geocoder = new google.maps.Geocoder();
-	geocoder.geocode({'latLng': latlng }, function(results, status) {
-		if (status == google.maps.GeocoderStatus.OK) {
-			if (results[0]) {
-				story.setLocationName(buildStoryLocation(results[0]));
-			}
-		} else {
-			console.log("Geocoder failed due to: " + status);
-		}
-		if (onFinished) onFinished()
-	});
-}
-
-function getTypeGeoCode(result,type) {
-	var adrcmps = result.address_components;
-	for ( var i = 0; i < adrcmps.length; i++) {
-		for ( var j = 0; j < adrcmps[i].types.length; j++) {
-			if (adrcmps[i].types[j] == type)
-				return adrcmps[i].long_name;
-		}
-	}
-	return '';
-}
-
-function buildStoryLocation(result) {
-	var country = getTypeGeoCode(result,'country')
-	var locality = getTypeGeoCode(result,'locality') + ', '
-	if (locality == ', ')
-		locality = getTypeGeoCode(result,'administrative_area_level_2') + ', '
-	if (country == '')
-		country = getTypeGeoCode(result,'administrative_area_level_1')
-
-	return locality + country;
-}
-
-//SOCIAL
-//Facebook
-function openFacebookSharePopup() {
-	var width  = 575,
-		height = 400,
-		left   = ($(window).width()  - width)  / 2,
-		top    = ($(window).height() - height) / 2,
-		url    = 'http://www.facebook.com/sharer/sharer.php?s=100&amp;p[url]=http://lostinreality.net/read/' + story.getStoryId(),
-		opts   = 'status=1' +
-				 ',width='  + width  +
-				 ',height=' + height +
-				 ',top='    + top    +
-				 ',left='   + left;
-
-	window.open(url, 'popup', opts);
-}
-//Twitter
-function openTwitterSharePopup() {
-	var width  = 830,
-		height = 630,
-		left   = ($(window).width()  - width)  / 2,
-		top    = ($(window).height() - height) / 2,
-		url    = 'https://twitter.com/intent/tweet?url=http://lostinreality.net/read/' + story.getStoryId() + '&amp;text=' + story.getTitle() + '&amp;via=LstnReality',
-		opts   = 'status=1' +
-				 ',width='  + width  +
-				 ',height=' + height +
-				 ',top='    + top    +
-				 ',left='   + left;
-
-	window.open(url, 'popup', opts);
+function publishStory() {
+  saveStoryOnServer(false);
 }

@@ -2436,3 +2436,7 @@ function stud_findTagsStaringWith(value,success) {
 		success: success
 	});
 }
+
+function publisherCreateStory() {
+	stud_publisherCreateStory()
+}

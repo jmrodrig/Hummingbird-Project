@@ -213,8 +213,12 @@ section {
 	display:none;
 }
 
-#create-link{
+#create-link {
 	display:none;
+}
+
+#publish-link {
+	display:block;
 }
 
 #stories-link{
@@ -265,10 +269,6 @@ section {
 
 #signup-link:hover {
 	background-color: rgba(111, 203, 66, 1);
-}
-
-#publish-link {
-	display:none;
 }
 
 #delete-link {

@@ -10,8 +10,8 @@ public class Story implements Comparable<Story> {
 	public String title;
 	public String summary;
 	public String content;
-	public Long[] postIds;
 	public boolean published;
+	public List<Location> locations;
 	public Location location;
 	public Place place;
 	public User author;
@@ -65,7 +65,6 @@ public class Story implements Comparable<Story> {
 		result.summary = story.getSummary();
 		result.content = story.getContent();
 		result.published = story.isPublished();
-		result.location = Location.getLocation(story.getLocation());
 		result.thumbnail = story.getThumbnail();
 		result.locationName = story.getLocationName();
 		result.articleTitle = story.getArticleTitle();
@@ -80,8 +79,6 @@ public class Story implements Comparable<Story> {
 		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
 		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
 		result.type = 0;
-		result.collections = getPublicCollections(story);
-
 
 		// if (forceReadDomainStory || story.isDomainStoryLoaded()){
 		// 	com.lir.library.domain.Story domainStory = story.getDomainStory();
@@ -107,31 +104,31 @@ public class Story implements Comparable<Story> {
 		return result;
 	}
 
-	public static Story getCollectionAsStory(models.StoryCollection collection) {
-		if (collection == null)
-			return null;
-		Story result = new Story();
-		result.id = collection.getId();
-		result.title = collection.getName();
-		result.summary = collection.getDescription();
-		result.published = collection.isPublished();
-		result.location = Location.getLocation(collection.getCollectionLocation());
-		result.thumbnail = collection.getImageUrl();
-		result.noFollowers = collection.getFollowers().size();
-		result.noUsers = collection.getUsers().size();
-		result.noStories = collection.getStories().size();
-		result.type = 1;
-		return result;
-	}
+	// public static Story getCollectionAsStory(models.StoryCollection collection) {
+	// 	if (collection == null)
+	// 		return null;
+	// 	Story result = new Story();
+	// 	result.id = collection.getId();
+	// 	result.title = collection.getName();
+	// 	result.summary = collection.getDescription();
+	// 	result.published = collection.isPublished();
+	// 	result.location = Location.getLocation(collection.getCollectionLocation());
+	// 	result.thumbnail = collection.getImageUrl();
+	// 	result.noFollowers = collection.getFollowers().size();
+	// 	result.noUsers = collection.getUsers().size();
+	// 	result.noStories = collection.getStories().size();
+	// 	result.type = 1;
+	// 	return result;
+	// }
 
-	private static List<StoryCollection> getPublicCollections(models.Story story) {
-		List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
-		for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
-			if (collection.isPublished())
-				collections.add(StoryCollection.getStoryCollection(collection,true));
-		}
-		return collections;
-	}
+	// private static List<StoryCollection> getPublicCollections(models.Story story) {
+	// 	List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
+	// 	for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
+	// 		if (collection.isPublished())
+	// 			collections.add(StoryCollection.getStoryCollection(collection,true));
+	// 	}
+	// 	return collections;
+	// }
 
   public int compareTo(Story story) {
       return (story.id).compareTo(this.id);

@@ -50,6 +50,8 @@ public class Story extends Model {
 
 	private static final long serialVersionUID = 1L;
 
+	private static final Integer CURRENT_MODEL_VERSION = 2;
+
 	private static HashMap<Long, com.lir.library.domain.Story> loadedStories = new HashMap<Long, com.lir.library.domain.Story>();
 
 	@Version
@@ -80,6 +82,12 @@ public class Story extends Model {
 
 	@Column(name = "location_name")
 	private String locationName;
+
+	@Column(name = "model_version")
+	private Integer modelversion;
+
+	@Column(name = "story_language")
+	private String language;
 
 	@OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
 	private List<UserStory> userStories;
@@ -123,9 +131,8 @@ public class Story extends Model {
 	@Transient
 	private com.lir.library.domain.Story domainStory;
 
-	@OneToOne(fetch = FetchType.LAZY, cascade = CascadeType.ALL)
-	@JoinColumn(name = "location_id")
-	private Location location;
+	@OneToMany(mappedBy = "story", cascade=CascadeType.ALL)
+	private List<Location> locations;
 
 	@OneToOne(fetch = FetchType.LAZY)
 	@JoinColumn(name = "place_id")
@@ -137,6 +144,20 @@ public class Story extends Model {
 
 	public void setId(long id) {
 		this.id = id;
+	}
+
+	public Integer getModelVersion() {
+		return modelversion;
+	}
+
+	public void setModelVersion(Integer modelversion) {
+		this.modelversion = modelversion;
+	}
+
+	public Boolean isModelVersion(Integer cmodelversion) {
+		if (this.getModelVersion() == cmodelversion)
+			return true;
+		return false;
 	}
 
 	public String getTitle() {
@@ -229,11 +250,22 @@ public class Story extends Model {
 	// }
 
 	public Location getLocation() {
-		return location;
+		return locations.get(0);
 	}
 
-	public void setLocation(Location location) {
-		this.location = location;
+	public List<Location> getLocations() {
+		return locations;
+	}
+
+	public void setLocations(List<controllers.json.Location> jsonLocations) {
+		for (controllers.json.Location jsonLocation : jsonLocations) {
+			Location location = new Location(jsonLocation,this);
+			locations.add(location);
+		}
+	}
+
+	public void setLocation(controllers.json.Location jsonLocation) {
+		locations.add(new Location(jsonLocation, this));
 	}
 
 	public Place getPlace() {
@@ -291,6 +323,14 @@ public class Story extends Model {
 		this.locationName = ln;
 	}
 
+	public String getLanguage() {
+		return this.language;
+	}
+
+	public void setLanguage(String lang) {
+		this.language = lang;
+	}
+
 	public com.lir.library.domain.Story getDomainStory() {
 
 		loadCachedDomainStory();
@@ -337,32 +377,6 @@ public class Story extends Model {
 		this.save(DBConstants.lir_backoffice);
 	}
 
-	private void updateStoryLocation() {
-		Location average = null;
-		int count = 0;
-		for (Post post : this.domainStory.getPosts()) {
-			if (post.getLocation() == null){
-				continue;
-			}
-			Location location = new Location(post.getLocation());
-			if (average != null){
-				average.setLatitude(average.getLatitude() + location.getLatitude());
-				average.setLongitude(average.getLongitude() + location.getLongitude());
-				average.setRadius(average.getRadius() + location.getRadius());
-			}else{
-				average = location;
-			}
-			count++;
-		}
-		if (average != null){
-			average.setLatitude(average.getLatitude() / count);
-			average.setLongitude(average.getLongitude() / count);
-			average.setRadius(average.getRadius() / count);
-			average.save(DBConstants.lir_backoffice);
-		}
-		this.setLocation(average);
-	}
-
 	public static Finder<Long, Story> finder = new Finder<Long, Story>(Long.class, Story.class);
 	public static JSONSerializer json = new JSONSerializer().include("id", "title", "summary", "cost", "labels.name").exclude("*");
 
@@ -392,7 +406,9 @@ public class Story extends Model {
 	}
 
 	public static List<models.Story> findAllByPublished() {
-		List<Story> stories = finder.where().eq("published", true).findList();
+		List<Story> stories = finder.where().eq("published", true)
+																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.findList();
 		return stories;
 	}
 
@@ -401,7 +417,7 @@ public class Story extends Model {
 		List<Story> stories = new ArrayList<Story>();
 		for (Location location : Location.findLocationsWithinBounds(w,n,e,s)) {
 			Story story = location.getStory();
-			if (story != null && story.isPublished()) {
+			if (story != null && story.isPublished() && !stories.contains(story) && story.isModelVersion(CURRENT_MODEL_VERSION)) {
 				stories.add(story);
 			}
 		}
@@ -458,6 +474,15 @@ public class Story extends Model {
 		return story;
 	}
 
+	public static Story create(User user)	throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+		Story story = new Story();
+		story.setModelVersion(CURRENT_MODEL_VERSION);
+		story.save(DBConstants.lir_backoffice);
+		System.out.println(story.getId());
+		UserStory.create(true, true, 0, "", user, story);
+		return story;
+	}
+
 	public static Story update(long id, String title, String summary, String content, Double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
@@ -478,6 +503,18 @@ public class Story extends Model {
 		return story;
 	}
 
+	public static Story update(long id, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
+		Story story = Story.findById(id);
+		if (story == null) {
+			throw new ModelNotFountException();
+		}
+
+		setStory(story, title, summary, contentJSON, published,	locations);
+		story.save(DBConstants.lir_backoffice);
+		story.setLabels(labels);
+		return story;
+	}
+
 	private static void setStory(Story story, String title, String summary, String content, double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
@@ -487,7 +524,15 @@ public class Story extends Model {
 		story.setPath(filePath);
 		story.setLocationName(locationName);
 		story.setArticle(articleTitle,articleDescription,articleImage,articleLink,articleDate,articleSource,articleAuthor,articleLanguage);
-		story.setLocation(new Location(location));
+		story.setLocation(location);
+	}
+
+	private static void setStory(Story story, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations) throws IOException {
+		story.setTitle(title);
+		story.setSummary(summary);
+		story.setContent(contentJSON);
+		story.setPublished(published);
+		story.setLocations(locations);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {

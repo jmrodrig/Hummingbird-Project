@@ -7,13 +7,11 @@ GET     /                       			controllers.Application.index()
 GET			/dashboards							controllers.Application.dashboards()
 GET			/library							controllers.Application.library()
 GET			/read/:storyId						controllers.Application.read(storyId: Long)
-GET			/create/:storyId					controllers.Application.create(storyId: Long)
+GET			/publisher/create/:storyId					controllers.Application.editStory(storyId: Long)
 GET 		/profile							controllers.Application.profile()
 GET 		/profile/:numberId  	controllers.Application.publicProfile(numberId: Long)
 GET     /scraper              controllers.Application.scraper()
 GET	    /collection/:collectionId											controllers.Application.openCollectionView(collectionId: Long)
-GET		  /@:tag										              controllers.Application.handleTagsIndex(tag: String)
-#GET		/collection/:collectionId/@:tag				controllers.Application.handleTagsCollection(tag: String)
 
 
 
@@ -46,7 +44,6 @@ GET			/notify/:storyId							controllers.Application.sendNotification(storyId: L
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
 GET    /highlight/:itemId,:type     controllers.Application.highlightItem(itemId: Long,type: Integer)
-GET    /highlighted                 controllers.Application.getHighlightedItems()
 GET   /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
 
 
@@ -60,7 +57,7 @@ GET		/listuserstories/:numberId														controllers.Stories.listUserStories
 GET		/listusersavedstories/:numberId														controllers.Stories.listUserSavedStories(numberId: Long)
 GET		/story/read/:storyId												controllers.Stories.readStory(storyId: Long)
 DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
-POST	/story														controllers.Stories.createStory()
+GET	/story/create														controllers.Application.createStory()
 PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)
 GET		/story/:storyId/download									controllers.Stories.downloadStory(storyId: Long)
 POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(storyId: Long)
@@ -84,25 +81,6 @@ PUT /collection/:collectionId/connect/:story1Id,:story2Id       controllers.Stor
 PUT /collection/:collectionId/disconnect/:story1Id,:story2Id       controllers.Stories.disconnectStories(collectionId: Long, story1Id: Long, story2Id: Long)
 POST /collection/:collectionId/create                               controllers.Stories.createStoryOnCollection(collectionId: Long)
 PUT /collection/:collectionId/publish/:publish                               controllers.Stories.publishCollection(collectionId: Long, publish: Integer)
-
-
-
-#Posts
-
-GET		/story/:storyId/post										controllers.Posts.listPosts(storyId: Long)
-GET		/story/:storyId/post/:postId								controllers.Posts.readPost(storyId: Long, postId: Long)
-POST	/story/:storyId/post										controllers.Posts.createPost(storyId: Long)
-PUT		/story/:storyId/post/:postId								controllers.Posts.updatePost(storyId: Long, postId: Long)
-DELETE	/story/:storyId/post/:postId								controllers.Posts.deletePost(storyId: Long, postId: Long)
-POST	/story/:storyId/post/:postId/uploadimage					controllers.Posts.uploadImage(storyId: Long, postId: Long)
-
-#Transitions
-
-GET		/story/:storyId/post/:postId/transition						controllers.Transitions.listTransitions(storyId: Long, postId: Long)
-GET		/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.readTransition(storyId: Long, postId: Long, transitionId: Long)
-POST	/story/:storyId/post/:postId/transition						controllers.Transitions.createTransition(storyId: Long, postId: Long)
-PUT		/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.updateTransition(storyId: Long, postId: Long, transitionId: Long)
-DELETE	/story/:storyId/post/:postId/transition/:transitionId		controllers.Transitions.deleteTransition(storyId: Long, postId: Long, transitionId: Long)
 
 #Map
 GET		/map														controllers.Maps.index()

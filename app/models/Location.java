@@ -7,6 +7,8 @@ import javax.persistence.GeneratedValue;
 import javax.persistence.Id;
 import javax.persistence.OneToOne;
 import javax.persistence.Table;
+import javax.persistence.JoinColumn;
+import javax.persistence.ManyToOne;
 
 import java.util.List;
 import java.util.ArrayList;
@@ -47,7 +49,8 @@ public class Location extends Model {
 	@Column(name = "name")
 	private String name;
 
-	@OneToOne(fetch = FetchType.LAZY, mappedBy = "location")
+	@ManyToOne(fetch=FetchType.LAZY)
+	@JoinColumn(name="story_id")
 	private Story story;
 
 	public Double getLatitude() {
@@ -106,13 +109,14 @@ public class Location extends Model {
 		return true;
 	}
 
-	public Location(controllers.json.Location location) {
+	public Location(controllers.json.Location location, models.Story story) {
 		this.name = location.name;
 		this.latitude = location.latitude;
 		this.longitude = location.longitude;
 		this.radius = location.radius;
 		this.zoom = location.zoom;
 		this.showpin = location.showpin;
+		this.story = story;
 		this.save(DBConstants.lir_backoffice);
 	}
 

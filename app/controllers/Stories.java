@@ -158,44 +158,41 @@ public class Stories extends Controller {
 		return ok(json);
 	}
 
-	@SecureSocial.SecuredAction
-	public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
-
-		controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
-		if (jsonStory.title == null || jsonStory.title.length() == 0){
-			jsonStory.title = "Untitled Story";
-		}
-
-		User user = getCurrentUser();
-		Story domainStory = new Story();
-		domainStory.setTitle(jsonStory.title);
-		if (jsonStory.summary != null){
-			domainStory.setSummary(jsonStory.summary);
-		}
-
-		models.Story story = models.Story.create(user,
-											jsonStory.title,
-											jsonStory.summary,
-											jsonStory.content,
-											0.0,
-											jsonStory.published,
-											null,
-											jsonStory.locationName,
-											jsonStory.articleTitle,
-											jsonStory.articleDescription,
-											jsonStory.articleImage,
-											jsonStory.articleLink,
-											jsonStory.articleDate,
-											jsonStory.articleSource,
-											jsonStory.articleAuthor,
-											jsonStory.articleLanguage,
-											jsonStory.location,
-											jsonStory.labels);
-
-		jsonStory = controllers.json.Story.getStory(story, user, true);
-		String json = new Gson().toJson(jsonStory);
-		return ok(json);
-	}
+	// @SecureSocial.SecuredAction
+	// public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+	//
+	// 	controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
+	//
+	// 	if (jsonStory.title == null || jsonStory.title.length() == 0){
+	// 		jsonStory.title = "Untitled Story";
+	// 	}
+	//
+	// 	User user = getCurrentUser();
+	// 	Story domainStory = new Story();
+	//
+	// 	models.Story story = models.Story.create(user,
+	// 										jsonStory.title,
+	// 										jsonStory.summary,
+	// 										jsonStory.content,
+	// 										0.0,
+	// 										jsonStory.published,
+	// 										null,
+	// 										jsonStory.locationName,
+	// 										jsonStory.articleTitle,
+	// 										jsonStory.articleDescription,
+	// 										jsonStory.articleImage,
+	// 										jsonStory.articleLink,
+	// 										jsonStory.articleDate,
+	// 										jsonStory.articleSource,
+	// 										jsonStory.articleAuthor,
+	// 										jsonStory.articleLanguage,
+	// 										jsonStory.location,
+	// 										jsonStory.labels);
+	//
+	// 	jsonStory = controllers.json.Story.getStory(story, user, true);
+	// 	String json = new Gson().toJson(jsonStory);
+	// 	return ok(json);
+	// }
 
 	@SecureSocial.SecuredAction
 	public static Result publishStory(Long storyId, Boolean published){
@@ -261,41 +258,26 @@ public class Stories extends Controller {
 		return ok(json_);
 	}
 
-	public static Result updateStory(Long storyId) {
-		boolean optimisticError = false;
-		String json = "";
-		do{
-			optimisticError = false;
+	@SecureSocial.SecuredAction
+	public static Result updateStory(Long storyId) throws IOException, ModelNotFountException {
 
-			try{
-				models.Story story = models.Story.findById(storyId);
-				if (story == null) {
-					return badRequest("Invalid story id");
-				}
+		models.Story story = models.Story.findById(storyId);
+		if (story == null) {
+			return badRequest("Invalid story id");
+		}
 
-				controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
-				// controllers.json.Story jsonStory = new
-				// JSONDeserializer<controllers.json.Story>().deserialize(request().body().asJson().asText());
+		controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
 
-				story.setTitle(jsonStory.title);
-				story.setSummary(jsonStory.summary);
-				story.setContent(jsonStory.content);
-				story.setThumbnail(jsonStory.thumbnail);
-				story.setLocationName(jsonStory.locationName);
+		story = models.Story.update( storyId,
+												jsonStory.title,
+												jsonStory.summary,
+												jsonStory.content,
+												jsonStory.published,
+												jsonStory.locations,
+												jsonStory.labels);
 
-				// story.saveDomainStory();
-
-
-				jsonStory = controllers.json.Story.getStory(story, true);
-				json = new Gson().toJson(jsonStory);
-
-			}catch(OptimisticLockException ole){
-				optimisticError = true;
-			}
-		} while(optimisticError);
-		// String json = new
-		// JSONSerializer().exclude("*.class").deepSerialize(jsonStory);
-
+		jsonStory = controllers.json.Story.getStory(story, false);
+		String json = new Gson().toJson(jsonStory);
 
 		return ok(json);
 	}
@@ -550,7 +532,7 @@ public class Stories extends Controller {
 		} else {
 			collection = StoryCollection.create(currentUser,collectionName);
 		}
-		collection.setPublished(0); 
+		collection.setPublished(0);
 		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(collection,false);
 		String json = new Gson().toJson(jsonCollection);
 		return ok(json);
@@ -742,6 +724,4 @@ public class Stories extends Controller {
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
-
-
 }
