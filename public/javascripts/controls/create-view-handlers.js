@@ -600,6 +600,8 @@ function addNewLocationSectionFromSelection(range) {
 function readStoryDataAndLoadOnDOM(story) {
   var contentElement = $('#story-content');
   $("#title").text(story.title);
+  if (!story.content) { return; }
+  $('#story-content section').remove();
   story.content.forEach(function(sectionObj) {
     if (sectionObj.type == "location-section") {
       var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
@@ -645,8 +647,7 @@ function saveStoryOnServer(published) {
   story.thumbnail = $("#story-details-modal img#story-thumbnail").attr('src');
   story.published = published;
   story.content = JSON.stringify(storycontent)
-  var firstlocation = readLocationDataAttrOnElement($("#story-details-modal .location-banner"));
-  story.locations = [firstlocation];
+  story.locations = [];
   // storycontent.forEach(function(sectionObj) {
   //   story.locations.push(sectionObj.location);
   // });

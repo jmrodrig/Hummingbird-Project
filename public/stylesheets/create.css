@@ -21,6 +21,15 @@ h1, h2, h3, h4, p, a, input, div {
 	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
+#publish-link {
+	display: block;
+}
+
+#create-link {
+	display: none;
+}
+
+
 /******************************************************************
 	Content Wrapper
 ******************************************************************/
@@ -215,6 +224,12 @@ h1, h2, h3, h4, p, a, input, div {
 
 #title {
 	margin-left: 60px;
+}
+
+#title:empty::before {
+	content:"your title goes here";
+	color: #ccc;
+	font-style: italic;
 }
 
 .story-text {
