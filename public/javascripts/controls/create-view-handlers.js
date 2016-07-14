@@ -51,7 +51,7 @@ function buildMapContainer(location) {
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
   addLocationDataAttrOnElement(locationBanner,location)
   $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
-  var locationNameelem = $('<p class="location-name">' + location.locationName + '</p>').appendTo(locationBanner);
+  var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
   var deleteLocationBtn = $('<button type="button" class="delete-location close"><span>&times;</span></button>').appendTo(locationBanner);
 
   // map popover
@@ -59,7 +59,7 @@ function buildMapContainer(location) {
   var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
   var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
   var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
-  searchboxelem.val(location.locationName);
+  searchboxelem.val(location.name);
   var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
   var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
   $('<div class="map-sight"/>').appendTo(mapContainer);
@@ -91,13 +91,13 @@ function buildMapContainer(location) {
   confirmLocationSelection.click(function() {
     location.latitude = map.getCenter().lat();
     location.longitude = map.getCenter().lng();
-    location.locationName = searchboxelem.val();
+    location.name = searchboxelem.val();
     location.zoom = map.getZoom();
     addLocationDataAttrOnElement(locationBanner,location);
     if (!map.marker)
       map.marker = new google.maps.Marker({map: map});
     map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
-    locationNameelem.text(location.locationName)
+    locationNameelem.text(location.name)
     locationBanner.popover('hide');
   })
 
@@ -142,13 +142,13 @@ function addLocationDataAttrOnElement(element,location) {
   location.longitude = (location.longitude) ? location.longitude : 0;
   location.radius = (location.radius) ? location.radius : 0;
   location.zoom = (location.zoom) ? location.zoom : 0;
-  location.locationName = (location.locationName) ? location.locationName : "choose location";
+  location.name = (location.name) ? location.name : "choose location";
 
   element.attr('lat',location.latitude);
   element.attr('lng',location.longitude);
   element.attr('radius',location.radius);
   element.attr('zoom',location.zoom);
-  element.attr('locationName',location.locationName);
+  element.attr('locationName',location.name);
 }
 
 function readLocationDataAttrOnElement(element) {
@@ -157,7 +157,7 @@ function readLocationDataAttrOnElement(element) {
   location.longitude = parseFloat(element.attr('lng'));
   location.radius = parseFloat(element.attr('radius'));
   location.zoom = parseFloat(element.attr('zoom'));
-  location.locationName = element.attr('locationName');
+  location.name = element.attr('locationName');
   return location;
 }
 
@@ -505,14 +505,14 @@ function buildLocationBannerForStoryDetailsModal(location) {
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
   addLocationDataAttrOnElement(locationBanner,location)
   $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
-  var locationNameelem = $('<p class="location-name">' + location.locationName + '</p>').appendTo(locationBanner);
+  var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
 
   // map popover
   var mapContainer = $("<div class='map-container' contenteditable='false'/>");
   var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
   var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
   var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
-  searchboxelem.val(location.locationName);
+  searchboxelem.val(location.name);
   var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
   var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
   $('<div class="map-sight"/>').appendTo(mapContainer);
@@ -544,13 +544,13 @@ function buildLocationBannerForStoryDetailsModal(location) {
   confirmLocationSelection.click(function() {
     location.latitude = map.getCenter().lat();
     location.longitude = map.getCenter().lng();
-    location.locationName = searchboxelem.val();
+    location.name = searchboxelem.val();
     location.zoom = map.getZoom();
     addLocationDataAttrOnElement(locationBanner,location);
     if (!map.marker)
       map.marker = new google.maps.Marker({map: map});
     map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
-    locationNameelem.text(location.locationName)
+    locationNameelem.text(location.name)
     locationBanner.popover('hide');
   })
 
