@@ -37,6 +37,7 @@ public class Story implements Comparable<Story> {
 	public Integer noFollowers;
 	public List<StoryCollection> collections;
 	public List<String> labels;
+	public Double distance;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
@@ -139,6 +140,15 @@ public class Story implements Comparable<Story> {
 
 	    public int compare(Story story1, Story story2) {
 	      return (story2.noOfLikes).compareTo(story1.noOfLikes);
+	    }
+
+	};
+
+	public static Comparator<Story> StoryDistanceComparator
+                          = new Comparator<Story>() {
+
+	    public int compare(Story story1, Story story2) {
+	      return (story2.distance).compareTo(story1.distance);
 	    }
 
 	};

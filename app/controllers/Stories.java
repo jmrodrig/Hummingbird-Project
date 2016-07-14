@@ -61,6 +61,56 @@ public class Stories extends Controller {
 	}
 
 	@SecureSocial.UserAwareAction
+	public static Result listPublishedStoriesWithLocation(Double latitude, Double longitude, int index, int size){
+		List<models.Story> stories = models.Story.findAllByPublished();
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		User currentUser = getCurrentUser();
+
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			result.add(jsonStory);
+		}
+
+		// sort by descending id (most recent story)
+		Collections.sort(result);
+		// sort by descending likes (most popular stories first)
+		Collections.sort(result, controllers.json.Story.StoryLikesComparator);
+
+		result = sortByDistanceToLocation(result,latitude,longitude);
+
+		if (result.size() > index+size) {
+			result = result.subList(index,index+size);
+		} else if (result.size() > index) {
+			result = result.subList(index,result.size());
+		}
+
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	public static List<controllers.json.Story> sortByDistanceToLocation(List<controllers.json.Story> stories, Double latitude, Double longitude) {
+		Double[] fibonacciNumbers = {1.0, 2.0, 3.0, 5.0, 8.0, 13.0, 21.0, 34.0, 55.0, 89.0, 144.0, 233.0, 377.0, 610.0, 987.0, 1597.0};
+		List<List<controllers.json.Story>> rangeLists = new ArrayList<List<controllers.json.Story>>(fibonacciNumbers.length);
+		for (controllers.json.Story story : stories) {
+			double distance = controllers.utils.Utils.distanceBetweenCoordinates(latitude,longitude,story.location.latitude,story.location.longitude,0.0,0.0);
+			Integer count = 0;
+			Double rangemaxdistance = fibonacciNumbers[count] * 1000;
+			while (distance >= rangemaxdistance && count < fibonacciNumbers.length) {
+				rangemaxdistance = fibonacciNumbers[++count];
+			}
+			story.distance = distance;
+			rangeLists.get(count).add(story);
+		}
+
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		for (List<controllers.json.Story> range : rangeLists) {
+			result.addAll(range);
+		}
+
+		return result;
+	}
+
+	@SecureSocial.UserAwareAction
 	public static Result listPublishedStoriesWithinBounds(Double w, Double n, Double e, Double s){
 		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s);
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
@@ -71,7 +121,9 @@ public class Stories extends Controller {
 			result.add(jsonStory);
 		}
 
+		// sort by descending id (most recent story)
 		Collections.sort(result);
+		// sort by descending likes (most popular stories first)
 		Collections.sort(result, controllers.json.Story.StoryLikesComparator);
 		if (result.size() > 26)
 			result = result.subList(0,25);
