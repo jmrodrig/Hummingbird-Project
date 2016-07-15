@@ -1,5 +1,8 @@
-var STORY_TEXT = 10;
-var PICTURE_CONTAINER = 11;
+
+var SECTION = 0,
+LOCATION_SECTION = 1,
+STORY_TEXT = 10,
+PICTURE_CONTAINER = 11;
 
 
 var ctrlDown = false,
@@ -313,10 +316,10 @@ function convertStoryContentToObject() {
     var sectionObj = new Object();
     var _thissection = $(this);
     if (_thissection.hasClass('location-section')) {
-      sectionObj.type = 'location-section';
+      sectionObj.type = LOCATION_SECTION;
       sectionObj.location = readLocationDataAttrOnElement(_thissection.find('.location-banner').first());
     } else {
-      sectionObj.type = 'section';
+      sectionObj.type = SECTION;
     }
     sectionObj.content = [];
     _thissection.children().each(function() {
@@ -603,7 +606,7 @@ function readStoryDataAndLoadOnDOM(story) {
   if (!story.content) { return; }
   $('#story-content section').remove();
   story.content.forEach(function(sectionObj) {
-    if (sectionObj.type == "location-section") {
+    if (sectionObj.type == LOCATION_SECTION) {
       var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
       buildMapContainer(sectionObj.location).appendTo(sectionElem)
       if (sectionObj.content) {
