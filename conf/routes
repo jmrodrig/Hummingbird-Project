@@ -64,8 +64,8 @@ GET		/story/:storyId/download									controllers.Stories.downloadStory(storyId:
 POST	/story/:storyId/uploadThumbnail								controllers.Stories.uploadThumbnail(storyId: Long)
 POST	/story/:storyId/uploadimage									controllers.Stories.uploadImage(storyId: Long)
 POST	/story/:storyId/publish/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
-POST	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
-POST	/story/:storyId/save												controllers.Stories.saveStory(storyId: Long)
+GET	/story/:storyId/like												controllers.Stories.likeStory(storyId: Long)
+GET	/story/:storyId/save												controllers.Stories.saveStory(storyId: Long)
 DELETE /story/:storyId/deleteimage                controllers.Stories.deleteImage(storyId: Long)
 
 #Collections
