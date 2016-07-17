@@ -91,10 +91,22 @@ public class Stories extends Controller {
 	public static List<controllers.json.Story> sortByDistanceToLocation(List<controllers.json.Story> stories, Double latitude, Double longitude) {
 		Double[] fibonacciNumbers = {1.0, 2.0, 3.0, 5.0, 8.0, 13.0, 21.0, 34.0, 55.0, 89.0, 144.0, 233.0, 377.0, 610.0, 987.0, 1597.0};
 		List<List<controllers.json.Story>> rangeLists = new ArrayList<List<controllers.json.Story>>(fibonacciNumbers.length);
+		Integer fiboindex = 0;
+		for (List<controllers.json.Story> range : rangeLists) {
+			controllers.json.Story dummystory = new controllers.json.Story();
+			dummystory.isDummy = true;
+			dummystory.distance = fibonacciNumbers[fiboindex] * 1000;
+			range.add(dummystory);
+			++fiboindex;
+		}
+
+		Integer count;
+		Double distance;
+		Double rangemaxdistance;
 		for (controllers.json.Story story : stories) {
-			double distance = controllers.utils.Utils.distanceBetweenCoordinates(latitude,longitude,story.location.latitude,story.location.longitude,0.0,0.0);
-			Integer count = 0;
-			Double rangemaxdistance = fibonacciNumbers[count] * 1000;
+			distance = controllers.utils.Utils.distanceBetweenCoordinates(latitude,longitude,story.location.latitude,story.location.longitude,0.0,0.0);
+			count = 0;
+			rangemaxdistance = fibonacciNumbers[count] * 1000;
 			while (distance >= rangemaxdistance && count < fibonacciNumbers.length) {
 				rangemaxdistance = fibonacciNumbers[++count];
 			}
@@ -104,6 +116,7 @@ public class Stories extends Controller {
 
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 		for (List<controllers.json.Story> range : rangeLists) {
+			range.get(0).noStories = range.size()-1;
 			result.addAll(range);
 		}
 

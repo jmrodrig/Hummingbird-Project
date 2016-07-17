@@ -38,6 +38,7 @@ public class Story implements Comparable<Story> {
 	public List<StoryCollection> collections;
 	public List<String> labels;
 	public Double distance;
+	public Boolean isDummy;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
