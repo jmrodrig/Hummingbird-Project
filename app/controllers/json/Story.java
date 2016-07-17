@@ -81,6 +81,7 @@ public class Story implements Comparable<Story> {
 		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
 		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
 		result.type = 0;
+		result.isDummy = false;
 
 		// if (forceReadDomainStory || story.isDomainStoryLoaded()){
 		// 	com.lir.library.domain.Story domainStory = story.getDomainStory();
