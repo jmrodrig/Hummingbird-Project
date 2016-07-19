@@ -26,6 +26,8 @@ public class Location extends Model {
 	 */
 	private static final long serialVersionUID = -1029079807380583068L;
 
+	private static final Integer CURRENT_MODEL_VERSION = 2;
+
 	@Id
 	@GeneratedValue
 	@Column(name = "id")
@@ -48,6 +50,9 @@ public class Location extends Model {
 
 	@Column(name = "name")
 	private String name;
+
+	@Column(name = "model_version")
+	private Integer modelversion;
 
 	@ManyToOne(fetch=FetchType.LAZY)
 	@JoinColumn(name="story_id")
@@ -117,6 +122,7 @@ public class Location extends Model {
 		this.zoom = location.zoom;
 		this.showpin = location.showpin;
 		this.story = story;
+		this.modelversion = CURRENT_MODEL_VERSION;
 		this.save(DBConstants.lir_backoffice);
 	}
 
@@ -133,6 +139,7 @@ public class Location extends Model {
 		this.radius = null;
 		this.zoom = null;
 		this.showpin = false;
+		this.modelversion = CURRENT_MODEL_VERSION;
 	}
 
 	private static Finder<Long, Location> finder = new Finder<Long, Location>(Long.class, Location.class);
@@ -153,8 +160,7 @@ public class Location extends Model {
 	}
 
 	public static List<Location> findAll() {
-		List<Location> locations = finder.where().gt("radius", 4.9)
-																							.lt("radius", 5.1)
+		List<Location> locations = finder.where().eq("model_version", CURRENT_MODEL_VERSION)
 																							.findList();
 		return locations;
 	}

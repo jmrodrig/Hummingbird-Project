@@ -138,6 +138,9 @@ public class Story extends Model {
 	@JoinColumn(name = "place_id")
 	private Place place;
 
+	@Transient
+	private Double distance;
+
 	public long getId() {
 		return id;
 	}
@@ -272,8 +275,18 @@ public class Story extends Model {
 		return place;
 	}
 
-	public void setPlace(Place place) {
-		this.place = place;
+	public void setPlace(Place p) {
+		this.place = p;
+	}
+
+	public Double getDistance() {
+		if (this.distance != null)
+			return this.distance;
+		return -1.0;
+	}
+
+	public void setDistance(Double d) {
+		this.distance = d;
 	}
 
 	public List<StoryLabel> getLabels() {
@@ -409,6 +422,23 @@ public class Story extends Model {
 		List<Story> stories = finder.where().eq("published", true)
 																				.eq("model_version", CURRENT_MODEL_VERSION)
 																				.findList();
+		return stories;
+	}
+
+	public static List<models.Story> findAllByPublishedWithLocation(Double lat, Double lng) {
+		List<Story> stories = new ArrayList<Story>();
+		System.out.println("Location.finAll().size() : " + Location.findAll().size());
+		for (Location location : Location.findAll()) {
+			Story story = location.getStory();
+			System.out.println("story : " + story);
+			if (story != null && story.isPublished() && story.isModelVersion(CURRENT_MODEL_VERSION)) {
+				Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
+				story.setDistance(distance);
+				stories.add(story);
+				System.out.println("storyId : " + story.getId());
+			}
+		}
+		System.out.println("findAllByPublishedWithLocation result size : " + stories.size());
 		return stories;
 	}
 

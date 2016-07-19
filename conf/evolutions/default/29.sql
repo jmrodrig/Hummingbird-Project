@@ -11,11 +11,8 @@ ALTER TABLE `lir_backoffice`.`stories_labels`
   ADD PRIMARY KEY (`id`),
   DROP INDEX `fk_stories_labels_labels_02` ;
 
-ALTER TABLE `lir_backoffice`.`locations`
-  ADD COLUMN `story_id` BIGINT(20) NOT NULL AFTER `showpin`;
-
 ALTER TABLE `lir_backoffice`.`stories`
-  ADD COLUMN `model_version` INT NULL AFTER `article_language`,
+  ADD COLUMN `model_version` TINYINT(1) NULL AFTER `article_language`,
   ADD COLUMN `story_language` VARCHAR(45) NULL AFTER `model_version`;
 
 
@@ -25,10 +22,6 @@ ALTER TABLE `lir_backoffice`.`stories`
 ALTER TABLE `lir_backoffice`.`stories`
   DROP COLUMN `model_version`,
   DROP COLUMN `story_language`;
-
-ALTER TABLE `lir_backoffice`.`locations`
-  DROP COLUMN `story_id` ;
-
 
 ALTER TABLE `lir_backoffice`.`stories_labels`
 DROP COLUMN `id`,

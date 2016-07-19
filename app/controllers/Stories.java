@@ -62,65 +62,92 @@ public class Stories extends Controller {
 
 	@SecureSocial.UserAwareAction
 	public static Result listPublishedStoriesWithLocation(Double latitude, Double longitude, int index, int size){
-		List<models.Story> stories = models.Story.findAllByPublished();
-		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude);
+		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
-			result.add(jsonStory);
+			jsonstories.add(jsonStory);
 		}
 
-		// sort by descending id (most recent story)
-		Collections.sort(result);
+		System.out.println("jsonstories size : " + jsonstories.size());
+
+		//sort by distance
+		Collections.sort(jsonstories, controllers.json.Story.StoryDistanceComparator);
+		//remove repeated instances
+		jsonstories = removeRepeatedItems(jsonstories);
+		System.out.println("After remove repeated size : " + jsonstories.size());
 		// sort by descending likes (most popular stories first)
-		Collections.sort(result, controllers.json.Story.StoryLikesComparator);
+		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
 
-		result = sortByDistanceToLocation(result,latitude,longitude);
 
-		if (result.size() > index+size) {
-			result = result.subList(index,index+size);
-		} else if (result.size() > index) {
-			result = result.subList(index,result.size());
+		if (jsonstories.size() > index+size) {
+			jsonstories = jsonstories.subList(index,index+size);
+		} else if (jsonstories.size() > index) {
+			jsonstories = jsonstories.subList(index,jsonstories.size());
 		}
 
-		String json = new Gson().toJson(result);
+		jsonstories = distributeByDistanceBins(jsonstories);
+
+		System.out.println("After distribute in bins size : " + jsonstories.size());
+		String json = new Gson().toJson(jsonstories);
 		return ok(json);
 	}
 
-	public static List<controllers.json.Story> sortByDistanceToLocation(List<controllers.json.Story> stories, Double latitude, Double longitude) {
+	public static List<controllers.json.Story> distributeByDistanceBins(List<controllers.json.Story> stories) {
+		// distance bins
 		Double[] fibonacciNumbers = {1.0, 2.0, 3.0, 5.0, 8.0, 13.0, 21.0, 34.0, 55.0, 89.0, 144.0, 233.0, 377.0, 610.0, 987.0, 1597.0};
-		List<List<controllers.json.Story>> rangeLists = new ArrayList<List<controllers.json.Story>>(fibonacciNumbers.length);
-		Integer fiboindex = 0;
-		for (List<controllers.json.Story> range : rangeLists) {
+		List<List<controllers.json.Story>> rangeBinList = new ArrayList<List<controllers.json.Story>>();
+
+		// dummy story as bin header
+		for (int i = 0; i < fibonacciNumbers.length; i++) {
+			List<controllers.json.Story> rangebin = new ArrayList<controllers.json.Story>();
 			controllers.json.Story dummystory = new controllers.json.Story();
 			dummystory.isDummy = true;
-			dummystory.distance = fibonacciNumbers[fiboindex] * 1000;
-			range.add(dummystory);
-			++fiboindex;
+			dummystory.distance = fibonacciNumbers[i] * 1000;
+			rangebin.add(dummystory);
+			rangeBinList.add(rangebin);
 		}
 
 		Integer count;
-		Double distance;
 		Double rangemaxdistance;
 		for (controllers.json.Story story : stories) {
-			distance = controllers.utils.Utils.distanceBetweenCoordinates(latitude,longitude,story.location.latitude,story.location.longitude,0.0,0.0);
-			count = 0;
-			rangemaxdistance = fibonacciNumbers[count] * 1000;
-			while (distance >= rangemaxdistance && count < fibonacciNumbers.length) {
-				rangemaxdistance = fibonacciNumbers[++count];
-			}
-			story.distance = distance;
-			rangeLists.get(count).add(story);
+			if (story.distance > -1) {
+				count = 0;
+				rangemaxdistance = fibonacciNumbers[count] * 1000;
+				while (story.distance >= rangemaxdistance && count < fibonacciNumbers.length) {
+					rangemaxdistance = fibonacciNumbers[count] * 1000;
+					++count;
+				}
+				rangeBinList.get(count).add(story);
+			};
 		}
 
+		// join all bins in one list
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
-		for (List<controllers.json.Story> range : rangeLists) {
-			range.get(0).noStories = range.size()-1;
-			result.addAll(range);
+		for (List<controllers.json.Story> rangebin : rangeBinList) {
+			rangebin.get(0).noStories = rangebin.size()-1;
+			result.addAll(rangebin);
 		}
-
 		return result;
+	}
+
+	public static List<controllers.json.Story> removeRepeatedItems(List<controllers.json.Story> list){
+		List<controllers.json.Story> newlist = new ArrayList<controllers.json.Story>();
+		for (controllers.json.Story s : list) {
+			if (!isStoryContainedInList(s,newlist))
+				newlist.add(s);
+		}
+		return newlist;
+	}
+
+	public static Boolean isStoryContainedInList(controllers.json.Story st, List<controllers.json.Story> list){
+		for (controllers.json.Story s : list) {
+			if (s.id == st.id)
+				return true;
+		}
+		return false;
 	}
 
 	@SecureSocial.UserAwareAction

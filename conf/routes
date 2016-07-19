@@ -49,8 +49,8 @@ GET   /tagsstartingwith=:value            controllers.Application.findLabelsStar
 
 #Stories
 
-GET		/publishedstories											controllers.Stories.listPublishedStories()
-GET		/publishedstories?lat=:latitude&lng=:longitude&lng=:index&lng=:size			controllers.Stories.listPublishedStoriesWithLocation(latitude: Double, longitude: Double,index: Integer, size: Integer)
+#GET		/publishedstories											controllers.Stories.listPublishedStories()
+GET		/publishedstories/:latitude/:longitude/:index/:size			controllers.Stories.listPublishedStoriesWithLocation(latitude: Double, longitude: Double,index: Integer, size: Integer)
 GET		/storiesin/:w,:n,:e,:s				controllers.Stories.listPublishedStoriesWithinBounds(w: Double, n: Double, e: Double, s: Double)
 GET		/listuserstories														controllers.Stories.listCurrentUserStories()
 GET		/listusersavedstories														controllers.Stories.listCurrentUserSavedStories()
