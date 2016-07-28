@@ -206,7 +206,7 @@ public class Stories extends Controller {
 
 		controllers.json.Story dummystory = new controllers.json.Story();
 		dummystory.isDummy = true;
-		result.add(dummystory)
+		result.add(dummystory);
 
 		for (models.Story story : savedstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
