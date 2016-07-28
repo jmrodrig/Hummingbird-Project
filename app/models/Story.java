@@ -394,12 +394,16 @@ public class Story extends Model {
 	public static JSONSerializer json = new JSONSerializer().include("id", "title", "summary", "cost", "labels.name").exclude("*");
 
 	public static List<Story> findAllUserStories(User user) {
-		List<Story> stories = finder.where().in("id", UserStory.findStoryIdsByUser(user.getId())).findList();
+		List<Story> stories = finder.where().in("id", UserStory.findStoryIdsByUser(user.getId()))
+																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.findList();
 		return stories;
 	}
 
 	public static List<Story> findAllUserSavedStories(User user) {
-		List<Story> stories = finder.where().in("id", SavedStory.findStoryIdsByUser(user.getId())).findList();
+		List<Story> stories = finder.where().in("id", SavedStory.findStoryIdsByUser(user.getId()))
+																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.findList();
 		return stories;
 	}
 

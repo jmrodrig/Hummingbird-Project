@@ -195,13 +195,24 @@ public class Stories extends Controller {
 	@SecureSocial.SecuredAction
 	public static Result listCurrentUserStories() {
 		User currentUser = getCurrentUser();
-		List<models.Story> stories = models.Story.findAllUserStories(currentUser);
+		List<models.Story> userstories = models.Story.findAllUserStories(currentUser);
+		List<models.Story> savedstories = models.Story.findAllUserSavedStories(currentUser);
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
-		for (models.Story story : stories) {
+		for (models.Story story : userstories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 			result.add(jsonStory);
 		}
+
+		controllers.json.Story dummystory = new controllers.json.Story();
+		dummystory.isDummy = true;
+		result.add(dummystory)
+
+		for (models.Story story : savedstories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			result.add(jsonStory);
+		}
+
 		String json = new Gson().toJson(result);
 		return ok(json);
 	}
