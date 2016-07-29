@@ -296,6 +296,7 @@ public class Story extends Model {
 	}
 
 	public void setLabels(List<String> labels) {
+		if (labels == null) return;
 		System.out.println("StoryId -story: " + this.getId());
 		for (String labelname : labels) {
 			StoryLabel.create(this,Label.create(labelname));
