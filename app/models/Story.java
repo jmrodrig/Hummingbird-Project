@@ -261,6 +261,8 @@ public class Story extends Model {
 	}
 
 	public void setLocations(List<controllers.json.Location> jsonLocations) {
+		if (jsonLocations == null)
+			return;
 		for (controllers.json.Location jsonLocation : jsonLocations) {
 			Location location = new Location(jsonLocation,this);
 			locations.add(location);
