@@ -115,6 +115,29 @@ public class Application extends Controller {
 		return redirect("/publisher/create/" + story.getId());
 	}
 
+	@SecureSocial.SecuredAction
+	public static Result createStoryMobile() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+		User user = getCurrentUser();
+		controllers.json.Story jsonStory;
+		models.Story story;
+		try {
+			jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
+			story = models.Story.create(user,
+																	jsonStory.title,
+																	jsonStory.summary,
+																	jsonStory.content,
+																	jsonStory.published,
+																	jsonStory.locations,
+																	jsonStory.labels);
+		} catch (IOException e) {
+			story = models.Story.create(user);
+		}
+
+		jsonStory = controllers.json.Story.getStory(story, user, false);
+		String json = new Gson().toJson(jsonStory);
+		return ok(json);
+	}
+
 	@SecuredAction
 	public static Result editStory(Long storyId) {
 		//TODO: validate if user has priviliges to edit the story

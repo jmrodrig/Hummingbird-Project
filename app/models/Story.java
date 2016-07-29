@@ -508,6 +508,18 @@ public class Story extends Model {
 		return story;
 	}
 
+	public static Story create(User user, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations, List<String> labels)
+								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+
+		Story story = new Story();
+		setStory(story, title, summary, contentJSON, published,	locations);
+		story.setModelVersion(CURRENT_MODEL_VERSION);
+		story.save(DBConstants.lir_backoffice);
+		UserStory.create(true, true, 0, "", user, story);
+		story.setLabels(labels);
+		return story;
+	}
+
 	public static Story create(User user)	throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		Story story = new Story();
 		story.setModelVersion(CURRENT_MODEL_VERSION);
