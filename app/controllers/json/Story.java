@@ -39,6 +39,7 @@ public class Story implements Comparable<Story> {
 	public List<String> labels;
 	public Double distance;
 	public Boolean isDummy;
+	public Boolean userCanEdit;
 
 //	public static Story getStory(com.lir.library.domain.Story story){
 //		if (story == null)
@@ -83,6 +84,7 @@ public class Story implements Comparable<Story> {
 		result.type = 0;
 		result.isDummy = false;
 		result.distance = story.getDistance();
+		result.userCanEdit = false;
 
 		// if (forceReadDomainStory || story.isDomainStoryLoaded()){
 		// 	com.lir.library.domain.Story domainStory = story.getDomainStory();
@@ -105,6 +107,8 @@ public class Story implements Comparable<Story> {
 			return result;
 		result.currentUserLikesStory = (models.Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 		result.currentUserSavedStory = (models.SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
+		if (currentUser.getNumberId() == result.author.numberId)
+			result.userCanEdit = true;
 		return result;
 	}
 
