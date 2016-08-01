@@ -489,11 +489,14 @@ public class Stories extends Controller {
 
 				imageFile.renameTo(uploadFile);
 
-				story.setThumbnail("/uploads/images/" + imageName);
-				story.save(DBConstants.lir_backoffice);
+				JsonObject json = new JsonObject();
 
-				String json = new Gson().toJson("/uploads/images/" + imageName);
-				return ok(json);
+		    json.addProperty("storyId", storyId);
+		    json.addProperty("imageUrl", "/uploads/images/" + imageName));
+
+				String json_ = new Gson().toJson(json);
+
+				return ok(json_);
 
 			} else {
 				flash("error", "Missing file");
