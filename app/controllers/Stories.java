@@ -492,7 +492,7 @@ public class Stories extends Controller {
 				JsonObject json = new JsonObject();
 
 		    json.addProperty("storyId", storyId);
-		    json.addProperty("imageUrl", "/uploads/images/" + imageName));
+		    json.addProperty("imageUrl", "/uploads/images/" + imageName);
 
 				String json_ = new Gson().toJson(json);
 
