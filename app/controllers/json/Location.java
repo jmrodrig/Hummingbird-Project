@@ -31,7 +31,7 @@ public class Location {
 		result.radius = location.getRadius();
 		result.zoom = location.getZoom();
 		result.showpin = location.isShowPin();
-		result.showpin = location.isMainStoryLocation();
+		result.ismain = location.isMainStoryLocation();
 		return result;
 	}
 }
