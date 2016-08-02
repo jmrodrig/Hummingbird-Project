@@ -598,7 +598,7 @@ public class Story extends Model {
 		story.setContent(contentJSON);
 		story.setPublished(published);
 		story.setLocations(locations);
-		if (locations.size() > 0)
+		if (locations != null && locations.size() > 0)
 			story.setLocationName(locations.get(0).name);
 	}
 
