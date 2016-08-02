@@ -22,6 +22,8 @@ import javax.persistence.OneToOne;
 import javax.persistence.Table;
 import javax.persistence.Transient;
 import javax.persistence.Version;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 import org.h2.server.web.DbContents;
 
@@ -127,6 +129,10 @@ public class Story extends Model {
 
 	@Column(name = "article_language")
 	private String articleLanguage;
+
+	@Column(name = "date_created")
+	@Temporal(TemporalType.TIMESTAMP)
+  private java.util.Date dateCreated;
 
 	@Transient
 	private com.lir.library.domain.Story domainStory;
@@ -345,6 +351,14 @@ public class Story extends Model {
 
 	public void setLanguage(String lang) {
 		this.language = lang;
+	}
+
+	public java.util.Date getDateCreated() {
+		return this.dateCreated;
+	}
+
+	public void setDateCreated(java.util.Date date) {
+		this.dateCreated = date;
 	}
 
 	public com.lir.library.domain.Story getDomainStory() {

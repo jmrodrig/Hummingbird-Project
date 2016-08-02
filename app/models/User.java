@@ -16,6 +16,8 @@ import javax.persistence.ManyToMany;
 import javax.persistence.JoinTable;
 import javax.persistence.JoinColumn;
 import javax.persistence.FetchType;
+import javax.persistence.Temporal;
+import javax.persistence.TemporalType;
 
 
 
@@ -67,6 +69,10 @@ public class User extends Model {
 
 	@Column(name = "password")
 	private String password;
+
+	@Column(name = "first_login")
+	@Temporal(TemporalType.TIMESTAMP)
+  private java.util.Date firstLogin;
 
 	@OneToMany(mappedBy = "user", cascade=CascadeType.ALL)
 	private List<UserStory> userStories;
@@ -164,6 +170,14 @@ public class User extends Model {
 
 	public void setPassword(String password) {
 		this.password = password;
+	}
+
+	public java.util.Date getFirstLogin() {
+		return this.firstLogin;
+	}
+
+	public void setFirstLogin(java.util.Date date) {
+		this.firstLogin = date;
 	}
 
 	public List<Invitation> getInvitations() {

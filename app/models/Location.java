@@ -43,7 +43,7 @@ public class Location extends Model {
 	private Double radius;
 
 	@Column(name = "zoom")
-	private Integer zoom;
+	private Double zoom;
 
 	@Column(name = "showpin")
 	private Boolean showpin;
@@ -90,7 +90,7 @@ public class Location extends Model {
 		return name;
 	}
 
-	public Integer getZoom() {
+	public Double getZoom() {
 		return zoom;
 	}
 

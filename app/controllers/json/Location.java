@@ -5,7 +5,7 @@ public class Location {
 	public Double latitude;
 	public Double longitude;
 	public Double radius;
-	public Integer zoom;
+	public Double zoom;
 	public Boolean showpin;
 
 	public static Location getLocation(com.lir.library.domain.Location location){
