@@ -259,7 +259,9 @@ public class Story extends Model {
 	// }
 
 	public Location getLocation() {
-		return locations.get(0);
+		if (locations.size() > 0)
+			return locations.get(0);
+		return null;
 	}
 
 	public List<Location> getLocations() {
@@ -341,8 +343,8 @@ public class Story extends Model {
 		return this.locationName;
 	}
 
-	public void setLocationName(String ln) {
-		this.locationName = ln;
+	public void setLocationName(String lname) {
+		this.locationName = lname;
 	}
 
 	public String getLanguage() {
@@ -596,6 +598,8 @@ public class Story extends Model {
 		story.setContent(contentJSON);
 		story.setPublished(published);
 		story.setLocations(locations);
+		if (locations.size() > 0)
+			story.setLocationName(locations.get(0).name);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {

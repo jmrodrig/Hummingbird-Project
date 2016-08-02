@@ -11,11 +11,11 @@ public class Story implements Comparable<Story> {
 	public String summary;
 	public String content;
 	public boolean published;
-	public List<Location> locations;
 	public Location location;
 	public Place place;
 	public User author;
 	public String thumbnail;
+	public List<Location> locations;
 	public String locationName;
 	public Integer noOfLikes;
 	public Integer noOfSaves;
@@ -69,6 +69,7 @@ public class Story implements Comparable<Story> {
 		result.content = story.getContent();
 		result.published = story.isPublished();
 		result.thumbnail = story.getThumbnail();
+		result.location = controllers.json.Location.getLocation(story.getLocation());
 		result.locationName = story.getLocationName();
 		result.articleTitle = story.getArticleTitle();
 		result.articleDescription = story.getArticleDescription();
@@ -86,16 +87,6 @@ public class Story implements Comparable<Story> {
 		result.distance = story.getDistance();
 		result.userCanEdit = false;
 
-		// if (forceReadDomainStory || story.isDomainStoryLoaded()){
-		// 	com.lir.library.domain.Story domainStory = story.getDomainStory();
-		// 	Long[] postIds = new Long[domainStory.getPosts().size()];
-		// 	int count = 0;
-		// 	for (Post post : domainStory.getPosts()) {
-		// 		postIds[count] = post.getId();
-		// 		count++;
-		// 	}
-		// 	result.postIds = postIds;
-		// }
 		return result;
 	}
 
@@ -129,14 +120,14 @@ public class Story implements Comparable<Story> {
 	// 	return result;
 	// }
 
-	// private static List<StoryCollection> getPublicCollections(models.Story story) {
-	// 	List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
-	// 	for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
-	// 		if (collection.isPublished())
-	// 			collections.add(StoryCollection.getStoryCollection(collection,true));
-	// 	}
-	// 	return collections;
-	// }
+	private static List<StoryCollection> getPublicCollections(models.Story story) {
+		List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
+		for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
+			if (collection.isPublished())
+				collections.add(StoryCollection.getStoryCollection(collection,true));
+		}
+		return collections;
+	}
 
   public int compareTo(Story story) {
       return (story.id).compareTo(this.id);
