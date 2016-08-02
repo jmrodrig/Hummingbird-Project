@@ -507,6 +507,63 @@ public class Stories extends Controller {
 	}
 
 	@SecureSocial.SecuredAction
+	public static Result uploadThumbnail(Long storyId) throws IOException {
+
+		models.Story story = models.Story.findById(storyId);
+		if (story == null) {
+			return badRequest("Invalid story id");
+		}
+
+		MultipartFormData body = request().body().asMultipartFormData();
+		List<FilePart> imageFileParts = body.getFiles();
+		for (FilePart imageFilePart : imageFileParts) {
+			if (imageFilePart != null) {
+				File imageFile = imageFilePart.getFile();
+				//String imageName = imageFilePart.getFilename().replace(" ","_");
+				String[] filenameparts = imageFilePart.getFilename().split("\\.");
+				String fileextension = filenameparts[filenameparts.length-1];
+
+				Long time= new java.util.Date().getTime();
+				String imageName = "thumbnail_story_" + storyId + "_" + time + "." + fileextension;
+
+
+				//String fileSrc = "images/";
+
+				String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
+
+				File uploadDir  = new File(uploadPath);
+
+				if (!uploadDir.exists()) {
+					uploadDir.mkdirs();
+				}
+
+				File uploadFile = new File(uploadDir, imageName);
+
+				System.out.println(uploadPath + imageName);
+
+				imageFile.renameTo(uploadFile);
+
+				story.setThumbnail("/uploads/images/" + imageName);
+				story.save(DBConstants.lir_backoffice);
+
+				JsonObject json = new JsonObject();
+
+		    json.addProperty("storyId", storyId);
+		    json.addProperty("imageUrl", "/uploads/images/" + imageName);
+
+				String json_ = new Gson().toJson(json);
+
+				return ok(json_);
+
+			} else {
+				flash("error", "Missing file");
+				return redirect(routes.Application.index());
+			}
+		}
+		return badRequest("Missing file");
+	}
+
+	@SecureSocial.SecuredAction
 	public static Result uploadCollectionImage(Long collectionId) throws IOException {
 		models.StoryCollection collection = models.StoryCollection.findCollectionById(collectionId);
 		if (collection == null) {
