@@ -214,7 +214,7 @@ public class Location extends Model {
 		location.zoom = l.zoom;
 		location.showpin = l.showpin;
 		location.ismain = l.ismain;
-		location.save(DBConstants.lir_backoffice);
+		location.update(DBConstants.lir_backoffice);
 		return location;
 	}
 
