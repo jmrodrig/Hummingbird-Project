@@ -48,6 +48,9 @@ public class Location extends Model {
 	@Column(name = "showpin")
 	private Boolean showpin;
 
+	@Column(name = "ismain")
+	private Boolean ismain;
+
 	@Column(name = "name")
 	private String name;
 
@@ -94,6 +97,15 @@ public class Location extends Model {
 		return zoom;
 	}
 
+	public void setAsMainStoryLocation(Boolean bol){
+		this.ismain = bol;
+		this.save(DBConstants.lir_backoffice);
+	}
+
+	public Boolean isMainStoryLocation(){
+		return ismain;
+	}
+
 	public Boolean isShowPin() {
 		return showpin;
 	}
@@ -121,6 +133,7 @@ public class Location extends Model {
 		this.radius = l.radius;
 		this.zoom = l.zoom;
 		this.showpin = l.showpin;
+		this.ismain = l.ismain;
 		this.story = story;
 		this.modelversion = CURRENT_MODEL_VERSION;
 		this.save(DBConstants.lir_backoffice);
@@ -171,6 +184,13 @@ public class Location extends Model {
 		return location;
 	}
 
+	public static Location findMainStoryLocation(Long storyid) {
+		Location location = finder.where().eq("story_id", storyid)
+																				.eq("ismain", true)
+																				.findUnique();
+		return location;
+	}
+
 	public static Location create(controllers.json.Location l, models.Story story) {
 		Location location = new Location();
 		location.name = l.name;
@@ -179,6 +199,7 @@ public class Location extends Model {
 		location.radius = l.radius;
 		location.zoom = l.zoom;
 		location.showpin = l.showpin;
+		location.ismain = l.ismain;
 		location.story = story;
 		location.modelversion = CURRENT_MODEL_VERSION;
 		location.save(DBConstants.lir_backoffice);
@@ -192,6 +213,7 @@ public class Location extends Model {
 		location.radius = l.radius;
 		location.zoom = l.zoom;
 		location.showpin = l.showpin;
+		location.ismain = l.ismain;
 		location.save(DBConstants.lir_backoffice);
 		return location;
 	}

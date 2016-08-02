@@ -11,10 +11,10 @@ public class Story implements Comparable<Story> {
 	public String summary;
 	public String content;
 	public boolean published;
-	public Location location;
 	public Place place;
 	public User author;
 	public String thumbnail;
+	public Location location;
 	public List<Location> locations;
 	public String locationName;
 	public Integer noOfLikes;

@@ -258,12 +258,6 @@ public class Story extends Model {
 	// 	return domainStory != null;
 	// }
 
-	public Location getLocation() {
-		if (locations.size() > 0)
-			return locations.get(0);
-		return null;
-	}
-
 	public List<Location> getLocations() {
 		return locations;
 	}
@@ -282,8 +276,8 @@ public class Story extends Model {
 		}
 	}
 
-	public void setLocation(controllers.json.Location jsonLocation) {
-		locations.add(new Location(jsonLocation, this));
+	public Location getLocation() {
+		return Location.findMainStoryLocation(this.getId());
 	}
 
 	public Place getPlace() {
@@ -594,7 +588,7 @@ public class Story extends Model {
 		story.setPath(filePath);
 		story.setLocationName(locationName);
 		story.setArticle(articleTitle,articleDescription,articleImage,articleLink,articleDate,articleSource,articleAuthor,articleLanguage);
-		story.setLocation(location);
+		//story.setLocation(location);
 	}
 
 	private static void setStory(Story story, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations) throws IOException {
@@ -603,8 +597,6 @@ public class Story extends Model {
 		story.setContent(contentJSON);
 		story.setPublished(published);
 		story.setLocations(locations);
-		if (locations != null && locations.size() > 0)
-			story.setLocationName(locations.get(0).name);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {

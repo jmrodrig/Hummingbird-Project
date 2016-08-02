@@ -8,6 +8,7 @@ public class Location {
 	public Double radius;
 	public Double zoom;
 	public Boolean showpin;
+	public Boolean ismain;
 
 	public static Location getLocation(com.lir.library.domain.Location location){
 		if (location == null)
@@ -30,6 +31,7 @@ public class Location {
 		result.radius = location.getRadius();
 		result.zoom = location.getZoom();
 		result.showpin = location.isShowPin();
+		result.showpin = location.isMainStoryLocation();
 		return result;
 	}
 }
