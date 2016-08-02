@@ -87,6 +87,10 @@ public class Story implements Comparable<Story> {
 		result.distance = story.getDistance();
 		result.userCanEdit = false;
 
+		result.locations = new ArrayList<controllers.json.Location>();
+		for (models.Location l : story.getLocations()) {
+			result.locations.add(controllers.json.Location.getLocation(l));
+		}
 		return result;
 	}
 
@@ -120,14 +124,14 @@ public class Story implements Comparable<Story> {
 	// 	return result;
 	// }
 
-	private static List<StoryCollection> getPublicCollections(models.Story story) {
-		List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
-		for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
-			if (collection.isPublished())
-				collections.add(StoryCollection.getStoryCollection(collection,true));
-		}
-		return collections;
-	}
+	// private static List<StoryCollection> getPublicCollections(models.Story story) {
+	// 	List<StoryCollection> collections = new ArrayList<controllers.json.StoryCollection>();
+	// 	for (models.StoryCollection collection : models.StoryStoryCollection.findCollectionsByStoryId(story.getId())) {
+	// 		if (collection.isPublished())
+	// 			collections.add(StoryCollection.getStoryCollection(collection,true));
+	// 	}
+	// 	return collections;
+	// }
 
   public int compareTo(Story story) {
       return (story.id).compareTo(this.id);
