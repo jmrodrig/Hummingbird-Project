@@ -410,44 +410,44 @@ public class Stories extends Controller {
 		return user;
 	}
 
-	@SecureSocial.SecuredAction
-	@BodyParser.Of(value = BodyParser.Json.class, maxLength = 10 * 1024 * 1024)
-	public static Result uploadThumbnail(Long storyId) throws IOException {
-		String json = "";
-		String filename = "";
-		String filePath = "";
-
-		models.Story story = models.Story.findById(storyId);
-		if (story == null) {
-			return badRequest("Invalid story id");
-		}
-
-		controllers.json.UriImage uriImage = new Gson().fromJson(request().body().asJson().toString(), controllers.json.UriImage.class);
-
-		//filename = story.getId() + "_v" + FileUtils.getCurrentTimeStamp() + "." + uriImage.ext;
-		filename = story.getId() + "." + uriImage.ext;
-
-		//filePath = C:\Users\Ze\LIR\webmaker\code\lir + /private/upload + /thumbnails/ + file.ext
-		filePath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/thumbnails/" + filename;
-
-		System.out.println(Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/thumbnails/" + filename);
-
-		byte[] data = Base64.decodeBase64(uriImage.data.getBytes());
-
-		try (OutputStream stream = new FileOutputStream(filePath)) {
-			stream.write(data);
-		} catch(Exception e) {
-			return badRequest("Could not create image file");
-		}
-
-		story.setThumbnail("/uploads/thumbnails/" + filename);
-		story.save(DBConstants.lir_backoffice);
-
-		json = new Gson().toJson("/uploads/thumbnails/" + filename);
-
-		return ok(json);
-
-	}
+	// @SecureSocial.SecuredAction
+	// @BodyParser.Of(value = BodyParser.Json.class, maxLength = 10 * 1024 * 1024)
+	// public static Result uploadThumbnail(Long storyId) throws IOException {
+	// 	String json = "";
+	// 	String filename = "";
+	// 	String filePath = "";
+	//
+	// 	models.Story story = models.Story.findById(storyId);
+	// 	if (story == null) {
+	// 		return badRequest("Invalid story id");
+	// 	}
+	//
+	// 	controllers.json.UriImage uriImage = new Gson().fromJson(request().body().asJson().toString(), controllers.json.UriImage.class);
+	//
+	// 	//filename = story.getId() + "_v" + FileUtils.getCurrentTimeStamp() + "." + uriImage.ext;
+	// 	filename = story.getId() + "." + uriImage.ext;
+	//
+	// 	//filePath = C:\Users\Ze\LIR\webmaker\code\lir + /private/upload + /thumbnails/ + file.ext
+	// 	filePath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/thumbnails/" + filename;
+	//
+	// 	System.out.println(Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/thumbnails/" + filename);
+	//
+	// 	byte[] data = Base64.decodeBase64(uriImage.data.getBytes());
+	//
+	// 	try (OutputStream stream = new FileOutputStream(filePath)) {
+	// 		stream.write(data);
+	// 	} catch(Exception e) {
+	// 		return badRequest("Could not create image file");
+	// 	}
+	//
+	// 	story.setThumbnail("/uploads/thumbnails/" + filename);
+	// 	story.save(DBConstants.lir_backoffice);
+	//
+	// 	json = new Gson().toJson("/uploads/thumbnails/" + filename);
+	//
+	// 	return ok(json);
+	//
+	// }
 
 	@SecureSocial.SecuredAction
 	public static Result uploadImage(Long storyId) throws IOException {
