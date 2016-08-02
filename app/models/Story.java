@@ -269,11 +269,16 @@ public class Story extends Model {
 	}
 
 	public void setLocations(List<controllers.json.Location> jsonLocations) {
-		if (jsonLocations == null)
-			return;
+		if (jsonLocations == null) return;
 		for (controllers.json.Location jsonLocation : jsonLocations) {
-			Location location = new Location(jsonLocation,this);
-			locations.add(location);
+			Location location = Location.findByIdAndStoryId(jsonLocation.id,this.getId());
+			if (location != null) {
+				Location.update(jsonLocation,location);
+			}
+			else {
+				location = Location.create(jsonLocation,this);
+				locations.add(location);
+			}
 		}
 	}
 

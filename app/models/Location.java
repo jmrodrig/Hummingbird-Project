@@ -114,13 +114,13 @@ public class Location extends Model {
 		return true;
 	}
 
-	public Location(controllers.json.Location location, models.Story story) {
-		this.name = location.name;
-		this.latitude = location.latitude;
-		this.longitude = location.longitude;
-		this.radius = location.radius;
-		this.zoom = location.zoom;
-		this.showpin = location.showpin;
+	public Location(controllers.json.Location l, models.Story story) {
+		this.name = l.name;
+		this.latitude = l.latitude;
+		this.longitude = l.longitude;
+		this.radius = l.radius;
+		this.zoom = l.zoom;
+		this.showpin = l.showpin;
 		this.story = story;
 		this.modelversion = CURRENT_MODEL_VERSION;
 		this.save(DBConstants.lir_backoffice);
@@ -132,15 +132,7 @@ public class Location extends Model {
 		this.radius = location.getRadius();
 	}
 
-	public Location() {
-		this.name = null;
-		this.latitude = null;
-		this.longitude = null;
-		this.radius = null;
-		this.zoom = null;
-		this.showpin = false;
-		this.modelversion = CURRENT_MODEL_VERSION;
-	}
+	public Location() {}
 
 	private static Finder<Long, Location> finder = new Finder<Long, Location>(Long.class, Location.class);
 
@@ -163,6 +155,45 @@ public class Location extends Model {
 		List<Location> locations = finder.where().eq("model_version", CURRENT_MODEL_VERSION)
 																							.findList();
 		return locations;
+	}
+
+	public static Location findById(Long id) {
+		if (id == null) return null;
+		Location location = finder.where().eq("id", id).findUnique();
+		return location;
+	}
+
+	public static Location findByIdAndStoryId(Long id, Long storyid) {
+		if (id == null) return null;
+		Location location = finder.where().eq("story_id", storyid)
+																				.eq("id", id)
+																				.findUnique();
+		return location;
+	}
+
+	public static Location create(controllers.json.Location l, models.Story story) {
+		Location location = new Location();
+		location.name = l.name;
+		location.latitude = l.latitude;
+		location.longitude = l.longitude;
+		location.radius = l.radius;
+		location.zoom = l.zoom;
+		location.showpin = l.showpin;
+		location.story = story;
+		location.modelversion = CURRENT_MODEL_VERSION;
+		location.save(DBConstants.lir_backoffice);
+		return location;
+	}
+
+	public static Location update(controllers.json.Location l, Location location) {
+		location.name = l.name;
+		location.latitude = l.latitude;
+		location.longitude = l.longitude;
+		location.radius = l.radius;
+		location.zoom = l.zoom;
+		location.showpin = l.showpin;
+		location.save(DBConstants.lir_backoffice);
+		return location;
 	}
 
 }
