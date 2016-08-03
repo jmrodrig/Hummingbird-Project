@@ -70,7 +70,7 @@ public class Story implements Comparable<Story> {
 		result.published = story.isPublished();
 		result.thumbnail = story.getThumbnail();
 		result.location = controllers.json.Location.getLocation(story.getLocation());
-		result.locationName = story.getLocation().getName();
+		result.locationName = story.getLocationName();
 		result.articleTitle = story.getArticleTitle();
 		result.articleDescription = story.getArticleDescription();
 		result.articleImage = story.getArticleImage();
