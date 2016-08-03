@@ -93,12 +93,20 @@ public class Location extends Model {
 		return name;
 	}
 
+	public void setName(String nm) {
+		this.name = nm;
+	}
+
 	public Double getZoom() {
 		return zoom;
 	}
 
-	public void setAsMainStoryLocation(Boolean bol){
-		this.ismain = bol;
+	public void setZoom(Double zm) {
+		this.zoom = zm;
+	}
+
+	public void setAsMainStoryLocation(Boolean bool){
+		this.ismain = bool;
 		this.save(DBConstants.lir_backoffice);
 	}
 
@@ -108,6 +116,10 @@ public class Location extends Model {
 
 	public Boolean isShowPin() {
 		return showpin;
+	}
+
+	public void setShowPin(Boolean bool) {
+		this.showpin = bool;
 	}
 
 	public Story getStory() {
@@ -136,16 +148,18 @@ public class Location extends Model {
 		this.ismain = l.ismain;
 		this.story = story;
 		this.modelversion = CURRENT_MODEL_VERSION;
-		this.save(DBConstants.lir_backoffice);
 	}
 
 	public Location(com.lir.library.domain.Location location) {
 		this.latitude = location.getLatitude();
 		this.longitude = location.getLongitude();
 		this.radius = location.getRadius();
+		this.modelversion = CURRENT_MODEL_VERSION;
 	}
 
-	public Location() {}
+	public Location() {
+		this.modelversion = CURRENT_MODEL_VERSION;
+	}
 
 	private static Finder<Long, Location> finder = new Finder<Long, Location>(Long.class, Location.class);
 
@@ -207,15 +221,15 @@ public class Location extends Model {
 	}
 
 	public static Location update(controllers.json.Location l, Location location) {
-		location.name = l.name;
-		location.latitude = l.latitude;
-		location.longitude = l.longitude;
-		location.radius = l.radius;
+		location.setName(l.name);
+		location.setLatitude(l.latitude);
+		location.setLongitude(l.longitude);
+		location.setRadius(l.radius);
 		System.out.println("MODELS.LOCATION UPDATING: " + location.getId());
 		System.out.println("MODELS.LOCATION UPDATING ZOOM: " + l.zoom);
-		location.zoom = l.zoom;
-		location.showpin = l.showpin;
-		location.ismain = l.ismain;
+		location.setZoom(l.zoom);
+		location.setShowPin(l.showpin);
+		location.setAsMainStoryLocation(l.ismain);
 		location.save(DBConstants.lir_backoffice);
 		return location;
 	}
