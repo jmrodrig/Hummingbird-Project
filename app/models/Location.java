@@ -211,10 +211,12 @@ public class Location extends Model {
 		location.latitude = l.latitude;
 		location.longitude = l.longitude;
 		location.radius = l.radius;
+		System.out.println("MODELS.LOCATION UPDATING: " + location.getId());
+		System.out.println("MODELS.LOCATION UPDATING ZOOM: " + l.zoom);
 		location.zoom = l.zoom;
 		location.showpin = l.showpin;
 		location.ismain = l.ismain;
-		location.update(DBConstants.lir_backoffice);
+		location.save(DBConstants.lir_backoffice);
 		return location;
 	}
 
