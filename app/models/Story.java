@@ -340,6 +340,7 @@ public class Story extends Model {
 	public String getLocationName() {
 		Location l = getLocation();
 		if (l != null) return l.getName();
+		return null;
 	}
 
 	public void setLocationName(String lname) {
