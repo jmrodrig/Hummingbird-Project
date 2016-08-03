@@ -16,7 +16,6 @@ var defaultLocation = new google.maps.LatLng(37, -20);
 
 var indexStories;
 var indexStoriesMarkerList = new Hashtable();
-var storySectionsMarkerList = new Hashtable();
 var indexStoryPathsList;
 var previousCenter = defaultLocation;
 var previousZoom = 2;
@@ -54,14 +53,6 @@ var EMBED_MAX_WIDTH = 570,
 EMBED_MAX_HEIGHT = 440,
 DEFAULT_VIEWPORT_SIZE = 0.2,
 LIR_SERVER_URL = "http://localhost:9000"
-
-var SECTION = 0,
-LOCATION_SECTION = 1,
-STORY_TEXT = 10,
-PICTURE_CONTAINER = 11;
-
-var SECTION_MARKER_COLOR = '#1ae04e',
-STORY_MARKER_COLOR = '#FF2C2C'
 
 /******************************************************************
 	INITIALIZATION
@@ -108,7 +99,7 @@ function loadStories(bounds_,onFinished) {
 		// drawLayout(indexStories);
 		setLayoutDimensions(indexStories);
 		// fitMapBoundsOnLayout(bounds_);
-		indexStoriesMarkerList = drawStoriesMarkersOnMap(indexStories,markerIcon);
+		indexStoriesMarkerList = drawMarkersOnMap(indexStories,markerIcon);
 		if (indexStories.length == 0) displayAlertMessage('There are no stories here');
 		if (onFinished) onFinished(stories);
   });
@@ -200,7 +191,7 @@ function intializeEvents() {
 	// 		$('#story-large-layout').hide().css('left', contentwidth + 'px').show();
 	// 		$('#story-large-layout-container').html(largeStoryContainer);
 	// 		$('#story-large-layout').animate({left: 0}, 300, "easeOutQuart");
-	// 		fitLocationOnView(previousstory,map);
+	// 		fitStoryOnView(previousstory,map);
 	// 	});
 	// });
 	//
@@ -213,7 +204,7 @@ function intializeEvents() {
 	// 		$('#story-large-layout').hide().css('left', -contentwidth + 'px').show();
 	// 		$('#story-large-layout-container').html(largeStoryContainer);
 	// 		$('#story-large-layout').animate({left: 0}, 300, "easeOutQuart");
-	// 		fitLocationOnView(nextstory,map);
+	// 		fitStoryOnView(nextstory,map);
 	// 	});
 	// });
 
@@ -236,7 +227,7 @@ function intializeEvents() {
 			fitPositionOnView(e.state.latitude,e.state.longitude,e.state.zoom,map);
 			loadStories(null,function(stories) {
 				if (e.state.story)
-					openStoryView(e.state.story);
+					drawStoryLargeLayout(e.state.story);
 				else
 					drawLayout(stories);
 			});
@@ -318,20 +309,17 @@ function drawStoryGridLayout(stories) {
   });
 }
 
-function openStoryView(story,options) {
+function drawStoryLargeLayout(story,options) {
 	if (!options) var options = {loadstoriesfirst:false}
 	if (options.loadstoriesfirst) {
 		loadStories(null,function(stories) {
 			drawLayout(stories,{keephidden:true})
-			openStoryView(story);
+			drawStoryLargeLayout(story);
 		});
 		return;
 	}
 	isStoryViewOpen = true;
 	var largeStoryContainer = buildStoryLargeContainer(story,options);
-
-	//clear map markers
-	hideAllStoriesMarkersFromMap();
 
 	// update layout
 	$('#story-large-layout-container').html(largeStoryContainer);
@@ -341,7 +329,7 @@ function openStoryView(story,options) {
 	//fit story on map
 	previousCenter = map.getCenter();
 	previousZoom = map.getZoom();
-	fitMarkersOnView(storySectionsMarkerList.values(),map);
+	fitStoryOnView(story,map);
 
 	// Show
 	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
@@ -396,7 +384,7 @@ function openEditStoryView(story) {
 	previousCenter = map.getCenter();
 	previousZoom = map.getZoom();
 	//Zoom in on the story location
-	fitLocationOnView(story.location,map);
+	fitStoryOnView(story,map);
 	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
 	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart", function() {
 		$('#story-large-layout').addClass('active')
@@ -431,8 +419,6 @@ function closeStoryView(options) {
 		storyLocationMarker.setMap(null);
 		storyLocationMarker = null;
 	}
-	clearStorySectionsMarkersFromMap();
-	showAllStoriesMarkersFromMap();
 }
 
 /******************************************************************
@@ -465,10 +451,10 @@ function buildStorySmallContainer(story,options) {
 																																		if (options.featured) {
 																																			openStoryLayoutView();
 																																			$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
-																																			fitLocationOnView(story.location,map);
-																																			openStoryView(story,{loadstoriesfirst:true});
+																																			fitStoryOnView(story,map);
+																																			drawStoryLargeLayout(story,{loadstoriesfirst:true});
 																																		} else
-                                                                    	openStoryView(story);
+                                                                    	drawStoryLargeLayout(story);
                                                                   });
   //Story container footer
   var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
@@ -503,7 +489,7 @@ function buildStorySmallContainer(story,options) {
 
   $('<li class="option-open"><a>Open</a></li>').appendTo(optionsList)
                                     .click(function() {
-                                      openStoryView(story);
+                                      drawStoryLargeLayout(story);
                                     });
 
 
@@ -582,6 +568,69 @@ function buildStorySmallContainer(story,options) {
   $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-saves">' + story.noOfSaves + ' saves</div>').appendTo(storyStatsContainer);
 
+	// Story Collections
+	// if (story.collections.length > 0 && !options.featured) {
+	// 	var storyCollectionsContainer = $('<div class="story-collections-container"/>').appendTo(storyContainerFooter);
+	// 	$('<p>Story appears on collection:</p>').appendTo(storyCollectionsContainer);
+	// 	story.collections.forEach(function(collection) {
+	// 		var collectionItem = $('<div class="collection-item" ></div>').appendTo(storyCollectionsContainer);
+	// 		if (!collection.imageUrl || collection.imageUrl == "") collection.imageUrl = defaultCollectionThumbnail;
+	// 		$('<div class="collection-thumbnail"></div>').appendTo(collectionItem).css('background-image','url(' + collection.imageUrl + ')');
+	// 		$('<a class="collection-name" href="/collection/' + collection.id + '">' + collection.name + '</a>').appendTo(collectionItem);
+	// 	});
+	// }
+
+  return storyContainer;
+}
+
+/******************************************************************
+	BUILD SMALL COLLECTION CONTAINER
+******************************************************************/
+
+function buildCollectionSmallContainer(collection,options) {
+	if (!options)
+		var options = {featured:false}
+
+  var storyContainer = $('<div/>').attr('id', 'collection-' + collection.id).attr('collectionId', collection.id)
+            .addClass('story-container sm-container collection-container');
+
+	storyContainer.hover(function() {
+		$('#collection-' + collection.id + '.collection-container.sm-container').addClass('highlighted');
+	} , function() {
+		$('#collection-' + collection.id + '.collection-container.sm-container').removeClass('highlighted');
+	});
+
+	var storyContainerHeader = $('<div class="collection-container-header"/>').appendTo(storyContainer);
+  //Story container body
+  var storyContainerBody = $('<div class="collection-container-body"/>').appendTo(storyContainer)
+                                                                  .click(function() {
+                                                                    location = "/collection/" + collection.id;
+                                                                  });
+	var storyContainerFooter = $('<div class="collection-container-footer"/>').appendTo(storyContainer);
+
+  //Thumbnail: article image or story image
+  var thumbnailLink = "";
+  if (collection.thumbnail)
+    thumbnailLink = collection.thumbnail;
+
+  if (thumbnailLink && thumbnailLink.length > 0) {
+    storyContainer.css('background-image','url(' + thumbnailLink + ')')
+  }
+
+	//--- Header ---//
+
+	$('<p>= story collection =</p>').appendTo(storyContainerHeader)
+
+	// Collection name
+  $('<p class="collection-name">' + collection.title + '</p>').appendTo(storyContainerBody);
+
+  //--- FOOTER ---//
+
+  // Stats: Likes and Saves
+  var collectionStatsContainer = $('<div class="collection-stats-container"/>').appendTo(storyContainerFooter);
+  $('<div class="collection-stats-stories">' + collection.noStories + ' stories</div>').appendTo(collectionStatsContainer);
+  $('<div class="collection-stats-followers">' + collection.noFollowers + ' followers</div>').appendTo(collectionStatsContainer);
+
   return storyContainer;
 }
 
@@ -593,6 +642,16 @@ function buildStoryLargeContainer(story,options) {
 	if (!options) var options = {featured:false,editable:false,new:true}
   var storyContainer = $('<div class="story-container lg-container"></div>');
 
+	if (story.id) {
+		storyContainer.attr('id', 'story-' + story.id).attr('storyId', story.id);
+		if (story.location && story.location.showpin) {
+			storyContainer.hover(function() {
+				indexStoriesMarkerList.get(story.id).addClass('highlighted')
+			} , function() {
+				indexStoriesMarkerList.get(story.id).removeClass('highlighted')
+			});
+		}
+	}
   //Story container header
   var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
 	//Scrollable content
@@ -676,277 +735,101 @@ function buildStoryLargeContainer(story,options) {
 		$('<button id="set-story-location" type="button" onclick="setStoryLocation()" class="btn btn-default pull-right">set</button>').appendTo(locationContainer);
 	}
 
-	if (!options.new)
-  	buildStoryContent(story).appendTo(storyContainerBody);
+  // Summary container
+  var summaryContainer = $('<div class="summary-container collapsed"/>').appendTo(storyContainerBody);
+  var summary = $('<div class="story-summary" placeholder="write your story"></div>').appendTo(summaryContainer);
+	setStoryText(story.summary,summary);
+  // $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
+
+	if (options.editable) {
+		summary.attr('contenteditable', 'true').addClass('editable');
+	}
+
+  //Thumbnail
+	var imageContainer = $('<div class="image-container"/>').appendTo(storyContainerBody);
+	if (options.editable) {
+		$('<button id="remove-story-image" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>')
+			.appendTo(imageContainer)
+			.click(function() {
+				$('.lg-container .image-container').hide();
+				$('.lg-container .story-image').attr('src','');
+				saveimagefile = null;
+			});
+	}
+  var img = $('<img class="story-image">').appendTo(imageContainer);
+	if (story.thumbnail && story.thumbnail.length > 0) {
+		img.attr('src',story.thumbnail);
+		imageContainer.css('display','block');
+  }
+
+
+	if (options.editable) {
+		var insertArticleContainer = $('<div id="story-insert-article">').appendTo(storyContainerBody)
+		var insertArticleInput = $('<input id="article-link" placeholder="article link">').appendTo(insertArticleContainer)
+																															.keyup(function() {
+																																txt = $(this).val();
+																																webUrl = getUrlFromText(txt);
+																																grabWebsiteMetadata(webUrl)
+																															});
+		$('<button id="close-article-link" type="button" class="close" aria-label="Close"><span aria-hidden="true">&times;</span></button>').appendTo(insertArticleContainer)
+																															.click(function() {
+																														    $('#story-insert-article').hide();
+																														    $('#article-link').val('');
+																														    article = null;
+																														    removeArticleContainer();
+																														  });
+		if (story.articleLink) insertArticleInput.val(story.articleLink);
+	}
+
+  // ARTICLE CONTAINER
+  if (story.articleLink) {
+    buildArticleContainer({
+      title: story.articleTitle,
+      description: story.articleDescription,
+      author: story.articleAuthor,
+      imageUrl: story.articleImage,
+      source: story.articleSource,
+      url: story.articleLink
+    },storyContainerBody,{colapsedescription:false});
+  }
+
+	// Story Collections
+	// if (!options.new && story.collections.length > 0 ) {
+	// 	var storyCollectionsContainer = $('<div class="story-collections-container"/>').appendTo(storyContainerFooter);
+	// 	$('<p>Story appears on collection:</p>').appendTo(storyCollectionsContainer);
+	// 	story.collections.forEach(function(collection) {
+	// 		var collectionItem = $('<div class="collection-item" ></div>').appendTo(storyCollectionsContainer);
+	// 		$('<div class="collection-thumbnail"></div>').appendTo(collectionItem).css('background-image','url(' + collection.imageUrl + ')');
+	// 		$('<a class="collection-name" href="/collection/' + collection.id + '">' + collection.name + '</a>').appendTo(collectionItem);
+	// 	});
+	// }
 
   return storyContainer;
 }
 
-/******************************************************************
-	STORY CONTENT
-******************************************************************/
+function buildAddPictureBtn() {
+	var addPictureBtn = $('<a id="story-add-picture-button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-art"></a>'),
+	form = $('<form enctype="multipart/form-data" id="image-upload-form">').appendTo(addPictureBtn);
+	input = $('<input id="f" name="profileImg[]" type="file" /></form>').appendTo(form)
+		.change(function(ev) {
+			saveimagefile = ev.target.files[0];
+			var fileReader = new FileReader();
 
-function buildStoryContent(story,options) {
-	if (!options) var options = {editable:false}
-	var storycontent = JSON.parse(story.content.replace(/&quot;/g,'"'));
-	if (!storycontent) { return; }
-	var contentElement = $("<div id='story-content'/>")
-	var sectioncounter = 0;
-  //$("#title").text(story.title);
-  storycontent.forEach(function(sectionObj) {
-    if (sectionObj.type == LOCATION_SECTION) {
-      var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
-      buildLocationBanner(sectionObj.location,options,sectioncounter).appendTo(sectionElem)
-      if (sectionObj.content) {
-        sectionObj.content.forEach(function(itemObj) {
-          switch (itemObj.type) {
-            case STORY_TEXT:
-              $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
-              break;
-            case PICTURE_CONTAINER:
-              buildPictureFrame(itemObj.link,itemObj.text,itemObj.position,options).appendTo(sectionElem);
-              break;
-          }
-        });
-      }
-			sectionElem.hover(function() {
-				fitLocationOnView(sectionObj.location,map);
-				var counter = parseInt($(this).attr('section-counter'));
-				storySectionsMarkerList.get(counter).addClass('highlighted')
-			} , function() {
-				var counter = parseInt($(this).attr('section-counter'));
-				storySectionsMarkerList.get(counter).removeClass('highlighted')
-			});
-    } else {
-      var sectionElem = $("<div class='section'/>").appendTo(contentElement);
-      if (sectionObj.content) {
-        sectionObj.content.forEach(function(itemObj) {
-          switch (itemObj.type) {
-            case STORY_TEXT:
-              $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
-              break;
-            case PICTURE_CONTAINER:
-              buildPictureFrame(itemObj.link,itemObj.text,itemObj.position,options).appendTo(sectionElem);
-              break;
-          }
-        });
-      } else {
-        $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
-      }
-    }
-		sectionElem.attr('section-counter',sectioncounter);
-		sectioncounter++;
-  });
-	return contentElement;
-}
+			if (saveimagefile) {
+				$('.image-container').show();
+			} else {
+				$('.image-container').hide();
+			}
 
-function buildLocationBanner(location,options,counter) {
-	if (!options) var options = {editable:false}
-  var _map;
-  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
-  addLocationDataAttrOnElement(locationBanner,location)
-  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
-  var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
-	if (options.editable) {
-  	var deleteLocationBtn = $('<button type="button" class="delete-location close"><span>&times;</span></button>').appendTo(locationBanner);
-	  // map popover
-	  var mapContainer = $("<div class='map-container' contenteditable='false'/>");
-	  var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
-	  var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
-	  var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
-	  searchboxelem.val(location.name);
-	  var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
-	  var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
-	  $('<div class="map-sight"/>').appendTo(mapContainer);
+			fileReader.onload = function(ev2) {
+				console.dir(ev2);
+				$('.story-image').attr('src', ev2.target.result);
+			};
 
-
-	  locationBanner.popover({
-	    html: true,
-	    content: mapContainer,
-	    placement: 'bottom',
-	    animation: true,
-	    trigger: 'manual'
-	  })
-	    .on('shown.bs.popover', function () {
-	      var coords = new Object();
-	      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
-	      coords.zoom = parseFloat(location.zoom);
-	      if (!_map)
-	        _map = initiateContentMap(mapelem[0],searchboxelem[0],coords);
-	  })
-
-	  locationNameelem.click(function() {
-	      locationBanner.popover('show');
-	  })
-
-	  cancelLocationSelection.click(function() {
-	    locationBanner.popover('hide');
-	  })
-
-	  confirmLocationSelection.click(function() {
-	    location.latitude = map.getCenter().lat();
-	    location.longitude = map.getCenter().lng();
-	    location.name = searchboxelem.val();
-	    location.zoom = map.getZoom();
-	    addLocationDataAttrOnElement(locationBanner,location);
-	    if (!map.marker)
-	      map.marker = new google.maps.Marker({map: _map});
-	    map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
-	    locationNameelem.text(location.name)
-	    locationBanner.popover('hide');
-	  })
-
-	  deleteLocationBtn.click(function() {
-	    deleteLocationSection(locationBanner.parent());
-	  })
-	} else {
-		var sectionmarker = drawSectionMarkerOnMap(location,counter);
-		storySectionsMarkerList.put(counter,sectionmarker);
-	}
-
-  return locationBanner;
-}
-
-function deleteLocationSection(sectionNode) {
-  sectionNode.find('.location-banner').remove();
-  prevSection = sectionNode.prev();
-  if (!prevSection || prevSection.hasClass('location-section') || prevSection.hasClass('title')) {
-    sectionNode.removeClass('location-section')
-  } else {
-    sectionNode.children().each(function() {
-      $(this).appendTo(prevSection);
-    });
-    sectionNode.remove();
-  }
-  updateSectionDistribution();
-}
-
-function updateSectionDistribution() {
-  var sectionsNodes = $('#story-content').find('.section')
-  sectionsNodes.each(function() {
-    var _this = $(this);
-    if (!_this.hasClass('location-section')) {
-      var nextSectionSibling = _this.next();
-      while (nextSectionSibling.length > 0 && !nextSectionSibling.hasClass('location-section')) {
-        nextSectionSibling.children().appendTo(_this);
-        nextSectionSibling = nextSectionSibling.next();
-      }
-    }
-  });
-  $(".section:empty").remove();
-}
-
-function addLocationDataAttrOnElement(element,location) {
-  location.latitude = (location.latitude) ? location.latitude : 0;
-  location.longitude = (location.longitude) ? location.longitude : 0;
-  location.radius = (location.radius) ? location.radius : 0;
-  location.zoom = (location.zoom) ? location.zoom : 0;
-  location.name = (location.name) ? location.name : "choose location";
-
-  element.attr('lat',location.latitude);
-  element.attr('lng',location.longitude);
-  element.attr('radius',location.radius);
-  element.attr('zoom',location.zoom);
-  element.attr('locationName',location.name);
-}
-
-function readLocationDataAttrOnElement(element) {
-  var location = new Object();
-  location.latitude = parseFloat(element.attr('lat'));
-  location.longitude = parseFloat(element.attr('lng'));
-  location.radius = parseFloat(element.attr('radius'));
-  location.zoom = parseFloat(element.attr('zoom'));
-  location.name = element.attr('locationName');
-  return location;
-}
-
-function initiateContentMap(mapelem,searchboxelem,coords) {
-
-	var mapOptions = {
-		zoom : 2,
-		streetViewControl: true,
-		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-    scaleControl : true,
-		zoomControl : true,
-		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.ROADMAP,
-		mapTypeControl : true,
-		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
-	}
-
-  var map = new google.maps.Map(mapelem,mapOptions);
-
-  if (!coords) {
-    var coords = new Object();
-    coords.position = new google.maps.LatLng(37, -20);
-    coords.zoom = 4;
-  } else {
-    map.marker = new google.maps.Marker({map: map, position:coords.position});
-  }
-  map.setZoom(coords.zoom);
-  map.setCenter(coords.position);
-
-
-  //-- SearchBox --//
-  var searchBox = new google.maps.places.SearchBox(searchboxelem);
-  // map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchboxelem);
-  //Bias the SearchBox results towards current map's viewport.
-  searchBox.setBounds(map.getBounds());
-  map.addListener('bounds_changed', function() {
-    searchBox.setBounds(map.getBounds());
-  });
-  searchBox.addListener('places_changed', function() {
-    var places = searchBox.getPlaces();
-    if (places.length == 0)
-      return;
-    map.setCenter(places[0].geometry.location);
-    map.setZoom(8);
-  });
-
-  return map;
-}
-
-function buildPictureFrame(link,caption,pos,options) {
-	if (!options) var options = {editable:false}
-  var picContainer = $("<div class='section-item picture-container' readonly/>");
-  var position = (pos) ? pos : "center"
-  var picFrame = $("<div class='picture-frame' position='" + position + "'/>").appendTo(picContainer);
-  $('<img src=' + link + '>').appendTo(picFrame);
-
-	if (options.editable) {
-		picContainer.removeAttr('readonly');
-		var picControlers = $("<div class='picture-controls btn-group' />").appendTo(picFrame);
-	  $("<a class='btn btn-default picture-position'>Left</a>").click(function() {
-	                                                              picFrame.attr('position','left');
-	                                                            })
-	                                                            .appendTo(picControlers);
-	  $("<a class='btn btn-default picture-position'>Center</a>").click(function() {
-	                                                              picFrame.attr('position','center');
-	                                                            })
-	                                                            .appendTo(picControlers);
-	  $("<a class='btn btn-default picture-position'>Right</a>").click(function() {
-	                                                              picFrame.attr('position','right');
-	                                                            })
-	                                                            .appendTo(picControlers);
-	  $("<a class='btn btn-default picture-position'>Cover</a>").click(function() {
-	                                                              picFrame.attr('position','cover');
-	                                                            })
-	                                                            .appendTo(picControlers);
-	  $("<a class='btn btn-default'>Delete</a>").click(function() {
-	                                                              //TODO: delete image on server
-	                                                              picContainer.remove();
-	                                                            })
-	                                                            .appendTo(picControlers);
-	}
-	if (options.editable) {
-  	$("<p class='picture-caption' contenteditable='true'/>").text(caption)
-																														.appendTo(picFrame);
-	} else {
-		$("<p class='picture-caption' contenteditable='false' readonly/>").text(caption)
-																														.appendTo(picFrame);
-	}
-
-  return picContainer;
+			fileReader.readAsDataURL(saveimagefile);
+			fr = fileReader;
+		});
+	return addPictureBtn;
 }
 
 /******************************************************************
@@ -966,13 +849,13 @@ function buildLikeButton(story) {
               .click(function() {
                 var storyId = $(this).attr('storyId');
                 likeStory(storyId, function(result) {
-                  $('.story-like-button[storyId=' + storyId + '] span').html(result.noOfLikes);
-									$('.story-like-button[storyId=' + storyId + '] .story-stats-likes').html(result.noOfLikes + ' likes');
+                  $('#story-' + storyId + ' .story-like-button span').html(result.noOfLikes);
+									$('#story-' + storyId + ' .story-stats-likes').html(result.noOfLikes + ' likes');
                   if (result.currentUserLikesStory) {
-                    $('.story-like-button[storyId=' + storyId + ']').addClass('liked')
+                    $('#story-' + storyId + ' .story-like-button').addClass('liked')
                                                                   .html(icon + '  <span class="badge">' + result.noOfLikes + '</span>');
                   } else {
-                    $('.story-like-button[storyId=' + storyId + ']').removeClass('liked')
+                    $('#story-' + storyId + ' .story-like-button').removeClass('liked')
                                                                   .html(icon + '  <span class="badge">' + result.noOfLikes + '</span>');
                   }
                 });
@@ -989,24 +872,192 @@ function buildSaveStoryButton(story) {
 							});
   var id = story.id;
   var saveStoryButtonClass = (story.currentUserSavedStory) ? 'saved' : '';
+	var list = buildChooseCollectionDropdownList(story);
   var saveStoryButton = $('<a storyId= ' + id + ' role="button" data-toggle="popover" tabindex="0" class="story-save-button btn btn-icon ' + saveStoryButtonClass + '" >' + icon + '  <span class="badge">' + story.noOfSaves + '</span></a>')
+							.popover({
+								html: true,
+								content: list,
+								placement: 'bottom',
+								animation: true,
+								trigger: 'focus'
+							})
               .click(function() {
 								var storyId = $(this).attr('storyId');
                 saveStory(storyId, function(result) {
-                  $('.story-save-button[storyId=' + storyId + '] span').html(result.noOfSaves);
+                  $('#story-' + storyId + ' .story-save-button span').html(result.noOfSaves);
 									var story = getStoryById(result.storyId,indexStories);
 									story.noOfSaves = result.noOfSaves;
-									$('.story-save-button[storyId=' + storyId + '] .story-stats-saves').html(story.noOfSaves + ' saves');
+									$('#story-' + storyId + ' .story-stats-saves').html(story.noOfSaves + ' saves');
                   if (result.currentUserSavedStory) {
-                    $('.story-save-button[storyId=' + storyId + ']').addClass('saved')
+                    $('#story-' + storyId + ' .story-save-button').addClass('saved')
                                                                   .html(icon + '  <span class="badge">' + result.noOfSaves + '</span>');
                   } else {
-                    $('.story-save-button[storyId=' + storyId + ']').removeClass('saved')
+                    $('#story-' + storyId + ' .story-save-button').removeClass('saved')
                                                                   .html(icon + '  <span class="badge">' + result.noOfSaves + '</span>');
                   }
                 });
               });
     return saveStoryButton;
+}
+
+function addArticleContainer(art) {
+  removeArticleContainer();
+  buildArticleContainer(art,$('.lg-container .story-container-body'),{size:"large",autoplay:true})
+}
+
+function removeArticleContainer() {
+  $('.article-container').remove();
+}
+
+function buildArticleContainer(art,addToContainer,options) {
+  var articleContainer = $('<div class="article-container"/>').appendTo(addToContainer);
+
+  if (getHostFromUrl(art.url) == "vine.co") {
+    buildVineContainer(art.url,articleContainer,options);
+  } else if (getHostFromUrl(art.url) == "www.youtube.com" || getHostFromUrl(art.url) == "youtu.be") {
+    buildYouTubeContainer(art.url,articleContainer,options);
+  } else if (getHostFromUrl(art.url) == "vimeo.com") {
+    buildVimeoContainer(art.url,articleContainer,options);
+  } else if (getHostFromUrl(art.url) == "www.instagram.com") {
+		buildInstagramContainer(art.url,articleContainer,options);
+	} else if (getHostFromUrl(art.url) == "www.facebook.com") {
+		buildFacebookVideoContainer(art.url,articleContainer,options);
+	} else {
+    articleContainer.click(function() {window.open(art.url);});
+
+    if (art.imageUrl != "") {
+      var articleImageContainer = $('<div class="article-img-container"/>').appendTo(articleContainer)
+                                  .append('<img class="article-image" src=' + art.imageUrl + '>');
+    }
+
+    var articleContentContainer = $('<div class="article-content-container"/>').appendTo(articleContainer)
+    var articleTitle = $('<h4 class="article-title" >' + art.title + '</h4>').appendTo(articleContentContainer);
+    var articleDescriptionContainer = $('<div class="article-description-container collapsed">').appendTo(articleContentContainer);
+    var articleDescription = $('<p class="article-description">' + art.description + '</p>').appendTo(articleDescriptionContainer);
+    if (!options.colapsedescription)
+      articleDescriptionContainer.removeClass('collapsed');
+    else
+      $('<div class="article-description-overlay"/>').appendTo(articleDescriptionContainer);
+
+    if (art.author) {
+      $('<p class="article-host-author">' + art.author + ' | ' + formatArticleSource(art) + '</p>').appendTo(articleContentContainer);
+    } else {
+      $('<p class="article-host-author">' + formatArticleSource(art) + '</p>').appendTo(articleContentContainer);
+    }
+  }
+  return articleContainer;
+}
+
+function buildVineContainer(link,addToContainer,options) {
+  var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
+  var iframe = $('<iframe class="vines-iframe" frameborder="0"></iframe>').appendTo(iframeContainer)
+                                          .load(function() {
+                                            if (options.size == "large") {
+                                              addToContainer.addClass('large-view');
+                                              iframesize = EMBED_MAX_WIDTH;
+                                              addToContainer.width(iframesize);
+                                              addToContainer.height(iframesize);
+                                            } else {
+                                              iframesize = addToContainer.width();
+                                              addToContainer.height(iframesize);
+                                            }
+                                            iframe.attr("width",iframesize)
+                                                  .attr("height",iframesize);
+                                            iframeContainer.innerWidth(iframesize)
+                                                           .innerHeight(iframesize)
+                                                           .show();
+                                          })
+                                          .attr('src',link + "/embed/simple");
+  return iframeContainer;
+}
+
+function buildYouTubeContainer(link,addToContainer,options) {
+  var VIDEO_RATIO = 16/9;
+	if (getHostFromUrl(link) == "www.youtube.com")
+		var videoId = link.split('https://www.youtube.com/watch?v=')[1];
+	else if (getHostFromUrl(link) == "youtu.be")
+  	var videoId = link.split('https://youtu.be/')[1];
+	var autoplay = (options.autoplay) ? 1 : 0;
+	var src = "https://www.youtube.com/embed/" + videoId + "?rel=0&amp;showinfo=0&amp;autoplay=" + autoplay;
+	var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
+  var iframe = $('<iframe class="youtube-iframe" frameborder="0" allowfullscreen></iframe>').appendTo(iframeContainer)
+                                          .load(function() {
+                                            if (options.size == "large") addToContainer.addClass('large-view');
+                                            var iframeWidth= addToContainer.width();
+                                            var iframeHeight= iframeWidth / VIDEO_RATIO;
+                                            iframeHeight = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : iframeHeight;
+                                            iframeWidth = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : iframeWidth;
+                                            iframe.attr("width",iframeWidth)
+                                                  .attr("height",iframeHeight);
+                                            iframeContainer.innerWidth(iframeWidth)
+                                                           .innerHeight(iframeHeight)
+                                                           .show();
+                                          })
+                                          .attr('src',src);
+  return iframeContainer;
+}
+
+function buildVimeoContainer(link,addToContainer,options) {
+  var VIDEO_RATIO = 16/9;
+  var videoId = link.split('https://vimeo.com/')[1];
+	if (options.autoplay) {
+		var autoplay = 1;
+	} else {
+		videoId = videoId.split('#',1)[0];
+		var autoplay = 0;
+	}
+  var src = "https://player.vimeo.com/video/" + videoId + "?autoplay=" + autoplay + "&color=ff0179&title=0&byline=0&portrait=0"
+  var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
+  var iframe = $('<iframe class="vimeo-iframe" frameborder="0" webkitallowfullscreen mozallowfullscreen allowfullscreen></iframe>').appendTo(iframeContainer)
+                                          .load(function() {
+                                            if (options.size == "large") addToContainer.addClass('large-view');
+                                            var iframeWidth= addToContainer.width();
+                                            var iframeHeight= iframeWidth / VIDEO_RATIO;
+                                            iframeHeight = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : iframeHeight;
+                                            iframeWidth = (iframeHeight>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : iframeWidth;
+                                            iframe.attr("width",iframeWidth)
+                                                  .attr("height",iframeHeight);
+                                            iframeContainer.innerWidth(iframeWidth)
+                                                           .innerHeight(iframeHeight)
+                                                           .show();
+                                          })
+                                          .attr('src',src);
+  return iframeContainer;
+}
+
+function buildInstagramContainer(link,addToContainer,options) {
+	var iframeContainer = $('<div class="article-embebed-iframe-container"/>').appendTo(addToContainer);
+	fetchInstagramEmbedIframe(link, function(data) {
+		var iframe = $(data.html).appendTo(iframeContainer);
+		if (options.size == "large") {
+			addToContainer.addClass('large-view-instagram');
+			var iframeWidth = EMBED_MAX_WIDTH;
+			addToContainer.width(iframeWidth);
+		} else {
+			var iframeWidth = addToContainer.width();
+		}
+		iframe.attr("width",iframeWidth);
+		iframeContainer.innerWidth(iframeWidth)
+									 .show();
+		instgrm.Embeds.process();
+		return iframeContainer;
+	});
+}
+
+function buildFacebookVideoContainer(link,addToContainer,options) {
+	var VIDEO_RATIO = 16/9;
+	if (options.size == "large") addToContainer.addClass('large-view');
+	var width = EMBED_MAX_WIDTH;
+	var height= width / VIDEO_RATIO;
+	height = (height>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT : height;
+	width = (height>EMBED_MAX_HEIGHT) ? EMBED_MAX_HEIGHT * VIDEO_RATIO : width;
+	fbvideoContainer = $('<div class="fb-video" data-width="'+ width +'" data-allowfullscreen="true"></div>')
+												.appendTo(addToContainer)
+												.innerWidth(width)
+								 				.innerHeight(height)
+												.attr('data-href', link )
+								 				.show();
+	window.fbAsyncInit();
 }
 
 /******************************************************************
@@ -1159,8 +1210,16 @@ function initiateMap() {
 			});
 			updatePageHistory();
 		});
-		if (openingtarget)
-			setUpOpeningTarget();
+		// If opening page with a story/location target
+		if (openingtarget) {
+			fitPositionOnView(openingtarget.latitude,openingtarget.longitude,openingtarget.zoom,map)
+			loadStories(null,function(stories) {
+				if (openingtarget.storyid)
+					drawStoryLargeLayout(getStoryById(openingtarget.storyid,stories));
+				else
+					drawLayout(stories);
+			});
+		}
 		google.maps.event.removeListener(listener);
 	});
 
@@ -1271,7 +1330,7 @@ function setStoryLocation() {
 		else if (editingstory && indexStoriesMarkerList.get(editingstory.id))
 			indexStoriesMarkerList.get(editingstory.id).setPosition(position,position,true);
 		else
-	  	storyLocationMarker = drawStoryMarkerOnMap(position);
+	  	storyLocationMarker = drawMarkerOnMap(position);
 	} else if (locationSetMode=='region') {
 		storylocation.showpin = false;
 		storylocation.radius = $('#map-region').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom);
@@ -1378,12 +1437,12 @@ function fitMarkersOnView(markers,map) {
 	}
 	else if (markers.length == 1) {
 		if (map)
-			var sets = fitLocationOnView(markers[0].location,map)
+			var sets = fitStoryOnView(markers[0].story,map)
 		indexZoom = sets.zoom;
 		indexCenter = sets.center;
 	} else {
 		for (var i = 0; i < markers.length; i++) {
-			if (markers[i].location != null)
+			if (markers[i].story.location != null)
 				bounds.extend( markers[i].getPosition() );
 		}
 		var north = bounds.getNorthEast().lat(),
@@ -1401,6 +1460,11 @@ function fitMarkersOnView(markers,map) {
 		indexZoom = (zoom >= 2) ? zoom : 2;
 		var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
 		indexCenter = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - ($('#map-canvas').innerWidth()-storiesGridListContainerWidth)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+		// var marker = new google.maps.Marker({
+		// 	position : new google.maps.LatLng(0.5*(north+south), 0.5*(west+east)),
+		// 	map : map,
+		// 	draggable : false
+		// });
 		map.setZoom(indexZoom);
 		map.panTo(indexCenter);
 	}
@@ -1415,7 +1479,7 @@ function fitStoriesOnView(stories,map) {
 	}
 	else if (stories.length == 1) {
 		if (map)
-			var sets = fitLocationOnView(stories[0].location,map)
+			var sets = fitStoryOnView(stories[0],map)
 		indexZoom = sets.zoom;
 		indexCenter = sets.center;
 	} else {
@@ -1451,13 +1515,13 @@ function fitStoriesOnView(stories,map) {
 	}
 }
 
-//--- fitLocationOnView ---//
-function fitLocationOnView(location,map) {
-	if (location != null) {
-		var zoom = location.zoom,
+//--- fitStoryOnView ---//
+function fitStoryOnView(story,map) {
+	if (story.location != null) {
+		var zoom = story.location.zoom,
 		width_pix = $('#map-viewport').innerWidth(),
 		delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
-		center = new google.maps.LatLng(location.latitude, location.longitude - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
+		center = new google.maps.LatLng(story.location.latitude, story.location.longitude - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
 		map.setZoom(zoom);
 		map.panTo(center);
 		return {zoom:zoom, center:center}
@@ -1474,7 +1538,7 @@ function fitPositionOnView(lat,lng,zoom,map) {
 }
 
 //--- drawPublishedStoryMarkersOnMap method ---//
-function drawStoriesMarkersOnMap(stories,icon) {
+function drawMarkersOnMap(stories,icon) {
 	clearAllMarkersFromMap();
 	markerList  = new Hashtable();
 	if (stories.length == 0) return markerList;
@@ -1488,10 +1552,9 @@ function drawStoriesMarkersOnMap(stories,icon) {
 			position = new google.maps.LatLng(st_.location.latitude, st_.location.longitude, true),
 			offset = new Object({x:0, y:0 }),
 			marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-			marker.setColor(STORY_MARKER_COLOR);
 			marker.story = st_;
 			marker.addListener('click', function() {
-				openStoryView(this.story);
+				drawStoryLargeLayout(this.story);
       });
 			marker.addListener('mouseenter',function() {
 				$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
@@ -1501,20 +1564,18 @@ function drawStoriesMarkersOnMap(stories,icon) {
 			});
 			markerList.put(st_.id,marker);
 		}
-	//fitLocationOnView(storyMarkerList);
+	//fitStoryOnView(storyMarkerList);
 	}
   return markerList;
 }
 
-function drawStoryMarkerOnMap(story) {
-	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
+function drawMarkerOnMap(position,story) {
 	var markerDiv = $('<div class="marker-div animated-marker"></div>'),
 	offset = new Object({x:0, y:0 }),
 	marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-	marker.setColor(STORY_MARKER_COLOR);
 	marker.story = story;
 	marker.addListener('click', function() {
-    openStoryView(this.story);
+    drawStoryLargeLayout(this.story);
   });
 	marker.addListener('mouseenter',function() {
 		$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
@@ -1522,16 +1583,6 @@ function drawStoryMarkerOnMap(story) {
 	marker.addListener('mouseleave',function() {
 		$('#story-' + this.story.id + '.story-container.sm-container').removeClass('highlighted');
 	});
-  return marker;
-}
-
-function drawSectionMarkerOnMap(location,sectioncounter) {
-	var position = new google.maps.LatLng(location.latitude, location.longitude, true);
-	var markerDiv = $('<div class="marker-div animated-marker"></div>'),
-	offset = new Object({x:0, y:0 }),
-	marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-	marker.location = location;
-	marker.setColor(SECTION_MARKER_COLOR);
   return marker;
 }
 
@@ -1554,31 +1605,6 @@ function clearAllMarkersFromMap() {
 		markerList[i].setMap(null);
 	}
 	indexStoriesMarkerList.clear()
-}
-
-function clearStorySectionsMarkersFromMap() {
-	if (!storySectionsMarkerList) return;
-	var markerList = storySectionsMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(null);
-	}
-	storySectionsMarkerList.clear()
-}
-
-function hideAllStoriesMarkersFromMap() {
-	if (!indexStoriesMarkerList) return;
-	var markerList = indexStoriesMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(null);
-	}
-}
-
-function showAllStoriesMarkersFromMap() {
-	if (!indexStoriesMarkerList) return;
-	var markerList = indexStoriesMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(map);
-	}
 }
 
 /******************************************************************
@@ -1723,7 +1749,8 @@ function postingFinished(story) {
   $('#story-publish-button').text('Post').removeAttr('disabled');
 	indexStories.push(story);
 	if (story.location.showpin) {
-		var marker = drawStoryMarkerOnMap(story)
+		var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
+		marker = drawMarkerOnMap(position,story)
 		indexStoriesMarkerList.put(story.id,marker)
 	}
   drawLayout(indexStories);
@@ -2221,23 +2248,12 @@ function openPageOnTarget(target) {
 	openingtarget = target;
 }
 
-function setUpOpeningTarget() {
-	// If opening page with a story/location target
-	fitPositionOnView(openingtarget.latitude,openingtarget.longitude,openingtarget.zoom,map)
-	loadStories(null,function(stories) {
-		if (openingtarget.storyid)
-			openStoryView(getStoryById(openingtarget.storyid,stories));
-		else
-			drawLayout(stories);
-	});
-}
-
 /******************************************************************
 	SERVER LINKS STUDS
 ******************************************************************/
 
 function uploadStoryImage(storyId,onFinished) {
-	url = '/story/uploadimage/' +storyId;
+	url = '/story/'+storyId+'/uploadimage';
 	var uploadImageForm = new FormData($('.lg-container #image-upload-form')[0]);
 	$.ajax( {
 	  url: url,
@@ -2252,7 +2268,7 @@ function uploadStoryImage(storyId,onFinished) {
 
 function deleteStoryImage(storyId,success,error) {
   $.ajax({
-		url: '/story/deleteimage/' +storyId,
+		url: '/story/'+storyId+'/deleteimage',
 		type: "DELETE",
     dataType: "json",
 		success: success,
@@ -2262,8 +2278,8 @@ function deleteStoryImage(storyId,success,error) {
 
 function likeStory(storyId, onFinished){
 	$.ajax({
-		url: "/story/like/" + storyId,
-		type: "PUT",
+		url: "/story/" + storyId + "/like",
+		type: "POST",
 		dataType: "json",
 		success: onFinished,
 		error: function() {console.log("Couln't like story");}
@@ -2272,8 +2288,8 @@ function likeStory(storyId, onFinished){
 
 function saveStory(storyId, onFinished){
 	$.ajax({
-		url: "/story/save/" + storyId,
-		type: "PUT",
+		url: "/story/" + storyId + "/save",
+		type: "POST",
 		dataType: "json",
 		success: onFinished,
 		error: function() {console.log("Couln't save story");}

@@ -11,7 +11,8 @@
 	var story = new Object();
 	story.id = @story.id;
 	story.title = "@story.title"
-	story.content = JSON.parse("@story.content".replace(/&quot;/g,'"'));
+	if ("@story.content".length > 0)
+		story.content = JSON.parse("@story.content".replace(/&quot;/g,'"'));
 </script>
 
 <section id="content-wrapper">
@@ -22,15 +23,12 @@
 				<input id="image-upload-input" name="profileImg[]" type="file" />
 			</form>
 		</a>
-		<a class="btn btn-default" id="add-location-btn" onclick="addSectionWithLocation()">location</a>
-		<a class="btn btn-default" id="add-section-btn" onclick="addSection()" >add section</a>
+		<a class="btn btn-default" id="add-location-btn" onclick="addLocationToCurrentSection()">location</a>
+		<a class="btn btn-default" id="add-section-btn" onclick="addSectionAtCurrentPosition()" >add section</a>
 		<a class="btn btn-default" id="add-advert-placeholder-btn" onclick="getElementAtCursorPosition()">ads</a>
 	</div>
-	<div id="story-content" contenteditable="true">
-		<h1 id="title" class="title text-title-size"></h1>
-		<div class='section'>
-			<p class="section-item story-text text-normal-size"></p>
-		</div>
+	<div id="story-content">
+		<!-- <h1 id="title" class="title text-title-size" contenteditable="true"></h1> -->
 	</div>
 </section>
 

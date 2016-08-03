@@ -252,7 +252,7 @@ function stud_fetchHtml(url,success, error){
 }
 
 function stud_uploadStoryImage(imageData,storyId,onFinished) {
-	url = '/story/'+storyId+'/uploadimage';
+	url = '/story/uploadimage/' +storyId;
 	//var imageData = new FormData($('.lg-container #image-upload-form')[0]);
 	$.ajax( {
 	  url: url,

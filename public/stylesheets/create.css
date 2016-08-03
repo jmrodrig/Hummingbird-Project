@@ -99,6 +99,7 @@ h1, h2, h3, h4, p, a, input, div {
 #story-content {
 	font-family: Georgia, "Times New Roman", Times, serif;
 	font-size: 20px;
+	padding-top: 40px;
 }
 
 #story-content h1 {
@@ -142,7 +143,7 @@ h1, h2, h3, h4, p, a, input, div {
 	max-width: inherit;
 	width: 460px;
 	padding: 0;
-	border: 0;
+	border: 4px solid #fff;
 	background-color: #333;
 	border-radius: 20px;
 }

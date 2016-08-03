@@ -2,7 +2,10 @@
 var SECTION = 0,
 LOCATION_SECTION = 1,
 STORY_TEXT = 10,
-PICTURE_CONTAINER = 11;
+PICTURE_CONTAINER = 11,
+DEFAULT_ZOOM = 4,
+DEFAULT_LATITUDE = 39.432031,
+DEFAULT_LONGITUDE = -8.084700;
 
 
 var ctrlDown = false,
@@ -27,7 +30,10 @@ function getElementAtCursorPosition() {
         element = element.parentNode;
     }
     console.log(element);
-    return element;
+    if ($.contains( $('#story-content')[0],element  ))
+      return element;
+    else
+      return null;
   }
 }
 
@@ -40,17 +46,119 @@ function getSectionAtCursorPosition() {
   }
 }
 
+function addSectionAtCurrentPosition() {
+  var section = $('<div class="section" contenteditable="true"/>');
+  var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
+  var currentpositon = getSectionAtCursorPosition();
+  if (currentpositon != null)
+    section.insertAfter($(getSectionAtCursorPosition()));
+  else
+    section.appendTo($('#story-content'));
+  resetCaretPositionOnElement(firstp[0],0);
+  setSectionKeyListners(section);
+}
+
+function addSectionAtEnd() {
+  var section = $('<div class="section" contenteditable="true"/>');
+  var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
+  section.appendTo($('#story-content'));
+  resetCaretPositionOnElement(firstp[0],0);
+  setSectionKeyListners(section);
+}
+
 function addSectionWithLocation() {
   var locationSection = $("<div class='section location-section'/>");
-  buildMapContainer(location).appendTo(locationSection);
+  buildLocationBanner(location).appendTo(locationSection);
   var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
   locationSection.insertAfter($(getSectionAtCursorPosition()));
   resetCaretPositionOnElement(firstp[0],0);
+  setSectionKeyListners(locationSection);
 }
 
-function buildMapContainer(location) {
-  var map;
+function removeSection(elem) {
+  elem.remove();
+}
 
+function addLocationToCurrentSection() {
+  var currentsection = getSectionAtCursorPosition();
+  if (currentsection == null) return;
+  currentsection = $(currentsection);
+  currentsection.addClass('location-section');
+  var locationbanner = buildLocationBanner();
+  currentsection.prepend(locationbanner);
+}
+
+function addPicture(imageUrl) {
+  var cursorPosition = getElementAtCursorPosition();
+  if (!cursorPosition) return;
+  var pictureframe = buildPictureFrame(imageUrl).insertBefore(cursorPosition);
+  if (!pictureframe[0].previousElementSibling || pictureframe[0].previousElementSibling.className.indexOf("story-text") == -1)
+    $('<p class="section-item story-text text-normal-size" />').insertBefore(pictureframe);
+}
+
+function setSectionKeyListners(sectionelement) {
+  sectionelement.keydown(function(e) {
+    // trap the return key being pressed
+    if (e.keyCode === returnKey) {}
+
+    // trap the back key being pressed
+    if (e.keyCode === backspacekey) {
+      var thissection = $(this);
+      var currentElement = getElementAtCursorPosition();
+      if (!currentElement.previousElementSibling || currentElement.previousElementSibling.className.indexOf("story-text") == -1) {
+        if (currentElement.innerHTML.length == 0 || currentElement.innerHTML == "<br>") {
+          e.preventDefault();
+          currentElement.innerHTML = "";
+          if (thissection[0].children.length == 1 && thissection[0].previousElementSibling != null)
+            removeSection(thissection);
+        }
+      }
+    }
+  });
+}
+
+function toggleTextSize() {
+  var currentElement = getElementAtCursorPosition();
+  $(currentElement).toggleClass("text-title-size");
+}
+
+function resetCaretPositionOnElement(el,offset) {
+  var range = document.createRange();
+  var sel = window.getSelection();
+  range.setStart(el, offset);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  $(el).focus();
+}
+
+function resetCaretPosition() {
+  var el = $("#story-content .story-text").last()[0];
+  var range = document.createRange();
+  var sel = window.getSelection();
+  range.setStart(el, 0);
+  range.collapse(true);
+  sel.removeAllRanges();
+  sel.addRange(range);
+  $(el).focus();
+}
+
+function buildLocationBanner(l) {
+  var location;
+  if (l == null) {
+    location = new Object();
+    location.id = null;
+    location.latitude = null;
+    location.longitude = null;
+    location.radius = 0;
+    location.zoom = null;
+    location.showpin = false;
+    location.ismain = false;
+    location.name = "(choose location)";
+  } else
+    location = l;
+
+  var map;
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
   addLocationDataAttrOnElement(locationBanner,location)
   $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
@@ -76,9 +184,12 @@ function buildMapContainer(location) {
     trigger: 'manual'
   })
     .on('shown.bs.popover', function () {
-      var coords = new Object();
-      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
-      coords.zoom = parseFloat(location.zoom);
+      var coords;
+      if (location.latitude != null) {
+        coords = new Object();
+        coords.position = new google.maps.LatLng(location.latitude,location.longitude);
+        coords.zoom = parseFloat(location.zoom);
+      }
       if (!map)
         map = initiateMap(mapelem[0],searchboxelem[0],coords);
   })
@@ -141,60 +252,27 @@ function updateSectionDistribution() {
 }
 
 function addLocationDataAttrOnElement(element,location) {
-  location.latitude = (location.latitude) ? location.latitude : 0;
-  location.longitude = (location.longitude) ? location.longitude : 0;
-  location.radius = (location.radius) ? location.radius : 0;
-  location.zoom = (location.zoom) ? location.zoom : 0;
-  location.name = (location.name) ? location.name : "choose location";
-
+  element.attr('id',location.id);
   element.attr('lat',location.latitude);
   element.attr('lng',location.longitude);
   element.attr('radius',location.radius);
   element.attr('zoom',location.zoom);
   element.attr('locationName',location.name);
+  element.attr('showpin',location.showpin);
+  element.attr('ismain',location.ismain);
 }
 
 function readLocationDataAttrOnElement(element) {
   var location = new Object();
+  location.id = parseInt(element.attr('id'));
   location.latitude = parseFloat(element.attr('lat'));
   location.longitude = parseFloat(element.attr('lng'));
   location.radius = parseFloat(element.attr('radius'));
   location.zoom = parseFloat(element.attr('zoom'));
   location.name = element.attr('locationName');
+  location.showpin = element.attr('showpin');
+  location.ismain = element.attr('ismain');
   return location;
-}
-
-function addSection() {
-  var section = $("<div class='section'/>");
-  var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
-  section.insertAfter($(getSectionAtCursorPosition()));
-  resetCaretPositionOnElement(firstp[0],0);
-}
-
-function toggleTextSize() {
-  var currentElement = getElementAtCursorPosition();
-  $(currentElement).toggleClass("text-title-size");
-}
-
-function resetCaretPositionOnElement(el,offset) {
-  var range = document.createRange();
-  var sel = window.getSelection();
-  range.setStart(el, offset);
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-  $(el).focus();
-}
-
-function resetCaretPosition() {
-  var el = $("#story-content :first-child")[0];
-  var range = document.createRange();
-  var sel = window.getSelection();
-  range.setStart(el, 0);
-  range.collapse(true);
-  sel.removeAllRanges();
-  sel.addRange(range);
-  $(el).focus();
 }
 
 function buildPictureFrame(link,pos) {
@@ -247,8 +325,8 @@ function initiateMap(mapelem,searchboxelem,coords) {
 
   if (!coords) {
     var coords = new Object();
-    coords.position = new google.maps.LatLng(37, -20);
-    coords.zoom = 4;
+    coords.position = new google.maps.LatLng(DEFAULT_LATITUDE, DEFAULT_LONGITUDE);
+    coords.zoom = DEFAULT_ZOOM;
   } else {
     map.marker = new google.maps.Marker({map: map, position:coords.position});
   }
@@ -361,7 +439,7 @@ function positionPictureFrame(position) {
 function uploadImageToServer(onFinished) {
   var imageData = new FormData($('#image-upload-form')[0]);
   stud_uploadStoryImage(imageData,story.id,function(data) {
-    console.log('picture-saved: ' + data);
+    console.log(data);
     if (onFinished) {
       onFinished(data);
     }
@@ -379,41 +457,23 @@ $(function() {
     var cursorPosition = getElementAtCursorPosition();
 
     fileReader.onload = function(ev2) {
-      uploadImageToServer(function(imageurl) {
-        buildPictureFrame(imageurl).insertBefore(cursorPosition);
+      uploadImageToServer(function(data) {
+        addPicture(data.imageUrl)
       });
+      $("#image-upload-input").replaceWith($("#image-upload-input").val('').clone(true));
     };
     fileReader.readAsDataURL(saveimagefile);
 
   });
 
+  readStoryDataAndLoadOnDOM(story);
   /* Set caret position at the firstchild of the article has the article is loaded */
   resetCaretPosition();
 
   // Overrides the return comand on the editable div
-  $('div[contenteditable]').keydown(function(e) {
-    // trap the return key being pressed
-    if (e.keyCode === 13) {
-      e.stopPropagation();
-      var currentelement = getElementAtCursorPosition();
-      if ($(currentelement).is('#story-content .title'))
-        return false;
-    }
-
-    // trap the back key being pressed
-    if (e.keyCode === 8) {
-      e.stopPropagation();
-      if (isBeginingOfFirstChild()) {
-        return false;
-      }
-      if (isBeforePictureFrame() && isCaretAtBegining()) {
-        isBeforePictureFrame().addClass('onfocus');
-        return false;
-      }
-    }
+  $('div[contenteditable]').each(function( index ) {
+    setSectionKeyListners($( this ));
   });
-
-  readStoryDataAndLoadOnDOM(story)
 
 
   $(window).bind("wheel", function(event) {
@@ -426,31 +486,31 @@ $(function() {
     $('#content-tools').css('top',scrollTop+200);
   });
 
-  $('#story-content').mouseup(function(e) {
-    $('#floating-new-location-section-button').remove();
-    var selection = window.getSelection();
-    if (selection.rangeCount > 0) {
-      var range = selection.getRangeAt(0);
-      if (!range.collapsed) {
-        var floatingbutton = $('<button id="floating-new-location-section-button"/>');
-        $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(floatingbutton)
-        floatingbutton.appendTo($('#content-wrapper'));
-        floatingbutton.click(function() {
-          addNewLocationSectionFromSelection(range);
-          $('#floating-new-location-section-button').remove();
-          selection.removeAllRanges();
-        })
-        var bounding = range.getBoundingClientRect(),
-        top = bounding.bottom - $('#content-wrapper').offset().top + $(window).scrollTop(),
-        left = bounding.left - $('#content-wrapper').offset().left + bounding.width/2 - 20;
-        if (left < 0)
-          left = 0
-        else if (left > $(window).innerWidth() - 240)
-          left = $(window).innerWidth() - 240;
-        floatingbutton.css({ top:top, left:left});
-      }
-    }
-  });
+  // $('#story-content').mouseup(function(e) {
+  //   $('#floating-new-location-section-button').remove();
+  //   var selection = window.getSelection();
+  //   if (selection.rangeCount > 0) {
+  //     var range = selection.getRangeAt(0);
+  //     if (!range.collapsed) {
+  //       var floatingbutton = $('<button id="floating-new-location-section-button"/>');
+  //       $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(floatingbutton)
+  //       floatingbutton.appendTo($('#content-wrapper'));
+  //       floatingbutton.click(function() {
+  //         addNewLocationSectionFromSelection(range);
+  //         $('#floating-new-location-section-button').remove();
+  //         selection.removeAllRanges();
+  //       })
+  //       var bounding = range.getBoundingClientRect(),
+  //       top = bounding.bottom - $('#content-wrapper').offset().top + $(window).scrollTop(),
+  //       left = bounding.left - $('#content-wrapper').offset().left + bounding.width/2 - 20;
+  //       if (left < 0)
+  //         left = 0
+  //       else if (left > $(window).innerWidth() - 240)
+  //         left = $(window).innerWidth() - 240;
+  //       floatingbutton.css({ top:top, left:left});
+  //     }
+  //   }
+  // });
 
   $("#publish-link").click(function() {
     populateStoryDetailsButton();
@@ -504,7 +564,6 @@ function changeThumbnailOnStoryDetailsModal(direction) {
 
 function buildLocationBannerForStoryDetailsModal(location) {
   var map;
-
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
   addLocationDataAttrOnElement(locationBanner,location)
   $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
@@ -560,55 +619,58 @@ function buildLocationBannerForStoryDetailsModal(location) {
   return locationBanner;
 }
 
-function addNewLocationSectionFromSelection(range) {
-  var locationSection = $("<div class='section location-section'/>");
-  buildMapContainer(location).appendTo(locationSection);
-  var lastchild = $(range.endContainer).parents('.section-item')[0],
-  child = $(range.startContainer).parents('.section-item')[0],
-  parent = $(range.startContainer).parents('.section')[0],
-  // grab selected nodes
-  children = [child];
-  while (child != lastchild) {
-    child = child.nextSibling
-    children.push(child)
-    console.log(children);
-  }
-  // grab nodes after selection
-  lastchild = parent.children[parent.children.length-1];
-  var childrenAfterSelection = [child.nextSibling];
-  while (child != lastchild) {
-    child = child.nextSibling
-    childrenAfterSelection.push(child)
-    console.log(childrenAfterSelection);
-  }
-  // insert Selection nodes on a new section
-  children.forEach(function(elem) {
-    locationSection.append(elem);
-  });
-  if (locationSection.find('.story-text').length == 0)
-    $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
-  locationSection.insertAfter($(parent));
-  // insert remaining nodes after selection
-  // on a new section after the previously
-  // created section
-  var remainingNodesSection = $("<div class='section'/>");
-  childrenAfterSelection.forEach(function(elem) {
-    remainingNodesSection.append(elem);
-  });
-  remainingNodesSection.insertAfter(locationSection);
-
-  updateSectionDistribution();
-}
+// function addNewLocationSectionFromSelection(range) {
+//   var locationSection = $("<div class='section location-section'/>");
+//   buildLocationBanner(location).appendTo(locationSection);
+//   var lastchild = $(range.endContainer).parents('.section-item')[0],
+//   child = $(range.startContainer).parents('.section-item')[0],
+//   parent = $(range.startContainer).parents('.section')[0],
+//   // grab selected nodes
+//   children = [child];
+//   while (child != lastchild) {
+//     child = child.nextSibling
+//     children.push(child)
+//     console.log(children);
+//   }
+//   // grab nodes after selection
+//   lastchild = parent.children[parent.children.length-1];
+//   var childrenAfterSelection = [child.nextSibling];
+//   while (child != lastchild) {
+//     child = child.nextSibling
+//     childrenAfterSelection.push(child)
+//     console.log(childrenAfterSelection);
+//   }
+//   // insert Selection nodes on a new section
+//   children.forEach(function(elem) {
+//     locationSection.append(elem);
+//   });
+//   if (locationSection.find('.story-text').length == 0)
+//     $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
+//   locationSection.insertAfter($(parent));
+//   // insert remaining nodes after selection
+//   // on a new section after the previously
+//   // created section
+//   var remainingNodesSection = $("<div class='section'/>");
+//   childrenAfterSelection.forEach(function(elem) {
+//     remainingNodesSection.append(elem);
+//   });
+//   remainingNodesSection.insertAfter(locationSection);
+//
+//   updateSectionDistribution();
+// }
 
 function readStoryDataAndLoadOnDOM(story) {
   var contentElement = $('#story-content');
   $("#title").text(story.title);
-  if (!story.content) { return; }
+  if (!story.content) {
+    addSectionAtEnd();
+    return;
+  }
   $('#story-content section').remove();
   story.content.forEach(function(sectionObj) {
     if (sectionObj.type == LOCATION_SECTION) {
       var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
-      buildMapContainer(sectionObj.location).appendTo(sectionElem)
+      buildLocationBanner(sectionObj.location).appendTo(sectionElem)
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {
           switch (itemObj.type) {

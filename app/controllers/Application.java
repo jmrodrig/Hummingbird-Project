@@ -220,28 +220,28 @@ public class Application extends Controller {
 		return ok(json);
 	}
 
-	// public static Result handleTagsIndex(String tag) {
-	// 	if (tag.contains("story")) {
-	// 		Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
-	// 		Story story = Story.findById(storyId);
-	// 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-	// 		return ok(views.html.index.render(jsonStory,jsonStory.location));
-	// 	} else {
-	// 		String[] tags = tag.replace("@","").split("&",2);
-	// 		controllers.json.Location location = new controllers.json.Location();
-	// 		try {
-	// 			location.latitude = Double.parseDouble(tags[0].split(",",3)[0]);;
-	// 			location.longitude = Double.parseDouble(tags[0].split(",",3)[1]);
-	// 			if ( Double.isNaN(location.longitude*location.latitude) )
-	// 				throw new NumberFormatException();
-	// 			location.zoom = Integer.parseInt(tags[0].split(",",3)[2]);
-	// 			location.name = tags[1].replace("addr=","");
-	// 			return ok(views.html.index.render(null,location));
-	// 		} catch (NumberFormatException e) {
-	// 			return ok(views.html.index.render(null,null));
-	// 		}
-	// 	}
-	// }
+	public static Result handleTagsIndex(String tag) {
+		if (tag.contains("story")) {
+			Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
+			Story story = Story.findById(storyId);
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+			return ok(views.html.index.render(jsonStory,jsonStory.location));
+		} else {
+			String[] tags = tag.replace("@","").split("&",2);
+			controllers.json.Location location = new controllers.json.Location();
+			try {
+				location.latitude = Double.parseDouble(tags[0].split(",",3)[0]);;
+				location.longitude = Double.parseDouble(tags[0].split(",",3)[1]);
+				if ( Double.isNaN(location.longitude*location.latitude) )
+					throw new NumberFormatException();
+				location.zoom = Double.parseDouble(tags[0].split(",",3)[2]);
+				location.name = tags[1].replace("addr=","");
+				return ok(views.html.index.render(null,location));
+			} catch (NumberFormatException e) {
+				return ok(views.html.index.render(null,null));
+			}
+		}
+	}
 
 	private static User getCurrentUser() {
 		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);

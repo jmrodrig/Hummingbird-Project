@@ -4,6 +4,7 @@
 
 # pages
 GET     /                       			controllers.Application.index()
+GET     /history/:tag                   controllers.Application.handleTagsIndex(tag: String)
 GET			/dashboards							controllers.Application.dashboards()
 GET			/library							controllers.Application.library()
 GET			/read/:storyId						controllers.Application.read(storyId: Long)
