@@ -267,9 +267,6 @@ public class Story extends Model {
 		for (controllers.json.Location jsonLocation : jsonLocations) {
 			Location location = Location.findByIdAndStoryId(jsonLocation.id,this.getId());
 			if (location != null) {
-				System.out.println("LOCATION ID: " + location.getId());
-				System.out.println("LOCATION ZOOM: " + location.getZoom());
-				System.out.println("JSON_LOCATION ZOOM: " + jsonLocation.zoom);
 				Location.update(jsonLocation,location);
 			} else {
 				location = Location.create(jsonLocation,this);

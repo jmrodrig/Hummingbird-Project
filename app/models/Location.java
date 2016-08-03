@@ -207,15 +207,14 @@ public class Location extends Model {
 
 	public static Location create(controllers.json.Location l, models.Story story) {
 		Location location = new Location();
-		location.name = l.name;
-		location.latitude = l.latitude;
-		location.longitude = l.longitude;
-		location.radius = l.radius;
-		location.zoom = l.zoom;
-		location.showpin = l.showpin;
-		location.ismain = l.ismain;
-		location.story = story;
-		location.modelversion = CURRENT_MODEL_VERSION;
+		location.setName(l.name);
+		location.setLatitude(l.latitude);
+		location.setLongitude(l.longitude);
+		location.setRadius(l.radius);
+		location.setZoom(l.zoom);
+		location.setShowPin(l.showpin);
+		location.setAsMainStoryLocation(l.ismain);
+		location.setStory(story);
 		location.save(DBConstants.lir_backoffice);
 		return location;
 	}
@@ -225,8 +224,6 @@ public class Location extends Model {
 		location.setLatitude(l.latitude);
 		location.setLongitude(l.longitude);
 		location.setRadius(l.radius);
-		System.out.println("MODELS.LOCATION UPDATING: " + location.getId());
-		System.out.println("MODELS.LOCATION UPDATING ZOOM: " + l.zoom);
 		location.setZoom(l.zoom);
 		location.setShowPin(l.showpin);
 		location.setAsMainStoryLocation(l.ismain);
