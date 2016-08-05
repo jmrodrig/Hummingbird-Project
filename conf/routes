@@ -44,7 +44,6 @@ GET			/validateInvite/:invitationCode				controllers.Application.validInvite(inv
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
-GET    /highlight/:itemId,:type     controllers.Application.highlightItem(itemId: Long,type: Integer)
 GET   /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
 
 
@@ -68,7 +67,9 @@ POST	/story/uploadimage/:storyId									controllers.Stories.uploadImage(storyId
 POST	/story/publish/:storyId/:published							controllers.Stories.publishStory(storyId: Long, published: Boolean)
 PUT	/story/like/:storyId												controllers.Stories.likeStory(storyId: Long)
 PUT	/story/save/:storyId												controllers.Stories.saveStory(storyId: Long)
-DELETE /story/deleteimage/:storyId                controllers.Stories.deleteImage(storyId: Long)
+DELETE /story/deletethumbnail/:storyId                controllers.Stories.deleteImage(storyId: Long)
+GET /highlighted                                  controllers.Application.getHighlightedItems()
+GET /highlight/:itemId,:type                                    controllers.Application.highlightItem(itemId: Long, type: Integer)
 
 #Collections
 POST	/collection/:name												controllers.Stories.createStoryCollection(name: String)

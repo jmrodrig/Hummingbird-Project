@@ -356,9 +356,7 @@ public class User extends Model {
 			Logger.error(e.getMessage());
 		}
 		try{
-			avatarUrl = getAvatarUrl();
-			if (avatarUrl == null)
-				avatarUrl = identity.avatarUrl().get();
+			avatarUrl = identity.avatarUrl().get();
 		} catch(Exception e){
 			Logger.error(e.getMessage());
 		}

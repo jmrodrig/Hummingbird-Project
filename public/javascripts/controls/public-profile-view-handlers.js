@@ -151,12 +151,6 @@ function  initializeProfileDetails() {
   $('#profile-stat-user-saved #value').html(user.domainUser.noOfSaved);
   $('#profile-stat-user-followers #value').html('0');
   $('#profile-stat-user-folllowing #value').html('0');
-
-  // STORY COLLECTIONS LIST
-  var collectionList = $('#story-collections-list')
-  user.domainUser.storyCollections.forEach(function(collection) {
-    $('<li><a href="/collection/' + collection.id + '">' + collection.name + '</a></li>').appendTo(collectionList);
-  });
 }
 
 function drawStoryItemOnMapView(story) {
@@ -227,7 +221,7 @@ function buildStoryContainer(story) {
   //Story container body
   var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
                                                                   .click(function() {
-                                                                    openStoryView({readonly:true, story:story});
+                                                                    openStoryView(story,{readonly:true});
                                                                   });
   //Story container footer
   var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
@@ -262,14 +256,8 @@ function buildStoryContainer(story) {
 
   $('<li><a href="#">Open</a></li>').appendTo(optionsList)
                                     .click(function() {
-                                      openStoryView({readonly:true, story:story});
+                                      openStoryView(story,{readonly:true});
                                     });
-
-  $('<li class="divider"></li>').appendTo(optionsList);
-  $('<li> <a href="#">Add to</a></li>').appendTo(optionsList)
-                                        .click(function() {
-                                          openChooseCollectionView(story);
-                                        });
 
 
   //--- BODY ---//
@@ -277,41 +265,30 @@ function buildStoryContainer(story) {
   //Story location container
   var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody);
 
-  var location = "";
-  if (story.locationName && story.locationName.length > 0)
-    location = story.locationName;
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-facebook30"></div>').appendTo(locationContainer);
-  $('<p class="location">' + location + '</p>').appendTo(locationContainer);
+  if (!story.locationName || story.locationName && story.locationName.length == 0)
+    story.locationName = "(a location)"
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-location"></div>').appendTo(locationContainer);
+  $('<p class="location">' + story.locationName + '</p>').appendTo(locationContainer);
 
   //Thumbnail: article image or story image
   var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
 
-  var thumbnailLink;
-  if (!story.articleLink) {
-    thumbnailLink = story.thumbnail;
-  } else {
-    thumbnailLink = story.articleImage;
-  }
+  if (!story.title || story.title && story.summary.title == 0)
+    story.title = "(A Story Title)"
+  var titleContainer = $('<div class="title-container"/>').appendTo(storyContainerBody);
+  var title = $('<p class="story-title"/>').appendTo(titleContainer).text(story.title);
 
-  if (thumbnailLink && thumbnailLink.length > 0) {
+  if (story.thumbnail && story.thumbnail.length > 0) {
     $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',thumbnailLink);
+                                                  .attr('src',story.thumbnail);
   }
 
-
-  if (!story.articleLink) {
-    // Summary container
-    if (story.summary && story.summary.length > 0) {
-      var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
-      var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-      setStoryText(story.summary,summary);
-      var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
-    }
-  } else {
-    var articleDetailsContainer = $('<div class="article-details-container"/>').appendTo(storyContainerBody)
-          .append('<p class="article-title" >' + story.articleTitle + '</p>')
-          .append('<a class="article-host" href="' + story.articleLink + '">' + getHostFromUrl(story.articleLink) + '</a>');
-  }
+  if (!story.summary || story.summary && story.summary.length == 0)
+    story.summary = "(a story summary...)"
+  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+  setStoryText(story.summary,summary);
+  var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 
   //--- FOOTER ---//
 
@@ -460,123 +437,13 @@ function buildInstagramContainer(link,addToContainer,options) {
 	});
 }
 
-function openStoryView(option) {
-  resetStoryView();
-  s = option.story;
-  // Author Details
-  if (option.edit == true | option.new == true) {
-    var avatarUrl = (user.getAvatarUrl()) ? user.getAvatarUrl() : defaultAvatarPic;
-    $('#open-story-view .story-author-name').text(user.getFullName())
-    $('#open-story-view .story-author-thumbnail').css('background-image','url(' + avatarUrl + ')');
-    loadStoryTextBehaviours();
-  } else if (option.readonly == true) {
-    $('#open-story-view .story-author-name').text(s.author.fullName)
-                                            .attr("href","/profile/" + s.author.numberId);
-    //Story author thumbnail
-    var avatarUrl = (s.author.avatarUrl) ? s.author.avatarUrl : defaultAvatarPic;
-    $('#open-story-view .story-author-thumbnail').css('background-image','url(' + avatarUrl + ')');
-  }
-
-  // Load Story details
-  if (option.edit == true || option.readonly == true) {
-    setStoryText(s.summary,$('#open-story-view #story-text'));
-    if (s.thumbnail) {
-      $('#open-story-view #story-image').attr('src',s.thumbnail);
-      $('#open-story-view #story-image-container').show();
-    }
-    var locationElement = $('#open-story-view .location').text(s.locationName);
-    if (locationElement.innerHeight() > 22)
-      locationElement.addClass('wrapped-text');
-    $('#open-story-view #story-map-location-input').val(s.locationName);
-    storylocation = s.location;
-    locationName = s.locationName;
-    var loc = new google.maps.LatLng(s.location.latitude, s.location.longitude, true);
-    if (storyLocationMarker)
-      storyLocationMarker.setPosition(loc);
-    else {
-      storyLocationMarker = new google.maps.Marker({
-        position : loc,
-        draggable : false
-      });
-    }
-    // ARTICLE CONTAINER
-		if (s.articleLink) {
-      article = {
-        title: s.articleTitle,
-        description: s.articleDescription,
-        author: s.articleAuthor,
-        imageUrl: s.articleImage,
-        source: s.articleSource,
-        url: s.articleLink
-      };
-      addArticleContainer(article);
-		}
-  }
-
-  // Buttons and Controls Edits
-  if (option.edit == true && s.articleLink) {
-    $('#open-story-view #story-insert-article').show();
-    $('#open-story-view #article-link').val(s.articleLink);
-  }
-
-  if (option.readonly == true) {
-    $('#open-story-view #remove-story-image').hide();
-    $('#open-story-view #set-location-btn').hide();
-    $('#open-story-view #story-map-location-input').hide()
-    $('#open-story-view #story-map-sight').hide();
-    $('#open-story-view #story-text').attr('contenteditable', 'false')
-                                                 .removeClass('editable');
-    $('#open-story-view #story-add-picture-button').hide();
-    $('#open-story-view #story-add-link-button').hide();
-    $('#open-story-view #story-publish-button').hide();
-    $('#open-story-view #story-cancel-create-button').hide();
-    $('#open-story-view #close-story-view').show();
-  }
-
-  if (option.edit == true)
-    editingstory = s;
-
-  //open view
-  $('#open-story-view').modal('show');
-  $('#open-story-view').on('hidden.bs.modal',function() {
-    resetStoryView();
-    $('#open-story-view').unbind('hidden.bs.modal');
-  });
-}
-
-function resetStoryView() {
-  $('#open-story-view #story-image-container').hide();
-  $('#open-story-view #story-image').attr('src','');
-  $('#open-story-view #story-text').text('');
-  $('#open-story-view #article-link').val('');
-  $('#open-story-view #story-insert-article').hide();
-  $('#open-story-view .location').text('Select location');
-  $('#open-story-view #story-map-location-input').val('');
-  $('#open-story-view #set-location-btn').show();
-  $('#open-story-view #remove-story-image').show();
-  $('#open-story-view #story-text').attr('contenteditable', 'true')
-                                               .addClass('editable');
-  $('#open-story-view #story-map-location-input').show();
-  $('#open-story-view #story-map-sight').show();
-  $('#open-story-view #story-add-picture-button').show();
-  $('#open-story-view #story-add-link-button').show();
-  $('#open-story-view #story-publish-button').show();
-  $('#open-story-view #story-cancel-create-button').show();
-  $('#open-story-view #close-story-view').hide();
-  $('#open-story-view #story-article').unbind();
-  removeArticleContainer();
-  article = null;
-  storylocation = null;
-  locationName = null;
-  storyLocationMarker = null;
-  editingstory = null;
-  saveimagefile = null;
-  hideStoryMap();
-}
-
-function closeStoryView() {
-  $('#open-story-view').modal('hide');
-  resetStoryView()
+function openStoryView(story,option) {
+  if (option.edit || option.readonly && !story.published && story.userCanEdit)
+    window.location.href = LIR_SERVER_URL + '/publisher/create/' + story.id;
+  else if (option.new)
+    window.location.href = LIR_SERVER_URL + '/story/create';
+  else if (option.readonly)
+    window.location.href = LIR_SERVER_URL + '/history/storyid=' + story.id;
 }
 
 // Open collection creation modal

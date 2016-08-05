@@ -19,7 +19,7 @@ html,body,section {
 	/* height: 100%; */
 	width: 100%;
 	color: #252525;
-  min-width: 1000px;
+  min-width: 1200px;
 }
 
 section {
@@ -79,16 +79,20 @@ section {
 	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
 }
 
-.icon-50px.glyph-icon:before, .icon-xxlarge.glyph:before, .icon-50px.glyph:before {
+.icon-50px.glyph-icon:before, .icon-xxxlarge.glyph:before, .icon-50px.glyph:before {
 	font-size: 50px;
 }
 
-.icon-40px.glyph-icon:before, .icon-xlarge.glyph:before, .icon-40px.glyph:before {
+.icon-40px.glyph-icon:before, .icon-xxlarge.glyph:before, .icon-40px.glyph:before {
 	font-size: 40px;
 }
 
-.icon-30px.glyph-icon:before, .icon-large.glyph:before, .icon-30px.glyph:before {
+.icon-30px.glyph-icon:before, .icon-xlarge.glyph:before, .icon-30px.glyph:before {
 	font-size: 30px;
+}
+
+.icon-25px.glyph-icon:before, .icon-large.glyph:before, .icon-25px.glyph:before {
+	font-size: 25px;
 }
 
 .icon-20px.glyph-icon:before, .icon-medium.glyph:before, .icon-20px.glyph:before {
@@ -215,18 +219,22 @@ section {
 
 #create-link {
 	display:block;
+  cursor: pointer;
 }
 
 #publish-link {
 	display:none;
+  cursor: pointer;
 }
 
 #stories-link{
 	display:none;
+  cursor: pointer;
 }
 
 #blog-link{
 	display:none;
+  cursor: pointer;
 }
 
 #login-link {

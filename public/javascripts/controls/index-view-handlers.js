@@ -52,13 +52,13 @@ noColumns;
 
 var EMBED_MAX_WIDTH = 570,
 EMBED_MAX_HEIGHT = 440,
-DEFAULT_VIEWPORT_SIZE = 0.2,
-LIR_SERVER_URL = "http://localhost:9000"
+DEFAULT_VIEWPORT_SIZE = 0.2
 
 var SECTION = 0,
 LOCATION_SECTION = 1,
 STORY_TEXT = 10,
-PICTURE_CONTAINER = 11;
+PICTURE_CONTAINER = 11,
+STORY_SUBTITLE = 12;
 
 var SECTION_MARKER_COLOR = '#1ae04e',
 STORY_MARKER_COLOR = '#FF2C2C'
@@ -154,11 +154,12 @@ function intializeEvents() {
 
   // COVER OPEN AND CLOSE DOMMouseScroll WheelEvent
   $("#content-wrapper").bind("wheel", function(event) {
+		NUMBER_OF_HEROS = 4;
 		if (animationBusy || $("#content-wrapper").hasClass('showing-map')) return;
 		if (event.originalEvent.deltaY >= 1) {
 			animationBusy = true;
 			var top = -$('#heros-container').position().top + contentheight;
-			if (top >= 5*contentheight) {
+			if (top >= NUMBER_OF_HEROS * contentheight) {
 				animationBusy = false;
 				return;
 			}
@@ -186,7 +187,6 @@ function intializeEvents() {
 	// RESIZE
 	$(window).resize(function() {
 		updateLayoutDimensions();
-    $('.lg-container .story-container-body').css('min-height',storyContainersWrapperHeight - 110 + 'px');
 	});
 
 
@@ -287,16 +287,16 @@ function drawLayout(stories,options) {
 }
 
 function drawStoryGridLayout(stories) {
-
   $('#story-grid-layout .story-container').remove();
 	var storiesGridLayoutContainer = $("#story-grid-layout");
 
 	if(!stories || stories.length == 0) {
+		$('#story-grid-layout').hide()
 		$('#no-stories-message').show();
 		return;
-	} else
-		$('#no-stories-message').hide();
-
+	}
+	$('#no-stories-message').hide();
+	$('#story-grid-layout').show()
 	// var stories = sortStoriesByDate(stories);
 	$('.layout-column').remove();
   for ( var i = 1; i <= noColumns; i++) {
@@ -316,6 +316,7 @@ function drawStoryGridLayout(stories) {
     columnCommuter = (counter++ % noColumns) + 1;
     container.appendTo($('#column-' + columnCommuter));
   });
+	updateLayoutDimensions();
 }
 
 function openStoryView(story,options) {
@@ -351,57 +352,15 @@ function openStoryView(story,options) {
 	});
 
 	updatePageHistory(story);
+	updateLayoutDimensions();
 }
 
 function openCreateStoryView() {
-	isStoryViewOpen = true;
-	var story = new Object();
-	$('.location.editable').val($('#search-input').val());
-	story.author = {fullName:user.getFullName(),avatarUrl:user.getAvatarUrl()}
-	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true,new:true});
-	$('#story-large-layout').animate({top: '100%'}, 150, "easeOutQuart", function() {
-		$('#story-large-layout-container').html(largeStoryContainer);
-		loadStoryTextBehaviours($('.story-summary'));
-		$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
-		$('#story-large-layout-controllers').hide();
-		$('#story-large-layout').animate({top: 0}, 150, "easeOutQuart", function() {
-			$('#story-large-layout').addClass('active')
-			$('#story-grid-layout').removeClass('active')
-		});
-	});
-	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
-	previousCenter = map.getCenter();
-	previousZoom = map.getZoom();
+	window.location.href = LIR_SERVER_URL + '/story/create';
 }
 
 function openEditStoryView(story) {
-	isStoryViewOpen = true;
-	editingstory = story;
-	if (story.articleLink)
-		article = {
-			title: story.articleTitle,
-			description: story.articleDescription,
-			author: story.articleAuthor,
-			imageUrl: story.articleImage,
-			source: story.articleSource,
-			url: story.articleLink
-		}
-	locationName = story.locationName
-	storylocation = story.location;
-	$('.location.editable').val(locationName);
-	var largeStoryContainer = buildStoryLargeContainer(story,{editable:true});
-	$('#story-large-layout-container').html(largeStoryContainer);
-	loadStoryTextBehaviours($('.story-summary'));
-	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
-	previousCenter = map.getCenter();
-	previousZoom = map.getZoom();
-	//Zoom in on the story location
-	fitLocationOnView(story.location,map);
-	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
-	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart", function() {
-		$('#story-large-layout').addClass('active')
-		$('#story-grid-layout').removeClass('active')
-	});
+	window.location.href = LIR_SERVER_URL + '/publisher/create/' + story.id;
 }
 
 function closeStoryView(options) {
@@ -513,14 +472,6 @@ function buildStorySmallContainer(story,options) {
                                             });
 	if (storyBelongsToCurrentUser(story)) editStoryBtn.css('display','block');
 
-  $('<li class="divider"></li>').appendTo(optionsList);
-  $('<li> <a>Add to</a></li>').appendTo(optionsList)
-                                        .click(function() {
-																					if (user)
-                                          	openChooseCollectionView(story);
-																					else
-																						displayAlertMessage('You need to login.')
-                                        });
 	// Highlight story (only for admin)
 	if (user && (user.admin || user.domainUser.email == 'jose@lostinreality.net')) {
 		$('<li><a href="#">Highlight</a></li>').appendTo(optionsList)
@@ -536,44 +487,33 @@ function buildStorySmallContainer(story,options) {
 
   //--- BODY ---//
 
-  //Story location container
+	//Story location container
   var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody);
 
-  var location = "";
-  if (story.locationName && story.locationName.length > 0)
-    location = story.locationName;
+  if (!story.locationName || story.locationName && story.locationName.length == 0)
+    story.locationName = "(a location)"
   $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-location"></div>').appendTo(locationContainer);
-  $('<p class="location">' + location + '</p>').appendTo(locationContainer);
+  $('<p class="location">' + story.locationName + '</p>').appendTo(locationContainer);
 
   //Thumbnail: article image or story image
   var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
 
-  var thumbnailLink;
-  if (!story.articleLink) {
-    thumbnailLink = story.thumbnail;
-  } else {
-    thumbnailLink = story.articleImage;
-  }
+  if (!story.title || story.title && story.summary.title == 0)
+    story.title = "(A Story Title)"
+  var titleContainer = $('<div class="title-container"/>').appendTo(storyContainerBody);
+  var title = $('<p class="story-title"/>').appendTo(titleContainer).text(story.title);
 
-  if (thumbnailLink && thumbnailLink.length > 0) {
+  if (story.thumbnail && story.thumbnail.length > 0) {
     $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',thumbnailLink);
+                                                  .attr('src',story.thumbnail);
   }
 
-
-  if (!story.articleLink) {
-    // Summary container
-    if (story.summary && story.summary.length > 0) {
-      var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
-      var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-      setStoryText(story.summary,summary);
-      var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
-    }
-  } else {
-    var articleDetailsContainer = $('<div class="article-details-container"/>').appendTo(storyContainerBody)
-          .append('<p class="article-title" >' + story.articleTitle + '</p>')
-          .append('<a class="article-host" href="' + story.articleLink + '">' + getHostFromUrl(story.articleLink) + '</a>');
-  }
+  if (!story.summary || story.summary && story.summary.length == 0)
+    story.summary = "(a story summary...)"
+  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+  setStoryText(story.summary,summary);
+  //var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 
   //--- FOOTER ---//
 
@@ -596,9 +536,9 @@ function buildStoryLargeContainer(story,options) {
   //Story container header
   var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
 	//Scrollable content
-	var scrollableContent = $('<div class="scrollable-content"/>').appendTo(storyContainer).innerHeight(storyContainersWrapperHeight - 110);
+	var scrollableContent = $('<div class="scrollable-content"/>').appendTo(storyContainer)
   //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent).css('min-height',storyContainersWrapperHeight - 110 + 'px');
+  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent)
 	if (options.editable)
 		storyContainerBody.addClass('edit');
   //Story container footer
@@ -627,54 +567,19 @@ function buildStoryLargeContainer(story,options) {
 	  // SAVE BUTTON
 	  optionsBtnContainer.append(buildSaveStoryButton(story));
 		// Close/Gridview
-		$('<button type="button" class="close-button btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-arrows"></button>').appendTo(optionsBtnContainer)
+		$('<button type="button" class="close-button btn btn-icon"><span class="glyph-icon icon-no-margins icon-25px flaticon-arrows"></button>').appendTo(optionsBtnContainer)
 																																				.click(function() {
 																																					closeStoryView();
 																																				});
-	} else if (options.editable) {
-		optionsBtnContainer.addClass('editing-options')
-		$('<button id="cancel-publish-button" type="button" onclick="closeStoryView()" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-30px flaticon-arrows"></button>').appendTo(optionsBtnContainer);
-		buildAddPictureBtn().appendTo(optionsBtnContainer)
-		$('<button id="story-add-link-button" type="button" class="btn btn-icon" data-toggle="tooltip" data-placement="bottom" title="Add an article from the internet."><span class="glyph-icon icon-no-margins icon-30px flaticon-internet"></button>').appendTo(optionsBtnContainer).tooltip({delay: { "show": 1500, "hide": 100 }})
-																																																		.click(function() {
-																																																			$('#story-insert-article').show();
-																																																		});
-		var postBtn = $('<button id="story-publish-button" type="button" class="btn btn-default">post</button>').appendTo(optionsBtnContainer)
-		if (story.id)
-			postBtn.html('save').click(function() {editStory()})
-		else
-			postBtn.click(function() {createStory()})
 	}
 
   //Story location container
-  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerHeader)
+  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody)
   var location = "";
 	if (story.locationName && story.locationName.length > 0)
     location = story.locationName;
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-location"></div>').appendTo(locationContainer);
+  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-placeholder"></div>').appendTo(locationContainer);
   var locationInput = $('<input readonly class="location" placeholder="Story location..." />').appendTo(locationContainer).val(location);
-
-	if (options.editable) {
-		locationInput.removeAttr('readonly').addClass('editable');
-		if (story.location && story.location.showpin) {
-			locationSetMode='pinpoint';
-			$('#map-sight').show();
-			$('#map-region').hide();
-		} else if (story.location && !story.location.showpin) {
-			locationSetMode='region';
-			$('#map-sight').hide();
-			$('#map-region').show();
-			radius = story.location.radius / 1.404595 / Math.exp(-0.693*story.location.zoom);
-			$('#map-region').css({width:2*radius, height: 2*radius, marginTop: -radius, marginLeft: -radius});
-		} else if (!story.location) {
-			locationSetMode='pinpoint';
-			$('#map-sight').show();
-			$('#map-region').hide();
-		}
-
-		$('<button id="switch-story-location-mode" type="button" onclick="swithStoryLocationSelectionMode()" class="btn btn-icon pull-right" data-toggle="tooltip" data-placement="bottom" title="Switch between pinpoint location or region."><span class="glyph-icon icon-no-margins icon-20px flaticon-location-2"></button>').appendTo(locationContainer).tooltip({delay: { "show": 1500, "hide": 100 }});
-		$('<button id="set-story-location" type="button" onclick="setStoryLocation()" class="btn btn-default pull-right">set</button>').appendTo(locationContainer);
-	}
 
 	if (!options.new)
   	buildStoryContent(story).appendTo(storyContainerBody);
@@ -687,12 +592,22 @@ function buildStoryLargeContainer(story,options) {
 ******************************************************************/
 
 function buildStoryContent(story,options) {
+	var contentElement = $("<div id='story-content'/>")
+	var storytitle = $('<h2 class="story-title"></h2>').text(story.title);
+	var storysummary = $('<p class="story-summary"></p>').text(story.summary);
+	var placeholderoverlay = $('<div class="placeholder-overlay"></div>');
+	var detailsoverlay = $('<div class="details-overlay"></div>');
+	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + story.thumbnail + ')')
+	detailsoverlay.append(storytitle);
+	detailsoverlay.append(storysummary);
+	storythumbnailandcontainer.append(placeholderoverlay);
+	storythumbnailandcontainer.append(detailsoverlay);
+	storythumbnailandcontainer.appendTo(contentElement);
+
 	if (!options) var options = {editable:false}
 	var storycontent = JSON.parse(story.content.replace(/&quot;/g,'"'));
-	if (!storycontent) { return; }
-	var contentElement = $("<div id='story-content'/>")
+	if (!storycontent) { return contentElement; }
 	var sectioncounter = 0;
-  //$("#title").text(story.title);
   storycontent.forEach(function(sectionObj) {
     if (sectionObj.type == LOCATION_SECTION) {
       var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
@@ -702,6 +617,9 @@ function buildStoryContent(story,options) {
           switch (itemObj.type) {
             case STORY_TEXT:
               $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
+						case STORY_SUBTITLE:
+              $('<p class="section-item story-text text-title-size">' + itemObj.text + '</p>').appendTo(sectionElem);
               break;
             case PICTURE_CONTAINER:
               buildPictureFrame(itemObj.link,itemObj.text,itemObj.position,options).appendTo(sectionElem);
@@ -725,13 +643,14 @@ function buildStoryContent(story,options) {
             case STORY_TEXT:
               $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
               break;
+						case STORY_SUBTITLE:
+              $('<p class="section-item story-text text-title-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
             case PICTURE_CONTAINER:
               buildPictureFrame(itemObj.link,itemObj.text,itemObj.position,options).appendTo(sectionElem);
               break;
           }
         });
-      } else {
-        $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
       }
     }
 		sectionElem.attr('section-counter',sectioncounter);
@@ -743,167 +662,14 @@ function buildStoryContent(story,options) {
 function buildLocationBanner(location,options,counter) {
 	if (!options) var options = {editable:false}
   var _map;
-  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
-  addLocationDataAttrOnElement(locationBanner,location)
-  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
+	var locationBannerContainer = $('<div class="location-banner-container" contenteditable="false" />');
+  var locationBanner = $('<div class="location-banner" contenteditable="false" />').appendTo(locationBannerContainer);
+  $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner)
   var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
-	if (options.editable) {
-  	var deleteLocationBtn = $('<button type="button" class="delete-location close"><span>&times;</span></button>').appendTo(locationBanner);
-	  // map popover
-	  var mapContainer = $("<div class='map-container' contenteditable='false'/>");
-	  var mapelem = $('<div class="map-canvas"/>').appendTo(mapContainer);
-	  var mapcontrols = $('<div class="map-controls"/>').appendTo(mapContainer);
-	  var searchboxelem = $('<input class="location-search-box" placeholder="choose location">').appendTo(mapcontrols);
-	  searchboxelem.val(location.name);
-	  var cancelLocationSelection = $('<button class="cancel-location btn btn-default btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-close"></button></button>').appendTo(mapcontrols);
-	  var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
-	  $('<div class="map-sight"/>').appendTo(mapContainer);
+	var sectionmarker = drawSectionMarkerOnMap(location,counter);
+	storySectionsMarkerList.put(counter,sectionmarker);
 
-
-	  locationBanner.popover({
-	    html: true,
-	    content: mapContainer,
-	    placement: 'bottom',
-	    animation: true,
-	    trigger: 'manual'
-	  })
-	    .on('shown.bs.popover', function () {
-	      var coords = new Object();
-	      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
-	      coords.zoom = parseFloat(location.zoom);
-	      if (!_map)
-	        _map = initiateContentMap(mapelem[0],searchboxelem[0],coords);
-	  })
-
-	  locationNameelem.click(function() {
-	      locationBanner.popover('show');
-	  })
-
-	  cancelLocationSelection.click(function() {
-	    locationBanner.popover('hide');
-	  })
-
-	  confirmLocationSelection.click(function() {
-	    location.latitude = map.getCenter().lat();
-	    location.longitude = map.getCenter().lng();
-	    location.name = searchboxelem.val();
-	    location.zoom = map.getZoom();
-	    addLocationDataAttrOnElement(locationBanner,location);
-	    if (!map.marker)
-	      map.marker = new google.maps.Marker({map: _map});
-	    map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
-	    locationNameelem.text(location.name)
-	    locationBanner.popover('hide');
-	  })
-
-	  deleteLocationBtn.click(function() {
-	    deleteLocationSection(locationBanner.parent());
-	  })
-	} else {
-		var sectionmarker = drawSectionMarkerOnMap(location,counter);
-		storySectionsMarkerList.put(counter,sectionmarker);
-	}
-
-  return locationBanner;
-}
-
-function deleteLocationSection(sectionNode) {
-  sectionNode.find('.location-banner').remove();
-  prevSection = sectionNode.prev();
-  if (!prevSection || prevSection.hasClass('location-section') || prevSection.hasClass('title')) {
-    sectionNode.removeClass('location-section')
-  } else {
-    sectionNode.children().each(function() {
-      $(this).appendTo(prevSection);
-    });
-    sectionNode.remove();
-  }
-  updateSectionDistribution();
-}
-
-function updateSectionDistribution() {
-  var sectionsNodes = $('#story-content').find('.section')
-  sectionsNodes.each(function() {
-    var _this = $(this);
-    if (!_this.hasClass('location-section')) {
-      var nextSectionSibling = _this.next();
-      while (nextSectionSibling.length > 0 && !nextSectionSibling.hasClass('location-section')) {
-        nextSectionSibling.children().appendTo(_this);
-        nextSectionSibling = nextSectionSibling.next();
-      }
-    }
-  });
-  $(".section:empty").remove();
-}
-
-function addLocationDataAttrOnElement(element,location) {
-  location.latitude = (location.latitude) ? location.latitude : 0;
-  location.longitude = (location.longitude) ? location.longitude : 0;
-  location.radius = (location.radius) ? location.radius : 0;
-  location.zoom = (location.zoom) ? location.zoom : 0;
-  location.name = (location.name) ? location.name : "choose location";
-
-  element.attr('lat',location.latitude);
-  element.attr('lng',location.longitude);
-  element.attr('radius',location.radius);
-  element.attr('zoom',location.zoom);
-  element.attr('locationName',location.name);
-}
-
-function readLocationDataAttrOnElement(element) {
-  var location = new Object();
-  location.latitude = parseFloat(element.attr('lat'));
-  location.longitude = parseFloat(element.attr('lng'));
-  location.radius = parseFloat(element.attr('radius'));
-  location.zoom = parseFloat(element.attr('zoom'));
-  location.name = element.attr('locationName');
-  return location;
-}
-
-function initiateContentMap(mapelem,searchboxelem,coords) {
-
-	var mapOptions = {
-		zoom : 2,
-		streetViewControl: true,
-		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-    scaleControl : true,
-		zoomControl : true,
-		zoomControlOptions : {style: google.maps.ZoomControlStyle.LARGE, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.ROADMAP,
-		mapTypeControl : true,
-		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.LEFT_BOTTOM},
-	}
-
-  var map = new google.maps.Map(mapelem,mapOptions);
-
-  if (!coords) {
-    var coords = new Object();
-    coords.position = new google.maps.LatLng(37, -20);
-    coords.zoom = 4;
-  } else {
-    map.marker = new google.maps.Marker({map: map, position:coords.position});
-  }
-  map.setZoom(coords.zoom);
-  map.setCenter(coords.position);
-
-
-  //-- SearchBox --//
-  var searchBox = new google.maps.places.SearchBox(searchboxelem);
-  // map.controls[google.maps.ControlPosition.TOP_LEFT].push(searchboxelem);
-  //Bias the SearchBox results towards current map's viewport.
-  searchBox.setBounds(map.getBounds());
-  map.addListener('bounds_changed', function() {
-    searchBox.setBounds(map.getBounds());
-  });
-  searchBox.addListener('places_changed', function() {
-    var places = searchBox.getPlaces();
-    if (places.length == 0)
-      return;
-    map.setCenter(places[0].geometry.location);
-    map.setZoom(8);
-  });
-
-  return map;
+  return locationBannerContainer;
 }
 
 function buildPictureFrame(link,caption,pos,options) {
@@ -954,7 +720,7 @@ function buildPictureFrame(link,caption,pos,options) {
 ******************************************************************/
 
 function buildLikeButton(story) {
-	var icon = '<span class="glyph-icon icon-no-margins icon-30px flaticon-favorite-1">'
+	var icon = '<span class="glyph-icon icon-no-margins icon-25px flaticon-like">'
   if (!user)
     return $('<button type="button" class="story-like-button btn btn-icon">' + icon + '</button>')
 							.click(function() {
@@ -981,7 +747,7 @@ function buildLikeButton(story) {
 }
 
 function buildSaveStoryButton(story) {
-	var icon = '<span class="glyph-icon icon-no-margins icon-30px flaticon-favorite">'
+	var icon = '<span class="glyph-icon icon-no-margins icon-25px flaticon-bookmark">'
   if (!user)
     return $('<a class="story-save-button btn btn-icon">' + icon + '</a>')
 							.click(function() {
@@ -1820,6 +1586,12 @@ function updateLayoutDimensions() {
 		height: storyContainersWrapperHeight,
 		width: storyContainersWrapperWidth
 	});
+
+	// story large container body height
+	var height = storyContainersWrapperHeight - $('#story-large-layout').css('padding-top').replace("px", "") - $('.lg-container .story-container-header').innerHeight();
+	$('.lg-container .story-container-body').css('min-height',height + 'px');
+	$('.lg-container .scrollable-content').css('height',height + 'px');
+
 	//Map Sight
 	$('#map-viewport').css({height: contentheight});
 

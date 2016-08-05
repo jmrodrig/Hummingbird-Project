@@ -1,4 +1,4 @@
-@(story: controllers.json.Story)
+@(story: controllers.json.Story, location: String)
 
 @main("") {
 	<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/create.css")">
@@ -11,24 +11,51 @@
 	var story = new Object();
 	story.id = @story.id;
 	story.title = "@story.title"
+	story.summary = "@story.summary"
+	story.published = ("@story.published" == "true") ? true : false;
+	story.thumbnail = "@story.thumbnail"
+	if ("@location".length > 0)
+		story.location = JSON.parse("@location".replace(/&quot;/g,'"'));
 	if ("@story.content".length > 0)
 		story.content = JSON.parse("@story.content".replace(/&quot;/g,'"'));
 </script>
 
 <section id="content-wrapper">
 	<div id="content-tools" class="btn-group-vertical">
-		<a class="btn btn-default" id="toggle-text-size-btn" onclick="toggleTextSize()">text</a>
-		<a class="btn btn-default" id="add-picture-btn" >Add Picture
-			<form enctype="multipart/form-data" id="image-upload-form">
+		<a class="btn btn-default" id="toggle-text-size-btn" data-toggle="tooltip" data-placement="right" title="Toggle text size" onclick="toggleTextSize()"><span class="glyph icon-no-margins icon-20px flaticon-letter"/></a>
+		<a class="btn btn-default" id="add-picture-btn" data-toggle="tooltip" data-placement="right" title="Add picture to a section."><span class="glyph icon-no-margins icon-20px flaticon-art"/>
+			<form enctype="multipart/form-data" id="image-upload-form" class="image-upload-form">
 				<input id="image-upload-input" name="profileImg[]" type="file" />
 			</form>
 		</a>
-		<a class="btn btn-default" id="add-location-btn" onclick="addLocationToCurrentSection()">location</a>
-		<a class="btn btn-default" id="add-section-btn" onclick="addSectionAtCurrentPosition()" >add section</a>
-		<a class="btn btn-default" id="add-advert-placeholder-btn" onclick="getElementAtCursorPosition()">ads</a>
+		<a class="btn btn-default" id="add-location-btn" data-toggle="tooltip" data-placement="right" title="Add location to a section." onclick="addLocationToCurrentSection()"><span class="glyph icon-no-margins icon-20px flaticon-location"/></a>
+		<a class="btn btn-default" id="add-section-btn" data-toggle="tooltip" data-placement="right" title="Add a new section." onclick="addSectionAtCurrentPosition()" ><span class="glyph icon-no-margins icon-20px flaticon-add"/></a>
+		<a class="btn btn-default" id="add-save-btn" data-toggle="tooltip" data-placement="right" title="Save story." onclick="saveStoryOnServer()"><span class="glyph icon-no-margins icon-20px flaticon-save"/></a>
 	</div>
-	<div id="story-content">
-		<!-- <h1 id="title" class="title text-title-size" contenteditable="true"></h1> -->
+	<div id="story-header">
+		<div id="story-container-and-thumbnail">
+			<button id="hide-pane-btn" type="button" class="btn btn-default btn-no-background" onclick="closePublishPane()"><span class="glyph icon-no-margins icon-15px flaticon-close"/></button>
+			<div id="placeholder-overlay" >
+			</div>
+			<div id="details-overlay" >
+				<h1 id="story-title" class="title text-title-size" contenteditable="true"></h1>
+				<div id="story-summary" contenteditable="true"></div>
+				<div id="story-location"></div>
+				<p id="story-status"></p>
+				<div id="actions">
+					<a id="add-cover-btn" class="btn btn-default">Add cover picture
+						<form enctype="multipart/form-data" id="cover-upload-form" class="image-upload-form">
+							<input id="cover-upload-input" name="profileImg[]" type="file" />
+						</form>
+					</a>
+					<button id="remove-cover-btn" type="button" class="btn btn-primary" onclick="removeCover()">Remove cover</button>
+					<button id="post-btn" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="This will make your story available to everyone." onclick="publishStory()">Publish</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	</div>
+	<div id="story-content"></div>
 	</div>
 </section>
 
@@ -58,10 +85,7 @@
 				<input id="story-external-link" type="text" placeholder="external link" disabled>
       </div>
       <div class="modal-footer">
-				<p id="story-status"></p>
-        <button id="create-collection-btn" type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-				<button id="create-collection-btn" type="button" class="btn btn-primary">Save as draft</button>
-				<button id="create-collection-btn" type="button" class="btn btn-primary">Publish</button>
+
       </div>
     </div>
   </div>

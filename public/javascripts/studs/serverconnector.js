@@ -264,3 +264,27 @@ function stud_uploadStoryImage(imageData,storyId,onFinished) {
 	  success: onFinished
 	} );
 }
+
+function stud_uploadStoryThumbnail(imageData,storyId,onFinished) {
+	url = '/story/uploadthumbnail/' +storyId;
+	//var imageData = new FormData($('.lg-container #image-upload-form')[0]);
+	$.ajax( {
+	  url: url,
+	  type: 'POST',
+	  data:  imageData,
+	  processData: false,
+	  contentType: false,
+    dataType: "json",
+	  success: onFinished
+	} );
+}
+
+function stud_deleteStoryThumbnail(storyId,success,error) {
+  $.ajax({
+		url: '/story/deletethumbnail/' +storyId,
+		type: "DELETE",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}

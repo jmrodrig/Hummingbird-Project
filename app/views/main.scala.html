@@ -4,8 +4,14 @@
 
 <html>
     <head>
-        <!-- <title>@title</title> -->
-        <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/lir-logo.png")">
+
+    <script>
+      var LIR_SERVER_URL = "http://localhost:9000";
+      //var LIR_SERVER_URL = "http://www.lostinreality.io"
+    </script>
+
+    <!-- <title>@title</title> -->
+    <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/lir-logo.png")">
 
     <!-- Google Maps API -->
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn5VBgm952_mApaQiMG-Xxazk-NVmEz0Q&&libraries=geometry,places" ></script>
@@ -353,7 +359,7 @@
 				  <ul class="dropdown-menu" role="menu">
 					<li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li>
 					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">+ Create a Story</a></li> -->
-					<li><a href="/" class="ga-event-navbar-library">Stories</a></li>
+					<li><a href="/" class="ga-event-navbar-library">Map</a></li>
 					<li class="divider"></li>
 					<li><a href="/logout">Log out</a></li>
 				  </ul>

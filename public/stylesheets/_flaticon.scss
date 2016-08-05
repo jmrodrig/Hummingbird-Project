@@ -1,6 +1,6 @@
     /*
     Flaticon icon font: Flaticon
-    Creation date: 26/06/2016 23:20
+    Creation date: 05/08/2016 02:38
     */
 
     @font-face {
@@ -36,84 +36,72 @@
   font-smoothing: antialiased;
     }
 
-    .flaticon-arrow:before { content: "\f100"; }
-.flaticon-arrows:before { content: "\f101"; }
-.flaticon-arrows-1:before { content: "\f102"; }
-.flaticon-arrows-2:before { content: "\f103"; }
-.flaticon-art:before { content: "\f104"; }
-.flaticon-check:before { content: "\f105"; }
-.flaticon-close:before { content: "\f106"; }
-.flaticon-delete:before { content: "\f107"; }
-.flaticon-delete-1:before { content: "\f108"; }
-.flaticon-direction:before { content: "\f109"; }
-.flaticon-draw:before { content: "\f10a"; }
-.flaticon-favorite:before { content: "\f10b"; }
-.flaticon-favorite-1:before { content: "\f10c"; }
-.flaticon-favorite-2:before { content: "\f10d"; }
-.flaticon-forbidden:before { content: "\f10e"; }
+    .flaticon-add:before { content: "\f100"; }
+.flaticon-arrow:before { content: "\f101"; }
+.flaticon-arrows:before { content: "\f102"; }
+.flaticon-arrows-1:before { content: "\f103"; }
+.flaticon-arrows-2:before { content: "\f104"; }
+.flaticon-art:before { content: "\f105"; }
+.flaticon-bookmark:before { content: "\f106"; }
+.flaticon-can:before { content: "\f107"; }
+.flaticon-check:before { content: "\f108"; }
+.flaticon-close:before { content: "\f109"; }
+.flaticon-cross:before { content: "\f10a"; }
+.flaticon-delete:before { content: "\f10b"; }
+.flaticon-draw:before { content: "\f10c"; }
+.flaticon-favorite:before { content: "\f10d"; }
+.flaticon-favorite-1:before { content: "\f10e"; }
 .flaticon-interface:before { content: "\f10f"; }
-.flaticon-interface-1:before { content: "\f110"; }
-.flaticon-interface-2:before { content: "\f111"; }
-.flaticon-internet:before { content: "\f112"; }
+.flaticon-internet:before { content: "\f110"; }
+.flaticon-letter:before { content: "\f111"; }
+.flaticon-like:before { content: "\f112"; }
 .flaticon-link:before { content: "\f113"; }
-.flaticon-link-1:before { content: "\f114"; }
-.flaticon-location:before { content: "\f115"; }
-.flaticon-location-1:before { content: "\f116"; }
-.flaticon-location-2:before { content: "\f117"; }
-.flaticon-nature:before { content: "\f118"; }
-.flaticon-pin:before { content: "\f119"; }
-.flaticon-placeholder:before { content: "\f11a"; }
-.flaticon-play:before { content: "\f11b"; }
-.flaticon-road:before { content: "\f11c"; }
-.flaticon-road-1:before { content: "\f11d"; }
-.flaticon-search:before { content: "\f11e"; }
-.flaticon-social:before { content: "\f11f"; }
-.flaticon-social-1:before { content: "\f120"; }
-.flaticon-social-2:before { content: "\f121"; }
-.flaticon-squares:before { content: "\f122"; }
-.flaticon-symbol:before { content: "\f123"; }
-.flaticon-tool:before { content: "\f124"; }
-.flaticon-tool-1:before { content: "\f125"; }
-.flaticon-vimeo:before { content: "\f126"; }
-.flaticon-vimeo-1:before { content: "\f127"; }
+.flaticon-location:before { content: "\f114"; }
+.flaticon-multimedia:before { content: "\f115"; }
+.flaticon-placeholder:before { content: "\f116"; }
+.flaticon-save:before { content: "\f117"; }
+.flaticon-save-disk:before { content: "\f118"; }
+.flaticon-search:before { content: "\f119"; }
+.flaticon-search-1:before { content: "\f11a"; }
+.flaticon-shapes:before { content: "\f11b"; }
+.flaticon-shapes-1:before { content: "\f11c"; }
+.flaticon-social:before { content: "\f11d"; }
+.flaticon-social-1:before { content: "\f11e"; }
+.flaticon-social-2:before { content: "\f11f"; }
+.flaticon-symbol:before { content: "\f120"; }
+.flaticon-tool:before { content: "\f121"; }
     
-    $font-Flaticon-arrow: "\f100";
-    $font-Flaticon-arrows: "\f101";
-    $font-Flaticon-arrows-1: "\f102";
-    $font-Flaticon-arrows-2: "\f103";
-    $font-Flaticon-art: "\f104";
-    $font-Flaticon-check: "\f105";
-    $font-Flaticon-close: "\f106";
-    $font-Flaticon-delete: "\f107";
-    $font-Flaticon-delete-1: "\f108";
-    $font-Flaticon-direction: "\f109";
-    $font-Flaticon-draw: "\f10a";
-    $font-Flaticon-favorite: "\f10b";
-    $font-Flaticon-favorite-1: "\f10c";
-    $font-Flaticon-favorite-2: "\f10d";
-    $font-Flaticon-forbidden: "\f10e";
+    $font-Flaticon-add: "\f100";
+    $font-Flaticon-arrow: "\f101";
+    $font-Flaticon-arrows: "\f102";
+    $font-Flaticon-arrows-1: "\f103";
+    $font-Flaticon-arrows-2: "\f104";
+    $font-Flaticon-art: "\f105";
+    $font-Flaticon-bookmark: "\f106";
+    $font-Flaticon-can: "\f107";
+    $font-Flaticon-check: "\f108";
+    $font-Flaticon-close: "\f109";
+    $font-Flaticon-cross: "\f10a";
+    $font-Flaticon-delete: "\f10b";
+    $font-Flaticon-draw: "\f10c";
+    $font-Flaticon-favorite: "\f10d";
+    $font-Flaticon-favorite-1: "\f10e";
     $font-Flaticon-interface: "\f10f";
-    $font-Flaticon-interface-1: "\f110";
-    $font-Flaticon-interface-2: "\f111";
-    $font-Flaticon-internet: "\f112";
+    $font-Flaticon-internet: "\f110";
+    $font-Flaticon-letter: "\f111";
+    $font-Flaticon-like: "\f112";
     $font-Flaticon-link: "\f113";
-    $font-Flaticon-link-1: "\f114";
-    $font-Flaticon-location: "\f115";
-    $font-Flaticon-location-1: "\f116";
-    $font-Flaticon-location-2: "\f117";
-    $font-Flaticon-nature: "\f118";
-    $font-Flaticon-pin: "\f119";
-    $font-Flaticon-placeholder: "\f11a";
-    $font-Flaticon-play: "\f11b";
-    $font-Flaticon-road: "\f11c";
-    $font-Flaticon-road-1: "\f11d";
-    $font-Flaticon-search: "\f11e";
-    $font-Flaticon-social: "\f11f";
-    $font-Flaticon-social-1: "\f120";
-    $font-Flaticon-social-2: "\f121";
-    $font-Flaticon-squares: "\f122";
-    $font-Flaticon-symbol: "\f123";
-    $font-Flaticon-tool: "\f124";
-    $font-Flaticon-tool-1: "\f125";
-    $font-Flaticon-vimeo: "\f126";
-    $font-Flaticon-vimeo-1: "\f127";
+    $font-Flaticon-location: "\f114";
+    $font-Flaticon-multimedia: "\f115";
+    $font-Flaticon-placeholder: "\f116";
+    $font-Flaticon-save: "\f117";
+    $font-Flaticon-save-disk: "\f118";
+    $font-Flaticon-search: "\f119";
+    $font-Flaticon-search-1: "\f11a";
+    $font-Flaticon-shapes: "\f11b";
+    $font-Flaticon-shapes-1: "\f11c";
+    $font-Flaticon-social: "\f11d";
+    $font-Flaticon-social-1: "\f11e";
+    $font-Flaticon-social-2: "\f11f";
+    $font-Flaticon-symbol: "\f120";
+    $font-Flaticon-tool: "\f121";

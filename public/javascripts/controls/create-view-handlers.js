@@ -2,6 +2,7 @@
 var SECTION = 0,
 LOCATION_SECTION = 1,
 STORY_TEXT = 10,
+STORY_SUBTITLE = 12,
 PICTURE_CONTAINER = 11,
 DEFAULT_ZOOM = 4,
 DEFAULT_LATITUDE = 39.432031,
@@ -14,11 +15,32 @@ var ctrlDown = false,
         vKey = 86,
         cKey = 67,
         returnKey = 13,
-        backspacekey = 8,
+        deleteKey = 46,
+        backspaceKey = 8,
         arrowUpKey = 38,
         arrowDownKey = 40,
         arrowLeftKey = 37,
         arrowRightKey = 39;
+
+function initializeUser() {
+
+	user = newUserObj();
+	user.constructor();
+	user.readLoggedUser(function (user){
+		if (user.getAvatarUrl())
+			avatarUrl = user.getAvatarUrl();
+		else
+			avatarUrl = defaultAvatarPic
+		$('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
+						.css('display' , 'block' );
+
+		$('#user-link div').css('background-image','url(' + avatarUrl + ')');
+	},
+	function (){
+		user = null
+		$('#login-link, #stories-link').css('display' , 'block' );
+	});
+}
 
 
 function getElementAtCursorPosition() {
@@ -56,6 +78,7 @@ function addSectionAtCurrentPosition() {
     section.appendTo($('#story-content'));
   resetCaretPositionOnElement(firstp[0],0);
   setSectionKeyListners(section);
+  saveStoryOnServer();
 }
 
 function addSectionAtEnd() {
@@ -64,6 +87,7 @@ function addSectionAtEnd() {
   section.appendTo($('#story-content'));
   resetCaretPositionOnElement(firstp[0],0);
   setSectionKeyListners(section);
+  saveStoryOnServer();
 }
 
 function addSectionWithLocation() {
@@ -83,6 +107,7 @@ function addLocationToCurrentSection() {
   var currentsection = getSectionAtCursorPosition();
   if (currentsection == null) return;
   currentsection = $(currentsection);
+  if (currentsection.hasClass('location-section')) return;
   currentsection.addClass('location-section');
   var locationbanner = buildLocationBanner();
   currentsection.prepend(locationbanner);
@@ -94,6 +119,7 @@ function addPicture(imageUrl) {
   var pictureframe = buildPictureFrame(imageUrl).insertBefore(cursorPosition);
   if (!pictureframe[0].previousElementSibling || pictureframe[0].previousElementSibling.className.indexOf("story-text") == -1)
     $('<p class="section-item story-text text-normal-size" />').insertBefore(pictureframe);
+  saveStoryOnServer();
 }
 
 function setSectionKeyListners(sectionelement) {
@@ -102,7 +128,7 @@ function setSectionKeyListners(sectionelement) {
     if (e.keyCode === returnKey) {}
 
     // trap the back key being pressed
-    if (e.keyCode === backspacekey) {
+    if (e.keyCode === backspaceKey) {
       var thissection = $(this);
       var currentElement = getElementAtCursorPosition();
       if (!currentElement.previousElementSibling || currentElement.previousElementSibling.className.indexOf("story-text") == -1) {
@@ -119,7 +145,7 @@ function setSectionKeyListners(sectionelement) {
 
 function toggleTextSize() {
   var currentElement = getElementAtCursorPosition();
-  $(currentElement).toggleClass("text-title-size");
+  $(currentElement).toggleClass("text-title-size text-normal-size");
 }
 
 function resetCaretPositionOnElement(el,offset) {
@@ -159,11 +185,12 @@ function buildLocationBanner(l) {
     location = l;
 
   var map;
-  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
+  var locationBannerContainer = $('<div class="location-banner-container" contenteditable="false" />');
+  var locationBanner = $('<div class="location-banner" contenteditable="false" />').appendTo(locationBannerContainer);
   addLocationDataAttrOnElement(locationBanner,location)
-  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
+  $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner);
   var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
-  var deleteLocationBtn = $('<button type="button" class="delete-location close"><span>&times;</span></button>').appendTo(locationBanner);
+  var deleteLocationBtn = $('<button type="button" class="delete-location btn btn-default btn-no-background"><span class="location-icon glyph-icon icon-no-margins icon-10px flaticon-close"></button>').appendTo(locationBanner);
 
   // map popover
   var mapContainer = $("<div class='map-container' contenteditable='false'/>");
@@ -175,34 +202,29 @@ function buildLocationBanner(l) {
   var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
   $('<div class="map-sight"/>').appendTo(mapContainer);
 
+  //Map popover layout
+  var mapPopOverContainer = $("<div class='popover-container' contenteditable='false'/>").appendTo(locationBannerContainer);
+  mapContainer.appendTo(mapPopOverContainer);
 
-  locationBanner.popover({
-    html: true,
-    content: mapContainer,
-    placement: 'bottom',
-    animation: true,
-    trigger: 'manual'
-  })
-    .on('shown.bs.popover', function () {
-      var coords;
-      if (location.latitude != null) {
-        coords = new Object();
-        coords.position = new google.maps.LatLng(location.latitude,location.longitude);
-        coords.zoom = parseFloat(location.zoom);
-      }
-      if (!map)
-        map = initiateMap(mapelem[0],searchboxelem[0],coords);
-  })
+  locationBanner.click(function(e) {
+    mapPopOverContainer.css('top',locationBanner.position().top + locationBanner.height());
+    var coords;
+    if (location.latitude != null) {
+      coords = new Object();
+      coords.position = new google.maps.LatLng(location.latitude,location.longitude);
+      coords.zoom = parseFloat(location.zoom);
+    }
 
-  locationNameelem.click(function() {
-      locationBanner.popover('show');
+    if (!map)
+      map = initiateMap(mapelem[0],searchboxelem[0],coords);
+    mapPopOverContainer.toggleClass('open');
   })
 
-  cancelLocationSelection.click(function() {
-    locationBanner.popover('hide');
+  cancelLocationSelection.click(function(e) {
+    mapPopOverContainer.removeClass('open');
   })
 
-  confirmLocationSelection.click(function() {
+  confirmLocationSelection.click(function(e) {
     location.latitude = map.getCenter().lat();
     location.longitude = map.getCenter().lng();
     location.name = searchboxelem.val();
@@ -212,27 +234,19 @@ function buildLocationBanner(l) {
       map.marker = new google.maps.Marker({map: map});
     map.marker.setPosition(new google.maps.LatLng(location.latitude,location.longitude));
     locationNameelem.text(location.name)
-    locationBanner.popover('hide');
+    mapPopOverContainer.removeClass('open');
   })
 
   deleteLocationBtn.click(function() {
-    deleteLocationSection(locationBanner.parent());
+    deleteLocationSection(locationBannerContainer.parent());
   })
 
-  return locationBanner;
+  return locationBannerContainer;
 }
 
 function deleteLocationSection(sectionNode) {
-  sectionNode.find('.location-banner').remove();
-  prevSection = sectionNode.prev();
-  if (!prevSection || prevSection.hasClass('location-section') || prevSection.hasClass('title')) {
-    sectionNode.removeClass('location-section')
-  } else {
-    sectionNode.children().each(function() {
-      $(this).appendTo(prevSection);
-    });
-    sectionNode.remove();
-  }
+  sectionNode.find('.location-banner-container').remove();
+  sectionNode.removeClass('location-section')
   updateSectionDistribution();
 }
 
@@ -263,19 +277,29 @@ function addLocationDataAttrOnElement(element,location) {
 }
 
 function readLocationDataAttrOnElement(element) {
-  var location = new Object();
-  location.id = parseInt(element.attr('id'));
-  location.latitude = parseFloat(element.attr('lat'));
-  location.longitude = parseFloat(element.attr('lng'));
-  location.radius = parseFloat(element.attr('radius'));
-  location.zoom = parseFloat(element.attr('zoom'));
-  location.name = element.attr('locationName');
-  location.showpin = element.attr('showpin');
-  location.ismain = element.attr('ismain');
+  if (element == null) return null;
+  var location = new Object(),
+  id = parseInt(element.attr('id')),
+  latitude = parseFloat(element.attr('lat')),
+  longitude = parseFloat(element.attr('lng')),
+  radius = parseFloat(element.attr('radius')),
+  zoom = parseFloat(element.attr('zoom')),
+  name = element.attr('locationName'),
+  showpin = element.attr('showpin'),
+  ismain = element.attr('ismain');
+
+  location.id = (!isNaN(id)) ? id : null;
+  location.latitude = (!isNaN(latitude)) ? latitude : null;
+  location.longitude = (!isNaN(longitude)) ? longitude : null;
+  location.radius = (!isNaN(radius)) ? radius : 0;
+  location.zoom = (!isNaN(zoom)) ? zoom : null;
+  location.showpin = (showpin) ? showpin : false;
+  location.ismain = (ismain) ? ismain : false;
+  location.name = (name) ? name : "(choose location)";
   return location;
 }
 
-function buildPictureFrame(link,pos) {
+function buildPictureFrame(link,pos,caption) {
   var picContainer = $("<div class='section-item picture-container' contenteditable='true'/>");
   var position = (pos) ? pos : "center"
   var picFrame = $("<div class='picture-frame' position='" + position + "' contenteditable='false'/>").appendTo(picContainer);
@@ -302,7 +326,7 @@ function buildPictureFrame(link,pos) {
                                                               picContainer.remove();
                                                             })
                                                             .appendTo(picControlers);
-  $("<p class='picture-caption' contenteditable='true'/>").appendTo(picFrame);
+  $("<p class='picture-caption' contenteditable='true'/>").text(caption).appendTo(picFrame);
   return picContainer;
 }
 
@@ -388,46 +412,6 @@ function isCaretAtBegining() {
   return false;
 }
 
-function convertStoryContentToObject() {
-  var contentObject = [];
-  $('.section').each(function() {
-    var sectionObj = new Object();
-    var _thissection = $(this);
-    if (_thissection.hasClass('location-section')) {
-      sectionObj.type = LOCATION_SECTION;
-      sectionObj.location = readLocationDataAttrOnElement(_thissection.find('.location-banner').first());
-    } else {
-      sectionObj.type = SECTION;
-    }
-    sectionObj.content = [];
-    _thissection.children().each(function() {
-      var _thischild = $(this);
-      var itemObj = new Object();
-      if (_thischild.hasClass('story-text')) {
-        itemObj.type = STORY_TEXT
-        itemObj.text = _thischild.text();
-      }
-      if (_thischild.hasClass('picture-container')) {
-        itemObj.type = PICTURE_CONTAINER
-        itemObj.link = _thischild.find('img').attr('src')
-        itemObj.position = _thischild.find('.picture-frame').attr('position')
-      }
-      if (_thischild.hasClass('media-container')) {
-        itemObj.type = MEDIA_CONTAINER
-        itemObj.link = _thischild.find('.media-frame').attr('src')
-        itemObj.position = _thischild.find('.media-frame').attr('position');
-      }
-      if (_thischild.hasClass('ad-container')) {
-        itemObj.type = MEDIA_CONTAINER
-        itemObj.position = _thischild.find('.ad-frame').attr('position');
-      }
-      sectionObj.content.push(itemObj);
-    });
-    contentObject.push(sectionObj);
-  });
-  return contentObject;
-}
-
 /*------------------------
       image controls
 -------------------------*/
@@ -439,6 +423,16 @@ function positionPictureFrame(position) {
 function uploadImageToServer(onFinished) {
   var imageData = new FormData($('#image-upload-form')[0]);
   stud_uploadStoryImage(imageData,story.id,function(data) {
+    console.log(data);
+    if (onFinished) {
+      onFinished(data);
+    }
+  });
+}
+
+function uploadStoryThumbnailToServer(onFinished) {
+  var imageData = new FormData($('#cover-upload-form')[0]);
+  stud_uploadStoryThumbnail(imageData,story.id,function(data) {
     console.log(data);
     if (onFinished) {
       onFinished(data);
@@ -463,7 +457,20 @@ $(function() {
       $("#image-upload-input").replaceWith($("#image-upload-input").val('').clone(true));
     };
     fileReader.readAsDataURL(saveimagefile);
+  });
 
+  $('#cover-upload-input').change(function(ev) {
+    var saveimagefile = ev.target.files[0];
+    var fileReader = new FileReader();
+    var cursorPosition = getElementAtCursorPosition();
+
+    fileReader.onload = function(ev2) {
+      uploadStoryThumbnailToServer(function(data) {
+        addCover(data.imageUrl)
+      });
+      $("#cover-upload-input").replaceWith($("#cover-upload-input").val('').clone(true));
+    };
+    fileReader.readAsDataURL(saveimagefile);
   });
 
   readStoryDataAndLoadOnDOM(story);
@@ -471,102 +478,129 @@ $(function() {
   resetCaretPosition();
 
   // Overrides the return comand on the editable div
-  $('div[contenteditable]').each(function( index ) {
+  $('#story-content div[contenteditable]').each(function( index ) {
     setSectionKeyListners($( this ));
   });
 
+  $('#story-header #story-summary').keydown(function(e) {
+    // trap the return key being pressed
+    if (e.keyCode === returnKey) {
+      e.preventDefault();
+    }
+    // limit the number of characters
+    if ($(this).text().length > 180 && !(e.keyCode === backspaceKey || e.keyCode === deleteKey || e.keyCode === arrowLeftKey || e.keyCode === arrowRightKey)) {
+      e.preventDefault();
+    }
+    $('#story-header #details-overlay').css('bottom',0);
+  });
 
-  $(window).bind("wheel", function(event) {
+  $('#story-header #story-title').keydown(function(e) {
+    // trap the return key being pressed
+    if (e.keyCode === returnKey) {
+      e.preventDefault();
+    }
+    // limit the number of characters
+    if ($(this).text().length > 80 && !(e.keyCode === backspaceKey || e.keyCode === deleteKey || e.keyCode === arrowLeftKey || e.keyCode === arrowRightKey)) {
+      e.preventDefault();
+    }
+  });
+
+  $('[data-toggle="tooltip"]').tooltip({delay: { "show": 1500, "hide": 100 }})
+
+
+  $(window).bind("wheel load", function(event) {
 		var scrollTop = $(window).scrollTop();
-    $('#content-tools').css('top',scrollTop+200);
+    $('#content-tools').css('top',scrollTop + 200);
   });
 
   $(window).resize(function() {
 		var scrollTop = $(window).scrollTop();
-    $('#content-tools').css('top',scrollTop+200);
+    $('#content-tools').css('top',scrollTop + 200);
   });
-
-  // $('#story-content').mouseup(function(e) {
-  //   $('#floating-new-location-section-button').remove();
-  //   var selection = window.getSelection();
-  //   if (selection.rangeCount > 0) {
-  //     var range = selection.getRangeAt(0);
-  //     if (!range.collapsed) {
-  //       var floatingbutton = $('<button id="floating-new-location-section-button"/>');
-  //       $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(floatingbutton)
-  //       floatingbutton.appendTo($('#content-wrapper'));
-  //       floatingbutton.click(function() {
-  //         addNewLocationSectionFromSelection(range);
-  //         $('#floating-new-location-section-button').remove();
-  //         selection.removeAllRanges();
-  //       })
-  //       var bounding = range.getBoundingClientRect(),
-  //       top = bounding.bottom - $('#content-wrapper').offset().top + $(window).scrollTop(),
-  //       left = bounding.left - $('#content-wrapper').offset().left + bounding.width/2 - 20;
-  //       if (left < 0)
-  //         left = 0
-  //       else if (left > $(window).innerWidth() - 240)
-  //         left = $(window).innerWidth() - 240;
-  //       floatingbutton.css({ top:top, left:left});
-  //     }
-  //   }
-  // });
 
   $("#publish-link").click(function() {
-    populateStoryDetailsButton();
-    $('#story-details-modal').modal('show');
-  })
-});
-
-function populateStoryDetailsButton() {
-  var thumbnailscr = $(".picture-container img").first().attr("src"),
-  storytitle = $("#title").text(),
-  description = $(".story-text").first().text().substring(0,500)
-  loc = readLocationDataAttrOnElement($(".location-banner").first()),
-  $("#story-details-modal img#story-thumbnail").attr('src',thumbnailscr)
-  $("#story-details-modal #story-title").text(storytitle)
-  $("#story-details-modal #story-description").val(description)
-  $("#story-details-modal #story-location").empty();
-  buildLocationBannerForStoryDetailsModal(loc).appendTo($("#story-details-modal #story-location"))
-  $("#story-details-modal #story-tags")
-  $("#story-details-modal #story-external-link")
-}
-
-function toggleExternalLink() {
-  if ($("#story-details-modal #external-link-checkbox")[0].checked) {
-    $("#story-details-modal #story-external-link").removeAttr('disabled')
-  } else {
-    $("#story-details-modal #story-external-link").attr('disabled','')
-  }
-}
-
-function nextThumbnailOnStoryDetailsModal() {
-  changeThumbnailOnStoryDetailsModal('next')
-}
-
-function previousThumbnailOnStoryDetailsModal() {
-  changeThumbnailOnStoryDetailsModal('previous')
-}
-
-function changeThumbnailOnStoryDetailsModal(direction) {
-  var imagesrc=[],
-  currentSrc = $("#story-details-modal img#story-thumbnail").attr('src');
-  $(".picture-container img").each(function() {
-    imagesrc.push($(this).attr('src'));
+    openPublishPane();
   });
-  var index = imagesrc.indexOf(currentSrc);
-  if (direction=="previous" && index > 0) {
-    $("#story-details-modal img#story-thumbnail").attr('src',imagesrc[--index])
-  } else if (direction=="next" && index < imagesrc.length-1) {
-    $("#story-details-modal img#story-thumbnail").attr('src',imagesrc[++index])
+
+  initializeUser();
+})
+
+function openPublishPane() {
+  populateStoryPublishPane();
+  window.scrollTo(0, 0);
+  $('#story-header').addClass('open');
+  $('#content-tools').addClass('publish-pane-open');
+  saveStoryOnServer();
+}
+
+function closePublishPane() {
+  $('#story-header .map-popover').removeClass('open');
+  $('#story-header').removeClass('open');
+  $('#content-tools').removeClass('publish-pane-open');
+  saveStoryOnServer();
+}
+
+function addCover(imageUrl) {
+  $('#story-container-and-thumbnail').css('background-image','url(' + imageUrl + ')');
+  $('#story-header, #content-tools').addClass('with-cover');
+  $("#story-header #add-cover-btn").hide();
+  $("#story-header #remove-cover-btn").show();
+}
+
+function removeCover() {
+  stud_deleteStoryThumbnail(story.id,function() {
+    $('#story-container-and-thumbnail').css('background-image','none');
+    story.thumbnail = null;
+    $('#story-header, #content-tools').removeClass('with-cover');
+    $("#story-header #add-cover-btn").show();
+    $("#story-header #remove-cover-btn").hide();
+  })
+}
+
+function populateStoryPublishPane() {
+  $("#story-header #story-title").text(story.title);
+  $("#story-header #story-summary").text(story.summary);
+  if (story.thumbnail) {
+    $('#story-container-and-thumbnail').css('background-image','url(' + story.thumbnail + ')');
+    $('#story-header, #content-tools').addClass('with-cover');
+    $("#story-header #add-cover-btn").hide();
+    $("#story-header #remove-cover-btn").show();
+  }
+  var loc;
+  if (story.location != null)
+    loc = story.location;
+  locationbanner = buildLocationBannerForPublishPane(loc);
+  if (locationbanner)
+    locationbanner.appendTo($("#story-header #story-location"))
+  if (story.published) {
+    $("#story-header #story-status").text("published");
+    $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
+  } else {
+    $("#story-header #story-status").text("draft");
   }
 }
 
-function buildLocationBannerForStoryDetailsModal(location) {
+function buildLocationBannerForPublishPane(l) {
+  if ($("#story-header .location-banner")[0]) return null;
+
+  var location;
+  if (l == null) {
+    location = new Object();
+    location.id = null;
+    location.latitude = null;
+    location.longitude = null;
+    location.radius = 0;
+    location.zoom = null;
+    location.showpin = false;
+    location.ismain = false;
+    location.name = "(choose location)";
+  } else
+    location = l;
+
   var map;
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
   addLocationDataAttrOnElement(locationBanner,location)
-  $('<span class="location-icon glyph-icon icon-no-margins icon-20px flaticon-placeholder">').appendTo(locationBanner)
+  $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner)
   var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
 
   // map popover
@@ -579,28 +613,27 @@ function buildLocationBannerForStoryDetailsModal(location) {
   var confirmLocationSelection = $('<button class="confirm-location btn btn-info btn-icon"><span class="glyph-icon icon-no-margins icon-15px flaticon-check"></button></button>').appendTo(mapcontrols);
   $('<div class="map-sight"/>').appendTo(mapContainer);
 
+  //Map popover layout
+  var mapPopOverContainer = $("<div class='popover-container' contenteditable='false'/>").appendTo($("#story-header"));
+  mapContainer.appendTo(mapPopOverContainer);
 
-  locationBanner.popover({
-    html: true,
-    content: mapContainer,
-    placement: 'bottom',
-    animation: true,
-    trigger: 'manual'
-  })
-    .on('shown.bs.popover', function () {
-      var coords = new Object();
+  locationBanner.click(function() {
+    mapPopOverContainer.css('top',locationBanner.position().top + locationBanner.height());
+    mapPopOverContainer.css('left',locationBanner.position().left);
+    var coords;
+    if (location.latitude != null) {
+      coords = new Object();
       coords.position = new google.maps.LatLng(location.latitude,location.longitude);
       coords.zoom = parseFloat(location.zoom);
-      if (!map)
-        map = initiateMap(mapelem[0],searchboxelem[0],coords);
-  })
+    }
 
-  locationNameelem.click(function() {
-      locationBanner.popover('show');
+    if (!map)
+      map = initiateMap(mapelem[0],searchboxelem[0],coords);
+    mapPopOverContainer.toggleClass('open');
   })
 
   cancelLocationSelection.click(function() {
-    locationBanner.popover('hide');
+    mapPopOverContainer.removeClass('open');
   })
 
   confirmLocationSelection.click(function() {
@@ -608,6 +641,8 @@ function buildLocationBannerForStoryDetailsModal(location) {
     location.longitude = map.getCenter().lng();
     location.name = searchboxelem.val();
     location.zoom = map.getZoom();
+    location.ismain = true;
+    story.location = location;
     addLocationDataAttrOnElement(locationBanner,location);
     if (!map.marker)
       map.marker = new google.maps.Marker({map: map});
@@ -619,49 +654,53 @@ function buildLocationBannerForStoryDetailsModal(location) {
   return locationBanner;
 }
 
-// function addNewLocationSectionFromSelection(range) {
-//   var locationSection = $("<div class='section location-section'/>");
-//   buildLocationBanner(location).appendTo(locationSection);
-//   var lastchild = $(range.endContainer).parents('.section-item')[0],
-//   child = $(range.startContainer).parents('.section-item')[0],
-//   parent = $(range.startContainer).parents('.section')[0],
-//   // grab selected nodes
-//   children = [child];
-//   while (child != lastchild) {
-//     child = child.nextSibling
-//     children.push(child)
-//     console.log(children);
-//   }
-//   // grab nodes after selection
-//   lastchild = parent.children[parent.children.length-1];
-//   var childrenAfterSelection = [child.nextSibling];
-//   while (child != lastchild) {
-//     child = child.nextSibling
-//     childrenAfterSelection.push(child)
-//     console.log(childrenAfterSelection);
-//   }
-//   // insert Selection nodes on a new section
-//   children.forEach(function(elem) {
-//     locationSection.append(elem);
-//   });
-//   if (locationSection.find('.story-text').length == 0)
-//     $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
-//   locationSection.insertAfter($(parent));
-//   // insert remaining nodes after selection
-//   // on a new section after the previously
-//   // created section
-//   var remainingNodesSection = $("<div class='section'/>");
-//   childrenAfterSelection.forEach(function(elem) {
-//     remainingNodesSection.append(elem);
-//   });
-//   remainingNodesSection.insertAfter(locationSection);
-//
-//   updateSectionDistribution();
-// }
+function convertStoryContentToObject() {
+  var contentObject = [];
+  $('.section').each(function() {
+    var sectionObj = new Object();
+    var _thissection = $(this);
+    if (_thissection.hasClass('location-section')) {
+      sectionObj.type = LOCATION_SECTION;
+      sectionObj.location = readLocationDataAttrOnElement(_thissection.find('.location-banner').first());
+    } else {
+      sectionObj.type = SECTION;
+    }
+    sectionObj.content = [];
+    _thissection.children().each(function() {
+      var _thischild = $(this);
+      var itemObj = new Object();
+      if (_thischild.hasClass('text-normal-size')) {
+        itemObj.type = STORY_TEXT
+        itemObj.text = _thischild.text();
+      }
+      if (_thischild.hasClass('text-title-size')) {
+        itemObj.type = STORY_SUBTITLE
+        itemObj.text = _thischild.text();
+      }
+      if (_thischild.hasClass('picture-container')) {
+        itemObj.type = PICTURE_CONTAINER
+        itemObj.link = _thischild.find('img').attr('src')
+        itemObj.text = _thischild.find('.picture-caption').text();
+        itemObj.position = _thischild.find('.picture-frame').attr('position')
+      }
+      if (_thischild.hasClass('media-container')) {
+        itemObj.type = MEDIA_CONTAINER
+        itemObj.link = _thischild.find('.media-frame').attr('src')
+        itemObj.position = _thischild.find('.media-frame').attr('position');
+      }
+      if (_thischild.hasClass('ad-container')) {
+        itemObj.type = MEDIA_CONTAINER
+        itemObj.position = _thischild.find('.ad-frame').attr('position');
+      }
+      sectionObj.content.push(itemObj);
+    });
+    contentObject.push(sectionObj);
+  });
+  return contentObject;
+}
 
 function readStoryDataAndLoadOnDOM(story) {
   var contentElement = $('#story-content');
-  $("#title").text(story.title);
   if (!story.content) {
     addSectionAtEnd();
     return;
@@ -669,7 +708,7 @@ function readStoryDataAndLoadOnDOM(story) {
   $('#story-content section').remove();
   story.content.forEach(function(sectionObj) {
     if (sectionObj.type == LOCATION_SECTION) {
-      var sectionElem = $("<div class='section location-section'/>").appendTo(contentElement);
+      var sectionElem = $("<div class='section location-section' contenteditable='true'/>").appendTo(contentElement);
       buildLocationBanner(sectionObj.location).appendTo(sectionElem)
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {
@@ -677,8 +716,11 @@ function readStoryDataAndLoadOnDOM(story) {
             case STORY_TEXT:
               $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
               break;
+            case STORY_SUBTITLE:
+              $('<p class="section-item story-text text-title-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
             case PICTURE_CONTAINER:
-              buildPictureFrame(itemObj.link,itemObj.position).appendTo(sectionElem);
+              buildPictureFrame(itemObj.link,itemObj.position,itemObj.text).appendTo(sectionElem);
               break;
           }
         });
@@ -686,12 +728,15 @@ function readStoryDataAndLoadOnDOM(story) {
         $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
       }
     } else {
-      var sectionElem = $("<div class='section'/>").appendTo(contentElement);
+      var sectionElem = $("<div class='section' contenteditable='true'/>").appendTo(contentElement);
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {
           switch (itemObj.type) {
             case STORY_TEXT:
               $('<p class="section-item story-text text-normal-size">' + itemObj.text + '</p>').appendTo(sectionElem);
+              break;
+            case STORY_SUBTITLE:
+              $('<p class="section-item story-text text-title-size">' + itemObj.text + '</p>').appendTo(sectionElem);
               break;
             case PICTURE_CONTAINER:
               buildPictureFrame(itemObj.link,itemObj.position).appendTo(sectionElem);
@@ -705,30 +750,42 @@ function readStoryDataAndLoadOnDOM(story) {
   });
 }
 
-function saveStoryOnServer(published) {
+function saveStoryOnServer(onFinished) {
   var storycontent = convertStoryContentToObject();
-  story.title = $("#title").text();
-  story.summary = $("#story-details-modal #story-description").val();
-  story.thumbnail = $("#story-details-modal img#story-thumbnail").attr('src');
-  story.published = published;
+  story.title = $("#story-header #story-title").text();
+  story.summary = $("#story-header #story-summary").text();
   story.content = JSON.stringify(storycontent)
   story.locations = [];
-  // storycontent.forEach(function(sectionObj) {
-  //   story.locations.push(sectionObj.location);
-  // });
+  if (story.location)
+    story.locations.push(story.location);
+  storycontent.forEach(function(sectionObj) {
+    if (sectionObj.location)
+      story.locations.push(sectionObj.location);
+  });
 
   story.labels = [];
 
   stud_updateStory(story, function(data) {
     console.log('story saved');
     console.log(data);
+    if (onFinished) {
+      onFinished();
+    }
   });
 }
 
 function publishStory() {
-  saveStoryOnServer(true);
-}
-
-function publishStory() {
-  saveStoryOnServer(false);
+  if (story.published == false) {
+    story.published = true;
+    saveStoryOnServer(function() {
+      $("#story-header #story-status").text("published");
+      $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
+    });
+  } else {
+    story.published = false;
+    saveStoryOnServer(function() {
+      $("#story-header #story-status").text("draft");
+      $("#story-header #post-btn").removeClass('highlighted').text('Publish');
+    });
+  }
 }

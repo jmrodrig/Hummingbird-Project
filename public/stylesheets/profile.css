@@ -375,9 +375,19 @@ h1, h2, h3, h4, p, a {
 	padding-left: 10px;
 }
 
+.title-container {
+	padding: 0px 7px;
+}
+
+.story-title {
+	font-size:20px;
+	font-family: Georgia, "Times New Roman", Times, serif;
+	margin-bottom: 6px;
+}
+
 .summary-container {
 	position: relative;
-	padding: 2px 7px;
+	padding: 0px 7px;
 	overflow: hidden;
 	width: 100%;
 }
@@ -393,7 +403,7 @@ h1, h2, h3, h4, p, a {
   line-height: 22px;
 	text-align: initial;
 	overflow:hidden;
-	margin: 8px 0px;
+	margin-bottom: 10px;
 	max-height: 100px;
 }
 

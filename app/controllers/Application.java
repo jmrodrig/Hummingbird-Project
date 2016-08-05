@@ -138,12 +138,14 @@ public class Application extends Controller {
 		return ok(json);
 	}
 
-	@SecuredAction
-	public static Result editStory(Long storyId) {
+	@SecureSocial.SecuredAction
+	public static Result editStory(Long storyId)  throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		//TODO: validate if user has priviliges to edit the story
+		User currentuser = getCurrentUser();
 		Story story = Story.findById(storyId);
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,false);
-		return ok(views.html.create.render(jsonStory));
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,currentuser,false);
+		String jsonLocation = new Gson().toJson(jsonStory.location);
+		return ok(views.html.create.render(jsonStory,jsonLocation));
 	}
 
 	public static Result validInvite(String invitationCode) {
@@ -191,23 +193,18 @@ public class Application extends Controller {
 		return ok();
 	}
 
-	// public static Result getHighlightedItems() {
-	// 	List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
-	// 	List<HighlightedItem> hitems = HighlightedItem.findAll();
-	// 	for (HighlightedItem item : hitems) {
-	// 		controllers.json.Story jsonStory;
-	// 		if (item.getType() == 0) {
-	// 			Story story = Story.findById(item.getItemId());
-	// 			jsonStory = controllers.json.Story.getStory(story, false);
-	// 		} else {
-	// 			StoryCollection collection = StoryCollection.findCollectionById(item.getItemId());
-	// 			jsonStory = controllers.json.Story.getCollectionAsStory(collection);
-	// 		}
-	// 		result.add(jsonStory);
-	// 	}
-	// 	String json = new Gson().toJson(result);
-	// 	return ok(json);
-	// }
+	public static Result getHighlightedItems() {
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+		List<HighlightedItem> hitems = HighlightedItem.findAll();
+		for (HighlightedItem item : hitems) {
+			controllers.json.Story jsonStory;
+			Story story = Story.findById(item.getItemId());
+			jsonStory = controllers.json.Story.getStory(story, false);
+			result.add(jsonStory);
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
 
 	@SecuredAction
 	public static Result findLabelsStartingWith(String value) {
