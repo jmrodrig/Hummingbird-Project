@@ -6,19 +6,19 @@
 	<script src="/assets/javascripts/controls/index-view-handlers.js" type="text/javascript"></script>
 
 	@if(story != null) {
-		<title>LIR | @story.locationName</title>
+		<title>LIR | @story.title</title>
 		<meta name="description" content="@story.summary" />
 
 		<!-- Twitter Card data -->
 		<meta name="twitter:site" content="http://www.lostinreality.io/@@storyid=@story.id">
-		<meta name="twitter:title" content="LIR | @story.locationName">
+		<meta name="twitter:title" content="@story.title">
 		<meta name="twitter:description" content="@story.summary">
-		<meta name="twitter:image" content="http://139.162.151.189@story.thumbnail">
+		<meta name="twitter:image" content="http://www.lostinreality.io@story.thumbnail">
 		<!-- Open Graph data -->
-		<meta property="og:title" content="LIR | @story.locationName" />
+		<meta property="og:title" content="@story.title" />
 		<meta property="og:type" content="article" />
 		<meta property="og:url" content="http://www.lostinreality.io/@@storyid=@story.id"/>
-		<meta property="og:image" content="http://139.162.151.189@story.thumbnail" />
+		<meta property="og:image" content="http://www.lostinreality.io@story.thumbnail" />
 		<meta property="og:description" content="@story.summary" />
 
 	}
@@ -49,7 +49,7 @@
 		<!-- Open Graph data -->
 		<meta property="og:title" content="Lost in Reality" />
 		<meta property="og:type" content="article" />
-		<meta property="og:url" content="http://www.lostinreality.net"/>
+		<meta property="og:url" content="http://www.lostinreality.io"/>
 		<meta property="og:image" content="@routes.Assets.at("images/lir_front.jpg")" />
 		<meta property="og:description" content="Explore the places around you with a map of stories. Sign up, download the app and start discovering." />
 
