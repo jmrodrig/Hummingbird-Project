@@ -144,7 +144,11 @@ public class Application extends Controller {
 		User currentuser = getCurrentUser();
 		Story story = Story.findById(storyId);
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,currentuser,false);
-		String jsonLocation = new Gson().toJson(jsonStory.location);
+		String jsonLocation;
+		if (jsonStory.location != null)
+			jsonLocation = new Gson().toJson(jsonStory.location);
+		else
+			jsonLocation = "";
 		return ok(views.html.create.render(jsonStory,jsonLocation));
 	}
 

@@ -22,6 +22,8 @@ var ctrlDown = false,
         arrowLeftKey = 37,
         arrowRightKey = 39;
 
+var currentSelectedElement;
+
 function initializeUser() {
 
 	user = newUserObj();
@@ -50,6 +52,8 @@ function getElementAtCursorPosition() {
       var element = selection.getRangeAt(0).startContainer;
       if (element.nodeName == "#text") //if is a textnode
         element = element.parentNode;
+    } else {
+      var element = currentSelectedElement;
     }
     console.log(element);
     if ($.contains( $('#story-content')[0],element  ))
@@ -516,6 +520,10 @@ $(function() {
   $(window).resize(function() {
 		var scrollTop = $(window).scrollTop();
     $('#content-tools').css('top',scrollTop + 200);
+  });
+
+  $('#story-content').on('mouseup',function(e) {
+		currentSelectedElement = e.target;
   });
 
   $("#publish-link").click(function() {
