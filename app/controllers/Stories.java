@@ -116,7 +116,7 @@ public class Stories extends Controller {
 			if (story.distance > -1) {
 				count = 0;
 				rangemaxdistance = fibonacciNumbers[count] * 1000;
-				while (story.distance >= rangemaxdistance && count < fibonacciNumbers.length) {
+				while (story.distance >= rangemaxdistance && count < fibonacciNumbers.length-1) {
 					rangemaxdistance = fibonacciNumbers[count] * 1000;
 					++count;
 				}
