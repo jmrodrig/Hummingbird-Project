@@ -567,7 +567,7 @@ h1, h2, h3, h4, p, a {
 	width: 100%;
   overflow-y: scroll;
   pointer-events: all;
-  background-color: rgba(126, 255, 131, 0.23)
+  background-color: rgba(0, 0, 0, 0.23)
 }
 
 .layout-column {
@@ -580,7 +580,7 @@ h1, h2, h3, h4, p, a {
 #story-large-layout {
   position: absolute;
   top:100%;
-	width: 860px;
+	width: 1060px;
   height: 100%;
   padding: 60px 25px 0px 35px;
   overflow: hidden;
@@ -828,7 +828,7 @@ h1, h2, h3, h4, p, a {
 ******************************************************************/
 
 .lg-container.story-container {
-	width:800px;
+	width:1000px;
 	text-align: inherit;
 	margin: auto;
 	margin-bottom: 10px;
@@ -1050,7 +1050,7 @@ h1, h2, h3, h4, p, a {
 
 .story-title {
 	font-family: Georgia, "Times New Roman", Times, serif;
-	font-size: 20px;
+	font-size: 30px;
   margin: 7px 0px;
   font-style: italic;
 }
@@ -1096,18 +1096,8 @@ h1, h2, h3, h4, p, a {
 	padding: 3px 10px;
 }
 
-.section:after {
-	display: inline-block;
-	content: ". . .";
-	width: 100%;
-	font-size: 32px;
-	font-family:  Georgia, "Times New Roman", Times, serif;
-	color: #ccc;
-	text-align: center;
-}
-
 .story-text {
-	width: 80%;
+	width: 60%;
   margin: auto;
 	font-family: Georgia, "Times New Roman", Times, serif;
 }
@@ -1146,7 +1136,7 @@ h1, h2, h3, h4, p, a {
 }
 
 .picture-frame[position=center] {
-	width: 80%;
+	width: 60%;
 	margin: auto;
 }
 
