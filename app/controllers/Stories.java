@@ -145,6 +145,7 @@ public class Stories extends Controller {
 
 	public static Boolean isStoryContainedInList(controllers.json.Story st, List<controllers.json.Story> list){
 		for (controllers.json.Story s : list) {
+			System.out.println("s.id = " + s.id + "st.id = " + st.id);
 			if (s.id == st.id)
 				return true;
 		}
