@@ -136,7 +136,6 @@ public class Stories extends Controller {
 	public static List<controllers.json.Story> removeRepeatedItems(List<controllers.json.Story> list){
 		List<controllers.json.Story> newlist = new ArrayList<controllers.json.Story>();
 		for (controllers.json.Story s : list) {
-			System.out.println("Is story " + s.id + "contained in list?: " + isStoryContainedInList(s,newlist));
 			if (!isStoryContainedInList(s,newlist))
 				newlist.add(s);
 		}
@@ -145,13 +144,7 @@ public class Stories extends Controller {
 
 	public static Boolean isStoryContainedInList(controllers.json.Story st, List<controllers.json.Story> list){
 		for (controllers.json.Story s : list) {
-			System.out.println("s.id = " + s.id + "; st.id = " + st.id);
-			System.out.println(s.id);
-			System.out.println(s.id);
-			System.out.println(s.id instanceof Long);
-			System.out.println(s.id instanceof Long);
-			System.out.println(s.id.equals(st.id));
-			if (s.id == st.id)
+			if (s.id.equals(st.id))
 				return true;
 		}
 		return false;
