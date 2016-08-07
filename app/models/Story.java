@@ -45,6 +45,7 @@ import com.lir.library.tools.LirDebug;
 import com.lir.library.tools.LirDebug.IDebug;
 
 import flexjson.JSONSerializer;
+import com.google.gson.Gson;
 
 @Entity
 @Table(name = "stories")
@@ -262,17 +263,25 @@ public class Story extends Model {
 		return locations;
 	}
 
-	public void setLocations(List<controllers.json.Location> jsonLocations) {
-		if (jsonLocations == null) return;
-		for (controllers.json.Location jsonLocation : jsonLocations) {
-			Location location = Location.findByIdAndStoryId(jsonLocation.id,this.getId());
-			if (location != null) {
-				Location.update(jsonLocation,location);
-			} else {
-				location = Location.create(jsonLocation,this);
-				locations.add(location);
+	public void setLocations(String contentString) {
+		System.out.println("Story CONTENT (before location set): " + this.getContent());
+		controllers.json.Story.ContentSection[] jsonContent = new Gson().fromJson(contentString, controllers.json.Story.ContentSection[].class);
+		for (controllers.json.Story.ContentSection section : jsonContent) {
+			controllers.json.Location jsonlocation = section.getLocation();
+			if (jsonlocation != null) {
+				Location location = Location.findByIdAndStoryId(jsonlocation.id,this.getId());
+				System.out.println("Found location with id " + jsonlocation.id + "?: " + location);
+				if (location != null) {
+					Location.update(jsonlocation,location);
+				} else {
+					location = Location.create(jsonlocation,this);
+					locations.add(location);
+				}
+				jsonlocation.id = location.getId();
 			}
 		}
+		this.setContent(new Gson().toJson(jsonContent));
+		System.out.println("Story CONTENT: " + this.getContent());
 	}
 
 	public Location getLocation() {
@@ -597,7 +606,7 @@ public class Story extends Model {
 		story.setSummary(summary);
 		story.setContent(contentJSON);
 		story.setPublished(published);
-		story.setLocations(locations);
+		story.setLocations(contentJSON);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {

@@ -154,4 +154,56 @@ public class Story implements Comparable<Story> {
 	    }
 
 	};
+
+	public static class ContentSection {
+				private Long id;
+        private int type;
+        private Location location;
+        private ContentItem[] content;
+
+				public Long getId() { return id; }
+
+        public int getType() { return type; }
+
+        public Location getLocation() { return location; }
+
+        public ContentItem[] getContent() { return content; }
+
+        public void setType(int t) { this.type = t; }
+
+        public void setLocation(Location l) { this.location = l; }
+
+        public void setContent(ContentItem[] cnt) { this.content = cnt; }
+    }
+
+    public static class ContentItem {
+        private int type;
+        private String text;
+        private String link;
+        private String position;
+
+        public int getType() { return type; }
+
+        public String getText() { return text; }
+
+        public String getPosition() {
+            return position;
+        }
+
+        public String getLink() {
+            return link;
+        }
+
+        public void setType(int t) { this.type = t; }
+
+        public void setText(String txt) { this.text = txt; }
+
+        public void setPosition(String pstn) {
+            this.position = pstn;
+        }
+
+        public void setLink( String lnk) {
+            this.link = lnk;
+        }
+    }
 }

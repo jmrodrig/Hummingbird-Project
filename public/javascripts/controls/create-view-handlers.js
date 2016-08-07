@@ -1,6 +1,7 @@
 
 var SECTION = 0,
 LOCATION_SECTION = 1,
+HEADER_SECTION = 2,
 STORY_TEXT = 10,
 STORY_SUBTITLE = 12,
 PICTURE_CONTAINER = 11,
@@ -73,7 +74,7 @@ function getSectionAtCursorPosition() {
 }
 
 function addSectionAtCurrentPosition() {
-  var section = $('<div class="section" contenteditable="true"/>');
+  var section = $('<div class="section" contenteditable="true" section-id="' + Date.now() +'"/>');
   var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
   var currentpositon = getSectionAtCursorPosition();
   if (currentpositon != null)
@@ -86,7 +87,7 @@ function addSectionAtCurrentPosition() {
 }
 
 function addSectionAtEnd() {
-  var section = $('<div class="section" contenteditable="true"/>');
+  var section = $('<div class="section" contenteditable="true" section-id="' + Date.now() +'"/>');
   var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
   section.appendTo($('#story-content'));
   resetCaretPositionOnElement(firstp[0],0);
@@ -95,7 +96,7 @@ function addSectionAtEnd() {
 }
 
 function addSectionWithLocation() {
-  var locationSection = $("<div class='section location-section'/>");
+  var locationSection = $("<div class='section location-section' section-id='" + Date.now() +"'/>");
   buildLocationBanner(location).appendTo(locationSection);
   var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(locationSection);
   locationSection.insertAfter($(getSectionAtCursorPosition()));
@@ -534,7 +535,6 @@ $(function() {
 })
 
 function openPublishPane() {
-  populateStoryPublishPane();
   window.scrollTo(0, 0);
   $('#story-header').addClass('open');
   $('#content-tools').addClass('publish-pane-open');
@@ -667,6 +667,7 @@ function convertStoryContentToObject() {
   $('.section').each(function() {
     var sectionObj = new Object();
     var _thissection = $(this);
+    sectionObj.id = parseInt(_thissection.attr('section-id'));
     if (_thissection.hasClass('location-section')) {
       sectionObj.type = LOCATION_SECTION;
       sectionObj.location = readLocationDataAttrOnElement(_thissection.find('.location-banner').first());
@@ -708,6 +709,7 @@ function convertStoryContentToObject() {
 }
 
 function readStoryDataAndLoadOnDOM(story) {
+  populateStoryPublishPane();
   var contentElement = $('#story-content');
   if (!story.content) {
     addSectionAtEnd();
@@ -715,8 +717,10 @@ function readStoryDataAndLoadOnDOM(story) {
   }
   $('#story-content section').remove();
   story.content.forEach(function(sectionObj) {
+    if (!sectionObj.id)
+      sectionObj.id = Date.now();
     if (sectionObj.type == LOCATION_SECTION) {
-      var sectionElem = $("<div class='section location-section' contenteditable='true'/>").appendTo(contentElement);
+      var sectionElem = $("<div class='section location-section' contenteditable='true' section-id='" + sectionObj.id +"'/>").appendTo(contentElement);
       buildLocationBanner(sectionObj.location).appendTo(sectionElem)
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {
@@ -736,7 +740,7 @@ function readStoryDataAndLoadOnDOM(story) {
         $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
       }
     } else {
-      var sectionElem = $("<div class='section' contenteditable='true'/>").appendTo(contentElement);
+      var sectionElem = $("<div class='section' contenteditable='true' section-id='" + sectionObj.id +"'/>").appendTo(contentElement);
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {
           switch (itemObj.type) {
@@ -762,20 +766,16 @@ function saveStoryOnServer(onFinished) {
   var storycontent = convertStoryContentToObject();
   story.title = $("#story-header #story-title").text();
   story.summary = $("#story-header #story-summary").text();
-  story.content = JSON.stringify(storycontent)
-  story.locations = [];
-  if (story.location)
-    story.locations.push(story.location);
-  storycontent.forEach(function(sectionObj) {
-    if (sectionObj.location)
-      story.locations.push(sectionObj.location);
-  });
-
+  if (story.location) {
+    storycontent.push({location:story.location,type:HEADER_SECTION})
+  }
+  story.content = JSON.stringify(storycontent);
   story.labels = [];
 
   stud_updateStory(story, function(data) {
     console.log('story saved');
     console.log(data);
+    updateSectionLocationIds(data);
     if (onFinished) {
       onFinished();
     }
@@ -796,4 +796,16 @@ function publishStory() {
       $("#story-header #post-btn").removeClass('highlighted').text('Publish');
     });
   }
+}
+
+function updateSectionLocationIds(st) {
+  content = JSON.parse(st.content);
+  content.forEach(function(section) {
+    if (section.location) {
+      if (section.location.ismain)
+        $('#story-location .location-banner').attr('id',section.location.id);
+      else
+        $('.location-section[section-id=' + section.id + '] .location-banner').attr('id',section.location.id);
+    }
+  });
 }

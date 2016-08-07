@@ -127,7 +127,7 @@ public class Application extends Controller {
 																	jsonStory.summary,
 																	jsonStory.content,
 																	jsonStory.published,
-																	jsonStory.locations,
+																	null,
 																	jsonStory.labels);
 		} catch (IOException e) {
 			story = models.Story.create(user);
