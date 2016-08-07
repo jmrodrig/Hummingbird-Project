@@ -150,7 +150,7 @@ public class Stories extends Controller {
 			System.out.println(s.id);
 			System.out.println(s.id instanceof Long);
 			System.out.println(s.id instanceof Long);
-			System.out.println(s.id === st.id);
+			System.out.println(s.id.equals(st.id));
 			if (s.id == st.id)
 				return true;
 		}
