@@ -775,6 +775,7 @@ function saveStoryOnServer(onFinished) {
   stud_updateStory(story, function(data) {
     console.log('story saved');
     console.log(data);
+    story = data;
     updateSectionLocationIds(data);
     if (onFinished) {
       onFinished();
@@ -802,8 +803,9 @@ function updateSectionLocationIds(st) {
   content = JSON.parse(st.content);
   content.forEach(function(section) {
     if (section.location) {
-      if (section.location.ismain)
+      if (section.location.ismain) {
         $('#story-location .location-banner').attr('id',section.location.id);
+      }
       else
         $('.location-section[section-id=' + section.id + '] .location-banner').attr('id',section.location.id);
     }
