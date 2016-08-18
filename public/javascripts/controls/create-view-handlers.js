@@ -92,7 +92,6 @@ function addSectionAtEnd() {
   section.appendTo($('#story-content'));
   resetCaretPositionOnElement(firstp[0],0);
   setSectionKeyListners(section);
-  saveStoryOnServer();
 }
 
 function addSectionWithLocation() {
@@ -545,7 +544,6 @@ function closePublishPane() {
   $('#story-header .map-popover').removeClass('open');
   $('#story-header').removeClass('open');
   $('#content-tools').removeClass('publish-pane-open');
-  saveStoryOnServer();
 }
 
 function addCover(imageUrl) {

@@ -17,7 +17,7 @@
 	if ("@location".length > 0)
 		story.location = JSON.parse("@location".replace(/&quot;/g,'"'));
 	if ("@story.content".length > 0)
-		story.content = JSON.parse("@story.content".replace(/&quot;/g,'"'));
+		story.content = JSON.parse("@story.content".replace(/&quot;/g,'"').replace(/\n/g,'\\n'));
 </script>
 
 <section id="content-wrapper">
