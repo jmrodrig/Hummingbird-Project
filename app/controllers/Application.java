@@ -118,22 +118,8 @@ public class Application extends Controller {
 	@SecureSocial.SecuredAction
 	public static Result createStoryMobile() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		User user = getCurrentUser();
-		controllers.json.Story jsonStory;
-		models.Story story;
-		try {
-			jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
-			story = models.Story.create(user,
-																	jsonStory.title,
-																	jsonStory.summary,
-																	jsonStory.content,
-																	jsonStory.published,
-																	null,
-																	jsonStory.labels);
-		} catch (IOException e) {
-			story = models.Story.create(user);
-		}
-
-		jsonStory = controllers.json.Story.getStory(story, user, false);
+		models.Story story = models.Story.create(user);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, false);
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
@@ -143,6 +129,7 @@ public class Application extends Controller {
 		//TODO: validate if user has priviliges to edit the story
 		User currentuser = getCurrentUser();
 		Story story = Story.findById(storyId);
+		if (story == null) return badRequest("Invalid story id.");
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,currentuser,false);
 		String jsonLocation;
 		if (jsonStory.location != null)
