@@ -182,7 +182,7 @@ public class Stories extends Controller {
 
 		for (models.Story story : stories) {
 			for (models.User user : followingUsers) {
-				if (story.storyIsOwnedByUser(user)) {
+				if (story.isOwnedByUser(user)) {
 					controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
 					result.add(jsonStory);
 				}

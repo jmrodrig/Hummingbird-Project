@@ -163,7 +163,7 @@ public class StoryCollection extends Model {
 	public Boolean collectionUsersOwnStory(Story story) {
 		List<User> collectionUsers = this.getUsers();
 		for (User u : users) {
-			if (story.storyIsOwnedByUser(u)) return true;
+			if (story.isOwnedByUser(u)) return true;
 		}
 		return false;
 	}

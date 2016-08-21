@@ -220,7 +220,7 @@ public class Story extends Model {
 		this.userStories = userStories;
 	}
 
-	public Boolean storyIsOwnedByUser(User user) {
+	public Boolean isOwnedByUser(User user) {
 		UserStory userStory = UserStory.fingByUserIdAndStoryId(user.getId(),this.id);
 		if (userStory != null)
 			return true;
@@ -468,7 +468,7 @@ public class Story extends Model {
 			Story story = location.getStory();
 			System.out.println("story : " + story);
 			if (story != null && story.isModelVersion(CURRENT_MODEL_VERSION)) {
-				if (story.isPublished() == 1 || story.isPublished() == 3 && story.getAuthor().isFollowedBy(currentuser)) {
+				if (story.isPublished() == 1 || story.isPublished() == 2 && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() != 0 && story.isOwnedByUser(currentuser)) {
 					Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
 					story.setDistance(distance);
 					stories.add(story);
