@@ -241,6 +241,18 @@ public class User extends Model {
 		this.deleteManyToManyAssociations("followingUsers");
 	}
 
+	public Boolean isFollowing(User u) {
+		if (this.followingUsers.contains(u))
+			return true;
+		return false;
+	}
+
+	public Boolean isFollowedBy(User u) {
+		if (this.followers.contains(u))
+			return true;
+		return false;
+	}
+
 	private static Finder<Long, User> finder = new Finder<Long, User>(Long.class, User.class);
 
 	public static User findByIdentityId(IdentityId identity){

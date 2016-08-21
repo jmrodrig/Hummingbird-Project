@@ -10,7 +10,7 @@ public class Story implements Comparable<Story> {
 	public String title;
 	public String summary;
 	public String content;
-	public boolean published;
+	public Integer published;
 	public Place place;
 	public User author;
 	public String thumbnail;

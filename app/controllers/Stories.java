@@ -62,9 +62,9 @@ public class Stories extends Controller {
 
 	@SecureSocial.UserAwareAction
 	public static Result listPublishedStoriesWithLocation(Double latitude, Double longitude, int index, int size){
-		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude);
-		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude,currentUser);
+		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
@@ -298,7 +298,7 @@ public class Stories extends Controller {
 	// }
 
 	@SecureSocial.SecuredAction
-	public static Result publishStory(Long storyId, Boolean published){
+	public static Result publishStory(Long storyId, Integer published){
 
 
 		models.Story story = models.Story.findById(storyId);
@@ -778,7 +778,7 @@ public class Stories extends Controller {
 		else if (publish == 1) publishStory = true;
 		for (models.Story story : collectionstories) {
 			if(storyCollection.collectionUsersOwnStory(story)) {
-				story.setPublished(publishStory);
+				//story.setPublished(publishStory);
 				story.save();
 			}
 		}

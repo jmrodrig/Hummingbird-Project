@@ -78,7 +78,7 @@ public class Story extends Model {
 	private double cost;
 
 	@Column(name = "published")
-	private boolean published;
+	private Integer published;
 
 	@Column(name = "thumbnail")
 	private String thumbnail;
@@ -192,6 +192,10 @@ public class Story extends Model {
 		// 	story.setSummary(summary);
 	}
 
+	public User getAuthor() {
+		return UserStory.fingByStoryIdAndIsAuthor(this.id, true).getUser();
+	}
+
 	public String getContent() {
 		return content;
 	}
@@ -247,11 +251,11 @@ public class Story extends Model {
 		this.path = path;
 	}
 
-	public boolean isPublished() {
+	public Integer isPublished() {
 		return published;
 	}
 
-	public void setPublished(boolean published) {
+	public void setPublished(Integer published) {
 		this.published = published;
 	}
 
@@ -451,23 +455,25 @@ public class Story extends Model {
 	}
 
 	public static List<models.Story> findAllByPublished() {
-		List<Story> stories = finder.where().eq("published", true)
+		List<Story> stories = finder.where().eq("published", 1)
 																				.eq("model_version", CURRENT_MODEL_VERSION)
 																				.findList();
 		return stories;
 	}
 
-	public static List<models.Story> findAllByPublishedWithLocation(Double lat, Double lng) {
+	public static List<models.Story> findAllByPublishedWithLocation(Double lat, Double lng, User currentuser) {
 		List<Story> stories = new ArrayList<Story>();
 		System.out.println("Location.finAll().size() : " + Location.findAll().size());
 		for (Location location : Location.findAll()) {
 			Story story = location.getStory();
 			System.out.println("story : " + story);
-			if (story != null && story.isPublished() && story.isModelVersion(CURRENT_MODEL_VERSION)) {
-				Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
-				story.setDistance(distance);
-				stories.add(story);
-				System.out.println("storyId : " + story.getId());
+			if (story != null && story.isModelVersion(CURRENT_MODEL_VERSION)) {
+				if (story.isPublished() == 1 || story.isPublished() == 3 && story.getAuthor().isFollowedBy(currentuser)) {
+					Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
+					story.setDistance(distance);
+					stories.add(story);
+					System.out.println("storyId : " + story.getId());
+				}
 			}
 		}
 		System.out.println("findAllByPublishedWithLocation result size : " + stories.size());
@@ -479,7 +485,7 @@ public class Story extends Model {
 		List<Story> stories = new ArrayList<Story>();
 		for (Location location : Location.findLocationsWithinBounds(w,n,e,s)) {
 			Story story = location.getStory();
-			if (story != null && story.isPublished() && !stories.contains(story) && story.isModelVersion(CURRENT_MODEL_VERSION)) {
+			if (story != null && story.isPublished() != 0 && !stories.contains(story) && story.isModelVersion(CURRENT_MODEL_VERSION)) {
 				stories.add(story);
 			}
 		}
@@ -490,7 +496,7 @@ public class Story extends Model {
 		return json;
 	}
 
-	public static Story create(User user, String title, String summary, String content, double cost, Boolean published, String filePath,
+	public static Story create(User user, String title, String summary, String content, double cost, Integer published, String filePath,
 								String locationName,
 								String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage,
 								controllers.json.Location location,
@@ -536,7 +542,7 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story create(User user, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations, List<String> labels)
+	public static Story create(User user, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations, List<String> labels)
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
 		Story story = new Story();
@@ -557,7 +563,7 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String content, Double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location, List<String> labels) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String content, Double cost, Integer published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
@@ -577,7 +583,7 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
@@ -589,7 +595,7 @@ public class Story extends Model {
 		return story;
 	}
 
-	private static void setStory(Story story, String title, String summary, String content, double cost, Boolean published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
+	private static void setStory(Story story, String title, String summary, String content, double cost, Integer published, String filePath, String locationName, String articleTitle, String articleDescription, String articleImage, String articleLink, String articleDate, String articleSource, String articleAuthor, String articleLanguage, controllers.json.Location location) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(content);
@@ -601,7 +607,7 @@ public class Story extends Model {
 		//story.setLocation(location);
 	}
 
-	private static void setStory(Story story, String title, String summary, String contentJSON, Boolean published, List<controllers.json.Location> locations) throws IOException {
+	private static void setStory(Story story, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(contentJSON);
