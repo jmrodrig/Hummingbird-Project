@@ -1,13 +1,42 @@
-@(story: controllers.json.Story)
+@(story: controllers.json.Story, location: String)
 
 <!DOCTYPE html>
 
 <html>
     <head>
-			<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/read.css")">
+			<link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/lir-logo.png")">
+			<meta name="keywords" content="Story,Storytelling,Location-based Storytelling,Travel,Travel App,App">
+			<script src="@routes.Assets.at("javascripts/jquery-1.12.1.min.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("flexigrid/js/flexigrid.pack.js")" type="text/javascript"></script>
+	    <script src="@routes.Assets.at("jquery-ui-1.11.4/jquery-ui.min.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("bootstrap-3.3.6/js/bootstrap.min.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("bootstrap-3.3.6/js/bootstrap.min.js")" type="text/javascript"></script>
+	    <script src="@routes.Assets.at("formplugin/js/jquery.form.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("javascripts/jshashtable-3.0.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("javascripts/jquery.json-2.4.min.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("javascripts/studs/serverconnector.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("javascripts/dropzone.js")" type="text/javascript"></script>
+			<script src="@routes.Assets.at("javascripts/googleAnalyticsTracker.js")" type="text/javascript"></script>
 
-			<script src="/assets/javascripts/controls/read-view-handlers.js" type="text/javascript"></script>
+			<!-- stylesheets -->
+	    <link rel="stylesheet" media="screen" href="@routes.Assets.at("jquery-ui-1.11.4/jquery-ui.min.css")">
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("flexigrid/css/flexigrid.pack.css")">
+			<link rel="stylesheet" href="@routes.Assets.at("jQuery-File-Upload-9.5.4/css/jquery.fileupload.css")">
+			<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap.min.css")">
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap.css")">
+			<!-- <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap-theme.min.css")"> -->
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/animations.css")">
 
+			<!-- icon font -->
+			<link rel="stylesheet" type="text/css" href="@routes.Assets.at("stylesheets/flaticon.css")">
+
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/read-mobile.css")">
+
+			<script src="/assets/javascripts/controls/read-mobile-view-handlers.js" type="text/javascript"></script>
+
+			<meta name="viewport" content="width=device-width; initial-scale=1.0; maximum-scale=1.0; minimum-scale=1.0; user-scalable=0;" />
+			<meta name="apple-mobile-web-app-capable" content="yes" />
 
 			<title>LIR | @story.title</title>
 			<meta name="description" content="@story.summary" />
@@ -25,9 +54,38 @@
 			<meta property="og:description" content="@story.summary" />
 
 			<meta property="fb:app_id" content="1494692634127358" />
+
+			<script>
+				var story = new Object();
+				story.id = @story.id;
+				story.title = "@story.title"
+				story.summary = "@story.summary"
+				story.published = "@story.published"
+				story.thumbnail = "@story.thumbnail"
+				story.author = new Object();
+				story.author.avatarUrl = "@story.author.avatarUrl"
+				story.author.fullName = "@story.author.fullName"
+				story.noOfLikes = "@story.noOfLikes"
+				story.noOfSaves = "@story.noOfSaves"
+				story.location = new Object();
+				if ("@location".length > 0)
+					story.location = JSON.parse("@location".replace(/&quot;/g,'"'));
+				if ("@story.content".length > 0)
+					story.content = JSON.parse("@story.content".replace(/&quot;/g,'"').replace(/\n/g,'\\n'));
+			</script>
+
 	</head>
 	<body>
+		<div id="banner-intro"></div>
 
-		
+		<div id="banner-app">
+			<span class="close-btn glyph-icon icon-no-margins icon-no-padding icon-15px flaticon-cross" onclick="hideAppBanner()"></span>
+			<div id="banner-app-logo"></div>
+			<p>Download the app:</p>
+			<a class="btn btn-success" href="/">APP</a>
+		</div>
+
+		<div id="story-body"></div>
+
 	</body>
 <html>

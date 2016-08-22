@@ -12,7 +12,7 @@
 	story.id = @story.id;
 	story.title = "@story.title"
 	story.summary = "@story.summary"
-	story.published = ("@story.published" == "true") ? true : false;
+	story.published = "@story.published"
 	story.thumbnail = "@story.thumbnail"
 	if ("@location".length > 0)
 		story.location = JSON.parse("@location".replace(/&quot;/g,'"'));

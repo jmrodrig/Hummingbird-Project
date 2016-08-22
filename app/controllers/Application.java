@@ -73,9 +73,15 @@ public class Application extends Controller {
 		return ok(views.html.dashboard.dashboard.render());
 	}
 
-	public static Result read(Long storyId) {
+	public static Result readMobile(Long storyId) {
 		models.Story story = models.Story.findById(storyId);
-		return ok(views.html.read.render(story));
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+		String jsonLocation;
+		if (jsonStory.location != null)
+			jsonLocation = new Gson().toJson(jsonStory.location);
+		else
+			jsonLocation = "";
+		return ok(views.html.readmobile.render(jsonStory,jsonLocation));
 	}
 
 	public static Result scraper() {

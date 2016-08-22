@@ -54,6 +54,8 @@ function buildStoryListItem(story) {
 		story.author.avatarUrl = defaultAvatarPic;
 	if (!story.thumbnail)
 		story.thumbnail = defaultthumbnail;
+	if (!story.locationName)
+		story.locationName = "(no location)";
 	var itemcontainer = $("<div class='story-item-container'></div>");
 	var locationcontainer = $("<div class='location-container'></div>").appendTo(itemcontainer);
 	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-placeholder"/>').appendTo(locationcontainer);
@@ -70,7 +72,15 @@ function buildStoryListItem(story) {
 	$("<p class='story-likes'></p>").appendTo(statscontainer).text(story.noOfLikes);
 	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-bookmark"></div>').appendTo(statscontainer);
 	$("<p class='story-saves'></p>").appendTo(statscontainer).text(story.noOfSaves);
+
+	itemcontainer.click(function() {
+		window.location.href = '/readmobile/' + story.id;
+	})
 	return itemcontainer;
+}
+
+function hideAppBanner() {
+	$('#banner-app').hide();
 }
 
 /******************************************************************
