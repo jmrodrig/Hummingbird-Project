@@ -1386,7 +1386,7 @@ function createStory() {
             article.author)
 	}
 
-	story.setPublished(true);
+	story.setPublished(1);
   //save story on server
 	stud_createStory(story.domainStory,function(st){
 		//upload story pics
@@ -1444,7 +1444,7 @@ function editStory() {
     story_.setArticle("","","","","","","");
   }
 
-	story_.setPublished(true);
+	story_.setPublished(1);
 
   //save story on server
 	stud_createStory(story_.domainStory,function(st){

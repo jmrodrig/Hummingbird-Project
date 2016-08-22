@@ -416,7 +416,7 @@ function buildStoryContainer(story) {
   //--- FOOTER ---//
 
   var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyContainerFooter);
-  if (story.published) {
+  if (story.published != 0) {
     // Stats: Likes and Saves
     $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
     $('<div class="story-stats-saves">' + story.noOfSaves + ' saves</div>').appendTo(storyStatsContainer);
@@ -566,7 +566,7 @@ function buildInstagramContainer(link,addToContainer,options) {
 }
 
 function openStoryView(story,option) {
-  if (option.edit || option.readonly && !story.published)
+  if (option.edit || option.readonly && story.published == 0)
     window.location.href = LIR_SERVER_URL + '/publisher/create/' + story.id;
   else if (option.new)
     window.location.href = LIR_SERVER_URL + '/story/create';
@@ -1059,7 +1059,7 @@ function createStory() {
   //set location name
   story.setLocationName(locationName);
 	story.setSummary(getStoryText($('#create-edit-open-story-view #story-text')));
-  story.setPublished(true);
+  story.setPublished(1);
   //setArticle
   if (article) {
 		story.setArticle(article.title,

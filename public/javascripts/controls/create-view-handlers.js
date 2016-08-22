@@ -578,7 +578,7 @@ function populateStoryPublishPane() {
   locationbanner = buildLocationBannerForPublishPane(loc);
   if (locationbanner)
     locationbanner.appendTo($("#story-header #story-location"))
-  if (story.published) {
+  if (story.published != 0) {
     $("#story-header #story-status").text("published");
     $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
   } else {
@@ -782,14 +782,14 @@ function saveStoryOnServer(onFinished) {
 }
 
 function publishStory() {
-  if (story.published == false) {
-    story.published = true;
+  if (story.published == 0) {
+    story.published = 1;
     saveStoryOnServer(function() {
       $("#story-header #story-status").text("published");
       $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
     });
   } else {
-    story.published = false;
+    story.published = 0;
     saveStoryOnServer(function() {
       $("#story-header #story-status").text("draft");
       $("#story-header #post-btn").removeClass('highlighted').text('Publish');
