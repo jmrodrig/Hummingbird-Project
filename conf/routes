@@ -49,8 +49,9 @@ GET   /tagsstartingwith=:value            controllers.Application.findLabelsStar
 
 #Stories
 
-#GET		/publishedstories											controllers.Stories.listPublishedStories()
-GET		/publishedstories/:latitude/:longitude/:index/:size			controllers.Stories.listPublishedStoriesWithLocation(latitude: Double, longitude: Double,index: Integer, size: Integer)
+GET	  /listpublicstories/:index/:size										                                      controllers.Stories.listPublicStories(index: Integer, size: Integer)
+GET	  /listpublicfollowingandprivatestories/:index/:size										                  controllers.Stories.listPublicFollowingAndPrivateStories(index: Integer, size: Integer)
+GET		/listpublicfollowingandprivatestorieswithlocation/:latitude/:longitude/:index/:size			controllers.Stories.listPublicFollowingAndPrivateStoriesWithLocation(latitude: Double, longitude: Double,index: Integer, size: Integer)
 GET		/storiesin/:w,:n,:e,:s				controllers.Stories.listPublishedStoriesWithinBounds(w: Double, n: Double, e: Double, s: Double)
 GET		/listuserstories														controllers.Stories.listCurrentUserStories()
 GET		/listusersavedstories														controllers.Stories.listCurrentUserSavedStories()

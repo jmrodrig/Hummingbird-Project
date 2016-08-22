@@ -454,10 +454,22 @@ public class Story extends Model {
 		return stories;
 	}
 
-	public static List<models.Story> findAllByPublished() {
+	public static List<models.Story> findAllByPublic() {
 		List<Story> stories = finder.where().eq("published", 1)
 																				.eq("model_version", CURRENT_MODEL_VERSION)
 																				.findList();
+		return stories;
+	}
+
+	public static List<models.Story> findAllByPublicFollowingAndPrivate(User currentuser) {
+		List<Story> stories = finder.where().isNotNull("published")
+																				.ne("published", 0)
+																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.findList();
+		for (Story st : stories) {
+			if (st.isPublished() == 3 && !st.isOwnedByUser(currentuser))
+				stories.remove(st);
+		}
 		return stories;
 	}
 

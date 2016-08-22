@@ -47,21 +47,59 @@ public class Stories extends Controller {
 	 */
 
 	@SecureSocial.UserAwareAction
-	public static Result listPublishedStories(){
-		List<models.Story> stories = models.Story.findAllByPublished();
-		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
+	public static Result listPublicStories(int index, int size){
+		List<models.Story> stories = models.Story.findAllByPublic();
+		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
 		System.out.println(currentUser);
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
-			result.add(jsonStory);
+			jsonstories.add(jsonStory);
 		}
-		String json = new Gson().toJson(result);
+
+		// sort by descending id (most recent story)
+		Collections.sort(jsonstories);
+		// sort by descending likes (most popular stories first)
+		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
+
+		if (jsonstories.size() > index+size) {
+			jsonstories = jsonstories.subList(index,index+size);
+		} else if (jsonstories.size() > index) {
+			jsonstories = jsonstories.subList(index,jsonstories.size());
+		}
+
+		String json = new Gson().toJson(jsonstories);
 		return ok(json);
 	}
 
 	@SecureSocial.UserAwareAction
-	public static Result listPublishedStoriesWithLocation(Double latitude, Double longitude, int index, int size){
+	public static Result listPublicFollowingAndPrivateStories(int index, int size){
+		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findAllByPublicFollowingAndPrivate(currentUser);
+		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
+		System.out.println(currentUser);
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			jsonstories.add(jsonStory);
+		}
+
+		// sort by descending id (most recent story)
+		Collections.sort(jsonstories);
+		// sort by descending likes (most popular stories first)
+		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
+
+		if (jsonstories.size() > index+size) {
+			jsonstories = jsonstories.subList(index,index+size);
+		} else if (jsonstories.size() > index) {
+			jsonstories = jsonstories.subList(index,jsonstories.size());
+		}
+
+		String json = new Gson().toJson(jsonstories);
+		return ok(json);
+	}
+
+	@SecureSocial.UserAwareAction
+	public static Result listPublicFollowingAndPrivateStoriesWithLocation(Double latitude, Double longitude, int index, int size){
 		User currentUser = getCurrentUser();
 		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude,currentUser);
 		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();

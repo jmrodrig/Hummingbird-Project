@@ -1,0 +1,221 @@
+
+/******************************************************************
+	Fonts
+******************************************************************/
+
+@import url(http://fonts.googleapis.com/css?family=Lato:100,300,400,700);
+
+@font-face {
+    font-family: "HarlowSolid";
+    src: url(../fonts/Harlow-Solid-Italic-Italic.ttf) format("truetype");
+}
+
+body {
+  overflow-y: hidden;
+}
+
+section{
+	position: relative;
+}
+
+h1, h2, h3, h4, p, a {
+	font-family: "Lato", "Helvetica Neue", Helvetica, Verdana, Arial, sans-serif;
+	text-decoration: none;
+	outline: none;
+	line-height: 1.6em;
+}
+
+.animate-transition {
+	-webkit-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
+}
+
+.modal-footer {
+	margin-top: 0px;
+	margin-top: 0px;
+	padding: 10px;
+}
+
+.list-group {
+    margin-bottom: 0px;
+}
+
+.hash-tag {
+  color: white;
+  background-color: #FF9393;
+  padding: 1px 5px;
+  border-radius: 7px;
+  box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.4);
+}
+
+.tag-list {
+  position: absolute;
+  min-width: 100px;
+  max-width: 400px;
+  background-color: #fff;
+  border: 1px solid #C3C3C3;
+  border-radius: 4px;
+  padding: 0px;
+}
+
+.tag-item {
+  display: block;
+  color: #aaa;
+  font-size: 12px;
+  padding: 0px 4px;
+  cursor: pointer;
+}
+
+.tag-item:hover {
+  background: #ddd;
+}
+
+/******************************************************************
+	Story container
+******************************************************************/
+
+#stories-list {
+
+}
+
+.story-item-container {}
+
+.location-container {}
+
+.story-location {}
+
+.story-thumbnail-container {}
+
+.story-details-container {}
+
+.story-title {}
+
+.story-author-container {}
+
+.story-author-thumbnail {}
+
+.story-author {}
+
+.story-summary {}
+
+.story-stats-container {}
+
+.story-likes {}
+
+.story-saves {}
+
+
+
+/******************************************************************
+	Message Windows
+******************************************************************/
+
+.alert-message {
+  position: relative;
+  top: 87%;
+  width: 40%;
+  margin: auto;
+  background: rgba(0, 0, 0, 0.7);
+  z-index: 400;
+  padding: 5px 10px;
+  border-radius: 5px;
+  opacity: 0;
+  -moz-box-shadow:     0px 5px 10px 2px rgba(1,1,1,.3);
+	-webkit-box-shadow:  0px 5px 10px 2px rgba(1,1,1,.3);
+	box-shadow: 0px 5px 10px 2px rgba(1,1,1,.3);
+  pointer-events: none;
+  text-align: center;
+}
+
+.alert-message p {
+  color: #fff;
+  font-size: 12px;
+  margin: 0px;
+}
+
+/******************************************************************
+	Icons
+******************************************************************/
+
+.glyph {
+	display: inline-block;
+	font-family:"Flaticon";
+	line-height: 1;
+	margin-left:0px;
+	vertical-align:middle;
+}
+
+.glyph:before {
+	margin-left:0px;
+	font-size: 20px;
+}
+
+.glyph-icon {
+	padding: 10px;
+	display: inline-block;
+	font-family:"Flaticon";
+	vertical-align:middle;
+}
+
+.icon-no-padding {
+  padding: 0 !important;
+}
+
+.icon-no-margins::before {
+  margin:0px !important;
+}
+
+.icon-round-borders {
+  border-radius: 100%;
+}
+
+.icon-shadow {
+  -moz-box-shadow:     0px 0px 10px rgba(1,1,1,.4);
+	-webkit-box-shadow:  0px 0px 10px rgba(1,1,1,.4);
+	box-shadow:          0px 0px 10px rgba(1,1,1,.4);
+}
+
+.icon-50px.glyph-icon:before, .icon-xxxlarge.glyph:before, .icon-50px.glyph:before {
+	font-size: 50px;
+}
+
+.icon-40px.glyph-icon:before, .icon-xxlarge.glyph:before, .icon-40px.glyph:before {
+	font-size: 40px;
+}
+
+.icon-30px.glyph-icon:before, .icon-xlarge.glyph:before, .icon-30px.glyph:before {
+	font-size: 30px;
+}
+
+.icon-25px.glyph-icon:before, .icon-large.glyph:before, .icon-25px.glyph:before {
+	font-size: 25px;
+}
+
+.icon-20px.glyph-icon:before, .icon-medium.glyph:before, .icon-20px.glyph:before {
+	font-size: 20px;
+}
+
+.icon-15px.glyph-icon:before, .icon-small.glyph:before, .icon-15px.glyph:before {
+	font-size: 15px;
+}
+
+.icon-10px.glyph-icon:before, .icon-xsmall.glyph:before, .icon-10px.glyph:before {
+	font-size: 10px;
+}
+
+.icon-8px.glyph-icon:before {
+	font-size: 8px;
+}
+
+/******************************************************************
+	Animations
+******************************************************************/
+
+.animate-transition {
+	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+}

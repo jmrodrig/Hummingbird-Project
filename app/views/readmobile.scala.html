@@ -1,0 +1,33 @@
+@(story: controllers.json.Story)
+
+<!DOCTYPE html>
+
+<html>
+    <head>
+			<link rel="stylesheet" media="screen" href="@routes.Assets.at("stylesheets/read.css")">
+
+			<script src="/assets/javascripts/controls/read-view-handlers.js" type="text/javascript"></script>
+
+
+			<title>LIR | @story.title</title>
+			<meta name="description" content="@story.summary" />
+
+			<!-- Twitter Card data -->
+			<meta name="twitter:site" content="http://www.lostinreality.io/@@storyid=@story.id">
+			<meta name="twitter:title" content="@story.title">
+			<meta name="twitter:description" content="@story.summary">
+			<meta name="twitter:image" content="http://www.lostinreality.io@story.thumbnail">
+			<!-- Open Graph data -->
+			<meta property="og:title" content="@story.title" />
+			<meta property="og:type" content="article" />
+			<meta property="og:url" content="http://www.lostinreality.io/@@storyid=@story.id"/>
+			<meta property="og:image" content="http://www.lostinreality.io@story.thumbnail" />
+			<meta property="og:description" content="@story.summary" />
+
+			<meta property="fb:app_id" content="1494692634127358" />
+	</head>
+	<body>
+
+		
+	</body>
+<html>

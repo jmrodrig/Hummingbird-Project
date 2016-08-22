@@ -65,6 +65,10 @@ section {
 	vertical-align:middle;
 }
 
+.icon-no-padding {
+  padding: 0 !important;
+}
+
 .icon-no-margins::before {
   margin:0px !important;
 }
