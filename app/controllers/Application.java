@@ -73,7 +73,7 @@ public class Application extends Controller {
 		return ok(views.html.dashboard.dashboard.render());
 	}
 
-	public static Result readMobile(Long storyId) {
+	public static Result readStory(Long storyId) {
 		models.Story story = models.Story.findById(storyId);
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
 		String jsonLocation;
@@ -81,7 +81,14 @@ public class Application extends Controller {
 			jsonLocation = new Gson().toJson(jsonStory.location);
 		else
 			jsonLocation = "";
-		return ok(views.html.readmobile.render(jsonStory,jsonLocation));
+		String userAgent = request().getHeader("User-Agent").toLowerCase();
+		Pattern reg_b = Pattern.compile(REGEX_B,Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+		Pattern reg_v = Pattern.compile(REGEX_V,Pattern.CASE_INSENSITIVE | Pattern.MULTILINE);
+		if (reg_b.matcher(userAgent).find() || reg_v.matcher(userAgent.substring(0,4)).find())
+			return ok(views.html.readmobile.render(jsonStory,jsonLocation));
+		else
+			return ok(views.html.index.render(jsonStory,jsonStory.location));
+
 	}
 
 	public static Result scraper() {

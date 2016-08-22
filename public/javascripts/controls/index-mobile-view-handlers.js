@@ -74,7 +74,7 @@ function buildStoryListItem(story) {
 	$("<p class='story-saves'></p>").appendTo(statscontainer).text(story.noOfSaves);
 
 	itemcontainer.click(function() {
-		window.location.href = '/readmobile/' + story.id;
+		window.location.href = '/story/' + story.id;
 	})
 	return itemcontainer;
 }
