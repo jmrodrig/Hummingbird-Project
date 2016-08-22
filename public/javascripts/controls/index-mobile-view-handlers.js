@@ -56,19 +56,19 @@ function buildStoryListItem(story) {
 		story.thumbnail = defaultthumbnail;
 	var itemcontainer = $("<div class='story-item-container'></div>");
 	var locationcontainer = $("<div class='location-container'></div>").appendTo(itemcontainer);
-	$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-location"></div>').appendTo(locationcontainer);
+	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-placeholder"/>').appendTo(locationcontainer);
 	$("<p class='story-location'></p>").appendTo(locationcontainer).text(story.locationName);
-	var thumbnailcontainer = $("<div class='pull-left story-thumbnail-container'></div>").css('background-image','url(' + story.thumbnail + ')').appendTo(itemcontainer);
+	var thumbnailcontainer = $("<div class='story-thumbnail-container'></div>").css('background-image','url(' + story.thumbnail + ')').appendTo(itemcontainer);
 	var detailscontainer = $("<div class='story-details-container'></div>").appendTo(itemcontainer);
-	$("<h2 class='story-title'></h2>").text(story.title).appendTo(detailscontainer);
-	var authorcontainer = $("<div class='story-author-container'></div>").appendTo(itemcontainer);
+	$("<p class='story-title'></p>").text(story.title).appendTo(detailscontainer);
+	var authorcontainer = $("<div class='story-author-container'></div>").appendTo(detailscontainer);
 	$("<div class='pull-left story-author-thumbnail'></div>").css('background-image','url(' + story.author.avatarUrl + ')').appendTo(authorcontainer);
 	$("<p class='story-author'></p>").appendTo(authorcontainer).text(story.author.fullName);
-	$("<p class='story-summary'></p>").appendTo(itemcontainer).text(story.summary);
-	var statscontainer = $("<div class='story-stats-container'></div>").appendTo(itemcontainer);
-	$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-location"></div>').appendTo(statscontainer);
+	$("<p class='story-summary'></p>").appendTo(detailscontainer).text(story.summary);
+	var statscontainer = $("<div class='story-stats-container'></div>").appendTo(detailscontainer);
+	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-like"></div>').appendTo(statscontainer);
 	$("<p class='story-likes'></p>").appendTo(statscontainer).text(story.noOfLikes);
-	$('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-location"></div>').appendTo(statscontainer);
+	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-bookmark"></div>').appendTo(statscontainer);
 	$("<p class='story-saves'></p>").appendTo(statscontainer).text(story.noOfSaves);
 	return itemcontainer;
 }

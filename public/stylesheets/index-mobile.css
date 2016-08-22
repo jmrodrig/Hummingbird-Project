@@ -10,8 +10,13 @@
     src: url(../fonts/Harlow-Solid-Italic-Italic.ttf) format("truetype");
 }
 
+/******************************************************************
+	General
+******************************************************************/
+
 body {
   overflow-y: hidden;
+  background-color: #e8e8e8;
 }
 
 section{
@@ -25,86 +30,100 @@ h1, h2, h3, h4, p, a {
 	line-height: 1.6em;
 }
 
-.animate-transition {
-	-webkit-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-moz-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-o-transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
-	transition: all 0.3s cubic-bezier(0.215, 0.61, 0.355, 1);
-}
-
-.modal-footer {
-	margin-top: 0px;
-	margin-top: 0px;
-	padding: 10px;
-}
-
-.list-group {
-    margin-bottom: 0px;
-}
-
-.hash-tag {
-  color: white;
-  background-color: #FF9393;
-  padding: 1px 5px;
-  border-radius: 7px;
-  box-shadow: 1px 1px 2px 0px rgba(0,0,0,0.4);
-}
-
-.tag-list {
-  position: absolute;
-  min-width: 100px;
-  max-width: 400px;
-  background-color: #fff;
-  border: 1px solid #C3C3C3;
-  border-radius: 4px;
-  padding: 0px;
-}
-
-.tag-item {
-  display: block;
-  color: #aaa;
-  font-size: 12px;
-  padding: 0px 4px;
-  cursor: pointer;
-}
-
-.tag-item:hover {
-  background: #ddd;
-}
-
 /******************************************************************
 	Story container
 ******************************************************************/
 
 #stories-list {
-
 }
 
-.story-item-container {}
+.story-item-container {
+  position: relative;
+  height: 120px;
+  overflow: hidden;
+  margin: 10px;
+  border-radius: 10px;
+  background-color: #fff;
+}
 
-.location-container {}
+.location-container {
+  text-align: center;
+  text-align: center;
+  border-bottom: 1px solid #ccc;
+}
 
-.story-location {}
+.story-location {
+  display: inline-block;
+  font-size: 12px;
+  font-weight: 300;
+  padding-left: 3px;
+  margin: 0px;
+  color: #adadad;
+}
 
-.story-thumbnail-container {}
+.story-thumbnail-container {
+  float: left;
+  width: 35%;
+  height: 100px;
+  background-size: cover;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-.story-details-container {}
+.story-details-container {
+  float: left;
+  padding: 3px;
+  width: 65%;
+}
 
-.story-title {}
+.story-title {
+  font-size: 16px;
+  font-weight: 300;
+  margin: 0px;
+}
 
 .story-author-container {}
 
-.story-author-thumbnail {}
+.story-author-thumbnail {
+  width: 16px;
+  height: 16px;
+  border-radius: 100%;
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
-.story-author {}
+.story-author {
+  font-size: 11px;
+  color: #aaa;
+  margin: 0px;
+  margin-left: 20px;
+}
 
-.story-summary {}
+.story-summary {
+  clear: both;
+  font-size: 11px;
+  margin: 0;
+  height: 35px;
+}
 
-.story-stats-container {}
+.story-stats-container {
+  text-align: center;
+  font-size: 11px;
+  color: #aaa;
+}
 
-.story-likes {}
+.story-stats-container * {
+  display: inline-block;
+  padding: 0px 3px;
+}
 
-.story-saves {}
+.story-likes {
+  margin-right: 10px;
+}
+
+.story-saves {
+}
 
 
 
@@ -156,7 +175,6 @@ h1, h2, h3, h4, p, a {
 	padding: 10px;
 	display: inline-block;
 	font-family:"Flaticon";
-	vertical-align:middle;
 }
 
 .icon-no-padding {
