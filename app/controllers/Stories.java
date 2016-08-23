@@ -362,7 +362,7 @@ public class Stories extends Controller {
 		return ok(json);
 	}
 
-	public static Result readStory(Long storyId) {
+	public static Result loadStory(Long storyId) {
 		models.User user = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
