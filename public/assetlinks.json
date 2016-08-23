@@ -1,0 +1,9 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "io.lostinreality.lir_android_app",
+    "sha256_cert_fingerprints":
+    ["A8:B0:40:BF:93:84:41:55:22:AA:F4:43:5E:30:97:9E:E2:7F:CC:AD:04:32:EE:29:19:62:7F:B9:46:A3:4A:09"]
+  }
+}]

@@ -98,6 +98,7 @@ GET 	/testajax													controllers.Application.testAjax()
 # Map static resources from the /public folder to the /assets URL path
 GET     /assets/*file               controllers.Assets.at(path="/public", file)
 GET     /uploads/*file              controllers.UploadedAssets.at(path="/private/upload", file)
+GET     /.well-known/assetlinks.json        controllers.Assets.at(path="/public", file="assetlinks.json")
 
 # Login page
 GET     /login                      securesocial.controllers.LoginPage.login
