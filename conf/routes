@@ -57,7 +57,7 @@ GET		/listusersavedstories														controllers.Stories.listCurrentUserSaved
 GET		/listuserstories/:numberId														controllers.Stories.listUserStories(numberId: Long)
 GET		/listusersavedstories/:numberId														controllers.Stories.listUserSavedStories(numberId: Long)
 GET		/story/:storyId												controllers.Application.readStory(storyId: Long)
-GET		/story/load/:storyId												controllers.Application.loadStory(storyId: Long)
+GET		/story/load/:storyId												controllers.Stories.loadStory(storyId: Long)
 DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
 GET	  /story/create														controllers.Application.createStory()
 POST	/story/createMobile											controllers.Application.createStoryMobile()
