@@ -19,14 +19,19 @@ STORY_SUBTITLE = 12;
 
 $(function() {
 	loadStories(function(stories) {
-		drawStoryList(stories);
+		setTimeout(function() {
+			$('#banner-intro').animate({opacity: .2}, 500,"easeOutQuart", function() {
+				drawStoryList(stories);
+				$("#stories-list").css('top',0);
+			});
+		},1000)
 	});
 })
 
 function loadStories(onFinished) {
   stud_readPublicStories(0,20,function(stories) {
 		indexStories = stories;
-		if (indexStories.length == 0) displayAlertMessage('There are no stories here');
+		if (indexStories.length == 0) displayAlertMessage('There are no stories published.');
 		if (onFinished) onFinished(stories);
   });
 }

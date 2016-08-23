@@ -34,6 +34,9 @@ h1, h2, h3, h4, p, a {
 ******************************************************************/
 
 #stories-list {
+  position: absolute;
+  width: 100%;
+  top: 100%;
 }
 
 .story-item-container {
@@ -157,6 +160,19 @@ h1, h2, h3, h4, p, a {
 /******************************************************************
 	Banners
 ******************************************************************/
+
+#banner-intro {
+  position: fixed;
+  left: 50%;
+  top: 100px;
+  width: 300px;
+  height: 400px;
+  margin-left: -150px;
+  background-image: url("/assets/images/banner-lir-mobile.png");
+  background-size: contain;
+  background-position: center;
+  background-repeat: no-repeat;
+}
 
 #banner-app {
   position: fixed;
