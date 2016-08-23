@@ -295,7 +295,9 @@ p.picture-caption:empty:not([readonly])::before {
 }
 
 #banner-app a {
-  width: 100px;
+  position: absolute;
+  width: 90px;
+  right: 30px;
   margin-top: 4px;
   margin-left: 20px;
 }
