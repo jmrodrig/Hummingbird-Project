@@ -98,8 +98,11 @@ public class Story implements Comparable<Story> {
 		if (story == null)
 			return null;
 		Story result = getStory(story,forceReadDomainStory);
-		if (currentUser == null)
+		if (currentUser == null) {
+			System.out.println("currentUser == null");
 			return result;
+		}
+
 		result.currentUserLikesStory = (models.Like.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 		result.currentUserSavedStory = (models.SavedStory.findByUserIdAndStoryId(currentUser.getId(), story.getId()) != null) ? true : false;
 		if (currentUser.getNumberId() == result.author.numberId)
