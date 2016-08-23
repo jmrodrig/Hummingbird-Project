@@ -571,7 +571,7 @@ function openStoryView(story,option) {
   else if (option.new)
     window.location.href = LIR_SERVER_URL + '/story/create';
   else if (option.readonly)
-    window.location.href = LIR_SERVER_URL + '/history/storyid=' + story.id;
+    window.location.href = LIR_SERVER_URL + '/story/' + story.id;
 }
 
 // Open collection creation modal

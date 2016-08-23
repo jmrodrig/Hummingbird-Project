@@ -34,7 +34,7 @@ function stud_updateStory(story, success, error){
 
 function stud_readStory(storyId, success, error){
 	$.ajax({
-		url: "/story/" + storyId,
+		url: "/story/load/" + storyId,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -45,7 +45,7 @@ function stud_readStory(storyId, success, error){
 
 function stud_publishStory(storyId, publish, success, error){
 	$.ajax({
-		url: "/story/" + storyId + "/publish/" + publish,
+		url: "/story//publish/" + storyid + "/" + publish,
 		type: "POST",
 		dataType: "json",
 		// contentType:"application/json",
@@ -220,7 +220,7 @@ function stud_readUserStories(success, error){
 
 function stud_readPublishedStories(success, error){
 	$.ajax({
-		url: "/publishedstories",
+		url: "/listpublicstories",
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
