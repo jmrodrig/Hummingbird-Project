@@ -362,6 +362,7 @@ public class Stories extends Controller {
 		return ok(json);
 	}
 
+	@SecureSocial.UserAwareAction
 	public static Result loadStory(Long storyId) {
 		models.User user = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
