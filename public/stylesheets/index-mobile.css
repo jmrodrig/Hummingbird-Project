@@ -34,9 +34,7 @@ h1, h2, h3, h4, p, a {
 ******************************************************************/
 
 #stories-list {
-  position: absolute;
-  width: 100%;
-  top: 100%;
+  opacity: 0;
 }
 
 .story-item-container {
@@ -60,7 +58,7 @@ h1, h2, h3, h4, p, a {
   font-weight: 300;
   padding-left: 3px;
   margin: 0px;
-  color: #adadad;
+  color: #1f1f1f;
 }
 
 .story-thumbnail-container {
@@ -83,6 +81,7 @@ h1, h2, h3, h4, p, a {
   font-weight: 300;
   margin: 0px;
   height: 25px;
+  overflow: hidden;
 }
 
 .story-author-container {}
@@ -98,7 +97,7 @@ h1, h2, h3, h4, p, a {
 
 .story-author {
   font-size: 11px;
-  color: #aaa;
+  color: #a2a2a2;
   margin: 0px;
   margin-left: 20px;
 }
@@ -108,12 +107,13 @@ h1, h2, h3, h4, p, a {
   font-size: 11px;
   margin: 0;
   height: 35px;
+  overflow: hidden;
 }
 
 .story-stats-container {
   text-align: center;
   font-size: 11px;
-  color: #aaa;
+  color: #1f1f1f;
 }
 
 .story-stats-container * {
@@ -166,7 +166,7 @@ h1, h2, h3, h4, p, a {
   left: 50%;
   top: 100px;
   width: 300px;
-  height: 400px;
+  height: 270px;
   margin-left: -150px;
   background-image: url("/assets/images/banner-lir-mobile.png");
   background-size: contain;
@@ -208,7 +208,9 @@ h1, h2, h3, h4, p, a {
 }
 
 #banner-app a {
-  width: 100px;
+  position: absolute;
+  width: 90px;
+  right: 30px;
   margin-top: 4px;
   margin-left: 20px;
 }

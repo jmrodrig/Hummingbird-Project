@@ -22,7 +22,7 @@ $(function() {
 		setTimeout(function() {
 			$('#banner-intro').animate({opacity: .2}, 500,"easeOutQuart", function() {
 				drawStoryList(stories);
-				$("#stories-list").css('top',0);
+				$("#stories-list").css('opacity',1);
 			});
 		},1000)
 	});
