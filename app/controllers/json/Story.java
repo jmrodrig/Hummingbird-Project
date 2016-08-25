@@ -168,10 +168,10 @@ public class Story implements Comparable<Story> {
 
 	private void checkIfPicturesAreUploadedOnServer() {
 		System.out.println("Story CONTENT (before checkIfPicturesAreUploadedOnServer): " + this.content);
+		if (this.content == null) return;
 		String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
 		ContentSection[] contentarray = new Gson().fromJson(this.content, ContentSection[].class);
 		List<ContentSection> content = new LinkedList<ContentSection>(Arrays.asList(contentarray));
-		if (content == null) return;
     for (ContentSection section : content) {
         if (section.type == Constants.HEADER_SECTION && section.link != null) {
 					File picturefile = new File(uploadPath + section.link);
