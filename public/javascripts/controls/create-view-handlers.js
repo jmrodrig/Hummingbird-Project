@@ -456,7 +456,7 @@ $(function() {
 
     fileReader.onload = function(ev2) {
       uploadImageToServer(function(data) {
-        addPicture(data[0])
+        addPicture(data.imageFileNames[0])
       });
       $("#image-upload-input").replaceWith($("#image-upload-input").val('').clone(true));
     };

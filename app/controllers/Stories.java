@@ -35,6 +35,8 @@ import controllers.utils.Base64;
 
 import com.google.gson.Gson;
 import com.google.gson.JsonObject;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonPrimitive;
 import com.lir.library.domain.Story;
 import play.mvc.BodyParser;
 
@@ -531,7 +533,17 @@ public class Stories extends Controller {
 			}
 		}
 
-		String json_ = new Gson().toJson(uploadedImageFileNames);
+		JsonArray jsonarray = new JsonArray();
+		for (String fname : uploadedImageFileNames) {
+			jsonarray.add(new JsonPrimitive(fname));
+		}
+
+		JsonObject json = new JsonObject();
+		json.addProperty("storyId", storyId);
+  	json.add("imageFileNames", jsonarray);
+
+
+		String json_ = new Gson().toJson(json);
 		return ok(json_);
 	}
 
