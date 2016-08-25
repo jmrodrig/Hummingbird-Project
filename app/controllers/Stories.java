@@ -340,7 +340,7 @@ public class Stories extends Controller {
 	@SecureSocial.SecuredAction
 	public static Result publishStory(Long storyId, Integer published){
 
-
+		models.User currentuser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
 			return badRequest("Invalid story id");
@@ -356,7 +356,7 @@ public class Stories extends Controller {
 		story.setPublished(published);
 		story.save(DBConstants.lir_backoffice);
 
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentuser, false);
 		jsonStory.author = controllers.json.User.getUser(UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
 		jsonStory.noOfLikes = Like.findByStoryId(story.getId()).size();
 		jsonStory.noOfSaves = SavedStory.findByStoryId(story.getId()).size();
@@ -366,12 +366,12 @@ public class Stories extends Controller {
 
 	@SecureSocial.UserAwareAction
 	public static Result loadStory(Long storyId) {
-		models.User user = getCurrentUser();
+		models.User currentuser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
 			return badRequest("Invalid story id");
 		}
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, true);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentuser, true);
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}
@@ -405,6 +405,7 @@ public class Stories extends Controller {
 	@SecureSocial.SecuredAction
 	public static Result updateStory(Long storyId) throws IOException, ModelNotFountException {
 		System.out.println("Update Story: " + storyId);
+		models.User currentuser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
 			return badRequest("Invalid story id");
@@ -420,7 +421,7 @@ public class Stories extends Controller {
 												jsonStory.locations,
 												jsonStory.labels);
 
-		jsonStory = controllers.json.Story.getStory(story, false);
+		jsonStory = controllers.json.Story.getStory(story, currentuser, false);
 		String json = new Gson().toJson(jsonStory);
 
 		return ok(json);
