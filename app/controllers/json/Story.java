@@ -167,6 +167,7 @@ public class Story implements Comparable<Story> {
 	};
 
 	private void checkIfPicturesAreUploadedOnServer() {
+		System.out.println("Story CONTENT (before checkIfPicturesAreUploadedOnServer): " + this.content);
 		String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
 		ContentSection[] contentarray = new Gson().fromJson(this.content, ContentSection[].class);
 		List<ContentSection> content = new LinkedList<ContentSection>(Arrays.asList(contentarray));
@@ -176,15 +177,18 @@ public class Story implements Comparable<Story> {
 					File picturefile = new File(uploadPath + section.link);
 					section.linkUploadState = picturefile.exists();
         } else {
-            for (ContentItem item : section.content) {
-                if (item.type == Constants.PICTURE_CONTAINER && item.link != null) {
-									File picturefile = new File(uploadPath + item.link);
-									item.linkUploadState = picturefile.exists();
-								}
-            }
+						if (section.content != null) {
+	            for (ContentItem item : section.content) {
+	                if (item.type == Constants.PICTURE_CONTAINER && item.link != null) {
+										File picturefile = new File(uploadPath + item.link);
+										item.linkUploadState = picturefile.exists();
+									}
+	            }
+						}
         }
     }
     this.content = new Gson().toJson(content);
+		System.out.println("Story CONTENT (after checkIfPicturesAreUploadedOnServer): " + this.content);
 	}
 
 	public static class ContentSection {
