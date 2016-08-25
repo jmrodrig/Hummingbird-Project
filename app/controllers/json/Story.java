@@ -1,7 +1,13 @@
 package controllers.json;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Comparator;
+import play.api.Play;
+import com.google.gson.Gson;
+import models.utils.Constants;
+import java.io.File;
 
 import com.lir.library.domain.Post;
 
@@ -91,6 +97,8 @@ public class Story implements Comparable<Story> {
 		for (models.Location l : story.getLocations()) {
 			result.locations.add(controllers.json.Location.getLocation(l));
 		}
+
+		result.checkIfPicturesAreUploadedOnServer();
 		return result;
 	}
 
@@ -158,55 +166,41 @@ public class Story implements Comparable<Story> {
 
 	};
 
+	private void checkIfPicturesAreUploadedOnServer() {
+		String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
+		ContentSection[] contentarray = new Gson().fromJson(this.content, ContentSection[].class);
+		List<ContentSection> content = new LinkedList<ContentSection>(Arrays.asList(contentarray));
+		if (content == null) return;
+    for (ContentSection section : content) {
+        if (section.type == Constants.HEADER_SECTION && section.link != null) {
+					File picturefile = new File(uploadPath + section.link);
+					section.linkUploadState = picturefile.exists();
+        } else {
+            for (ContentItem item : section.content) {
+                if (item.type == Constants.PICTURE_CONTAINER && item.link != null) {
+									File picturefile = new File(uploadPath + item.link);
+									item.linkUploadState = picturefile.exists();
+								}
+            }
+        }
+    }
+    this.content = new Gson().toJson(content);
+	}
+
 	public static class ContentSection {
-				private Long id;
-        private int type;
-        private Location location;
-        private ContentItem[] content;
+		public long id;
+		public int type;
+		public String link;
+		public Boolean linkUploadState;
+		public Location location;
+		public ContentItem[] content;
+  }
 
-				public Long getId() { return id; }
-
-        public int getType() { return type; }
-
-        public Location getLocation() { return location; }
-
-        public ContentItem[] getContent() { return content; }
-
-        public void setType(int t) { this.type = t; }
-
-        public void setLocation(Location l) { this.location = l; }
-
-        public void setContent(ContentItem[] cnt) { this.content = cnt; }
-    }
-
-    public static class ContentItem {
-        private int type;
-        private String text;
-        private String link;
-        private String position;
-
-        public int getType() { return type; }
-
-        public String getText() { return text; }
-
-        public String getPosition() {
-            return position;
-        }
-
-        public String getLink() {
-            return link;
-        }
-
-        public void setType(int t) { this.type = t; }
-
-        public void setText(String txt) { this.text = txt; }
-
-        public void setPosition(String pstn) {
-            this.position = pstn;
-        }
-
-        public void setLink( String lnk) {
-            this.link = lnk;
-        }
-    }
+  public static class ContentItem {
+    public int type;
+    public String text;
+    public String link;
+    public String position;
+		public Boolean linkUploadState;
+  }
 }

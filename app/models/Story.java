@@ -252,7 +252,7 @@ public class Story extends Model {
 	}
 
 	public Integer isPublished() {
-		if (published == null) return 0; 
+		if (published == null) return 0;
 		return published;
 	}
 
@@ -272,7 +272,7 @@ public class Story extends Model {
 		System.out.println("Story CONTENT (before location set): " + this.getContent());
 		controllers.json.Story.ContentSection[] jsonContent = new Gson().fromJson(contentString, controllers.json.Story.ContentSection[].class);
 		for (controllers.json.Story.ContentSection section : jsonContent) {
-			controllers.json.Location jsonlocation = section.getLocation();
+			controllers.json.Location jsonlocation = section.location;
 			if (jsonlocation != null) {
 				Location location = Location.findByIdAndStoryId(jsonlocation.id,this.getId());
 				System.out.println("Found location with id " + jsonlocation.id + "?: " + location);
