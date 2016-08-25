@@ -505,7 +505,7 @@ function buildStorySmallContainer(story,options) {
 
   if (story.thumbnail && story.thumbnail.length > 0) {
     $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',story.thumbnail);
+                                                  .attr('src',PICTURES_SERVER_PATH + story.thumbnail);
   }
 
   if (!story.summary || story.summary && story.summary.length == 0)
@@ -597,7 +597,7 @@ function buildStoryContent(story,options) {
 	var storysummary = $('<p class="story-summary"></p>').text(story.summary);
 	var placeholderoverlay = $('<div class="placeholder-overlay"></div>');
 	var detailsoverlay = $('<div class="details-overlay"></div>');
-	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + story.thumbnail + ')')
+	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')')
 	detailsoverlay.append(storytitle);
 	detailsoverlay.append(storysummary);
 	storythumbnailandcontainer.append(placeholderoverlay);
@@ -677,7 +677,7 @@ function buildPictureFrame(link,caption,pos,options) {
   var picContainer = $("<div class='section-item picture-container' readonly/>");
   var position = (pos) ? pos : "center"
   var picFrame = $("<div class='picture-frame' position='" + position + "'/>").appendTo(picContainer);
-  $('<img src=' + link + '>').appendTo(picFrame);
+  $('<img src=' + PICTURES_SERVER_PATH + link + '>').appendTo(picFrame);
 
 	if (options.editable) {
 		picContainer.removeAttr('readonly');
@@ -1969,7 +1969,7 @@ function updatePageHistory(story) {
 	stateObj = {"latitude":center.lat(),"longitude":center.lng(),"zoom":zoom};
 	if (story) {
 		stateObj.story = story;
-		var stateUrl = LIR_SERVER_URL + '/history/storyid=' + story.id;
+		var stateUrl = LIR_SERVER_URL + '/story/read/' + story.id;
 		window.history.pushState(stateObj,"", stateUrl);
 	} else {
 		var stateUrl = LIR_SERVER_URL + '/history/' + center.lat() + ',' + center.lng() + ',' + zoom;

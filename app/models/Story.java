@@ -252,6 +252,7 @@ public class Story extends Model {
 	}
 
 	public Integer isPublished() {
+		if (published == null) return 0; 
 		return published;
 	}
 
@@ -620,6 +621,7 @@ public class Story extends Model {
 	}
 
 	private static void setStory(Story story, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations) throws IOException {
+		System.out.println("models.Story.setStory...");
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(contentJSON);

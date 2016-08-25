@@ -65,7 +65,7 @@ function buildStoryListItem(story) {
 	var locationcontainer = $("<div class='location-container'></div>").appendTo(itemcontainer);
 	$('<span class="glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-placeholder"/>').appendTo(locationcontainer);
 	$("<p class='story-location'></p>").appendTo(locationcontainer).text(story.locationName);
-	var thumbnailcontainer = $("<div class='story-thumbnail-container'></div>").css('background-image','url(' + story.thumbnail + ')').appendTo(itemcontainer);
+	var thumbnailcontainer = $("<div class='story-thumbnail-container'></div>").css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')').appendTo(itemcontainer);
 	var detailscontainer = $("<div class='story-details-container'></div>").appendTo(itemcontainer);
 	$("<p class='story-title'></p>").text(story.title).appendTo(detailscontainer);
 	var authorcontainer = $("<div class='story-author-container'></div>").appendTo(detailscontainer);
@@ -79,7 +79,7 @@ function buildStoryListItem(story) {
 	$("<p class='story-saves'></p>").appendTo(statscontainer).text(story.noOfSaves);
 
 	itemcontainer.click(function() {
-		window.location.href = '/story/' + story.id;
+		window.location.href = '/story/read/' + story.id;
 	})
 	return itemcontainer;
 }

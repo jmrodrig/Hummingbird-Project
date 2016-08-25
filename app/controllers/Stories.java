@@ -402,14 +402,14 @@ public class Stories extends Controller {
 
 	@SecureSocial.SecuredAction
 	public static Result updateStory(Long storyId) throws IOException, ModelNotFountException {
-
+		System.out.println("Update Story: " + storyId);
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) {
 			return badRequest("Invalid story id");
 		}
-
+		System.out.println("Request Body: " + request().body().asJson().toString());
 		controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
-
+		System.out.println("jsonstory: " + jsonStory);
 		story = models.Story.update( storyId,
 												jsonStory.title,
 												jsonStory.summary,
@@ -497,52 +497,42 @@ public class Stories extends Controller {
 		}
 
 		MultipartFormData body = request().body().asMultipartFormData();
+		List<String> uploadedImageFileNames = new ArrayList<>();
 		List<FilePart> imageFileParts = body.getFiles();
 		for (FilePart imageFilePart : imageFileParts) {
 			if (imageFilePart != null) {
 				File imageFile = imageFilePart.getFile();
-				//String imageName = imageFilePart.getFilename().replace(" ","_");
-				String[] filenameparts = imageFilePart.getFilename().split("\\.");
-				String fileextension = filenameparts[filenameparts.length-1];
-
-				Long time= new java.util.Date().getTime();
-				String imageName = "image_story_" + storyId + "_" + time + "." + fileextension;
-
-
-				//String fileSrc = "images/";
+				String imageFileName = imageFilePart.getFilename();
+				System.out.println("Image File Name: " + imageFileName);
+				if (imageFileName.indexOf("story_image_") == -1 && imageFileName.indexOf("thumbnail_story_") == -1) {
+					String[] filenameparts = imageFileName.split("\\.");
+					String fileextension = filenameparts[filenameparts.length-1];
+					Long time= new java.util.Date().getTime();
+					imageFileName = "story_image_" + storyId + "_" + time + "." + fileextension;
+				}
 
 				String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
-
 				File uploadDir  = new File(uploadPath);
-
-				//String uploadPath = Play.current().path().getAbsolutePath() + "/private/upload/";
-				//File uploadDir = new File(uploadPath + fileSrc);
 
 				if (!uploadDir.exists()) {
 					uploadDir.mkdirs();
 				}
-				//fileSrc += imageFilePart.getFilename();
-				File uploadFile = new File(uploadDir, imageName);
+				File uploadFile = new File(uploadDir, imageFileName);
 
-				System.out.println(uploadPath + imageName);
+				System.out.println("Image File Path: " + uploadPath + imageFileName);
 
 				imageFile.renameTo(uploadFile);
 
-				JsonObject json = new JsonObject();
-
-		    json.addProperty("storyId", storyId);
-		    json.addProperty("imageUrl", "/uploads/images/" + imageName);
-
-				String json_ = new Gson().toJson(json);
-
-				return ok(json_);
+				uploadedImageFileNames.add(imageFileName);
 
 			} else {
 				flash("error", "Missing file");
 				return redirect(routes.Application.index());
 			}
 		}
-		return badRequest("Missing file");
+
+		String json_ = new Gson().toJson(uploadedImageFileNames);
+		return ok(json_);
 	}
 
 	@SecureSocial.SecuredAction
@@ -558,15 +548,14 @@ public class Stories extends Controller {
 		for (FilePart imageFilePart : imageFileParts) {
 			if (imageFilePart != null) {
 				File imageFile = imageFilePart.getFile();
-				//String imageName = imageFilePart.getFilename().replace(" ","_");
-				String[] filenameparts = imageFilePart.getFilename().split("\\.");
-				String fileextension = filenameparts[filenameparts.length-1];
-
-				Long time= new java.util.Date().getTime();
-				String imageName = "thumbnail_story_" + storyId + "_" + time + "." + fileextension;
-
-
-				//String fileSrc = "images/";
+				String imageFileName = imageFilePart.getFilename();
+				System.out.println("Image File Name: " + imageFileName);
+				if (imageFileName.indexOf("thumbnail_story_") == -1) {
+					String[] filenameparts = imageFileName.split("\\.");
+					String fileextension = filenameparts[filenameparts.length-1];
+					Long time= new java.util.Date().getTime();
+					imageFileName = "thumbnail_story_" + storyId + "_" + time + "." + fileextension;
+				}
 
 				String uploadPath = Play.current().path().getAbsolutePath() + Constants.publicStoryPath + "/images/";
 
@@ -576,19 +565,19 @@ public class Stories extends Controller {
 					uploadDir.mkdirs();
 				}
 
-				File uploadFile = new File(uploadDir, imageName);
+				File uploadFile = new File(uploadDir, imageFileName);
 
-				System.out.println(uploadPath + imageName);
+				System.out.println("Image File Path: " + uploadPath + imageFileName);
 
 				imageFile.renameTo(uploadFile);
 
-				story.setThumbnail("/uploads/images/" + imageName);
+				story.setThumbnail(imageFileName);
 				story.save(DBConstants.lir_backoffice);
 
 				JsonObject json = new JsonObject();
 
 		    json.addProperty("storyId", storyId);
-		    json.addProperty("imageUrl", "/uploads/images/" + imageName);
+		    json.addProperty("imageUrl", imageFileName);
 
 				String json_ = new Gson().toJson(json);
 

@@ -243,12 +243,6 @@ public class Application extends Controller {
 	}
 
 	public static Result handleTagsIndex(String tag) {
-		if (tag.contains("story")) {
-			Long storyId = Long.parseLong(tag.split("storyid=",2)[1]);
-			Story story = Story.findById(storyId);
-			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
-			return ok(views.html.index.render(jsonStory,jsonStory.location));
-		} else {
 			String[] tags = tag.replace("@","").split("&",2);
 			controllers.json.Location location = new controllers.json.Location();
 			try {
@@ -262,7 +256,6 @@ public class Application extends Controller {
 			} catch (NumberFormatException e) {
 				return ok(views.html.index.render(null,null));
 			}
-		}
 	}
 
 	private static User getCurrentUser() {

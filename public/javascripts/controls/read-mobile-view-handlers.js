@@ -57,7 +57,7 @@ function buildStoryContent(story) {
 	$("<p class='story-saves'></p>").appendTo(statscontainer).text(story.noOfSaves);
 	var placeholderoverlay = $('<div class="placeholder-overlay"></div>');
 	var detailsoverlay = $('<div class="details-overlay"></div>');
-	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + story.thumbnail + ')')
+	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')')
 	detailsoverlay.append(locationcontainer);
 	detailsoverlay.append(storytitle);
 	detailsoverlay.append(authorcontainer);
@@ -124,7 +124,7 @@ function buildLocationBanner(location,counter) {
 function buildPictureFrame(link,caption,pos) {
   var picContainer = $("<div class='section-item picture-container' readonly/>");
   var picFrame = $("<div class='picture-frame'/>").appendTo(picContainer);
-  $('<img src=' + link + '>').appendTo(picFrame);
+  $('<img src=' + PICTURES_SERVER_PATH + link + '>').appendTo(picFrame);
 	$("<p class='picture-caption' contenteditable='false' readonly/>").text(caption).appendTo(picFrame);
   return picContainer;
 }

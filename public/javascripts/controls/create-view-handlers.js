@@ -307,7 +307,7 @@ function buildPictureFrame(link,pos,caption) {
   var picContainer = $("<div class='section-item picture-container' contenteditable='true'/>");
   var position = (pos) ? pos : "center"
   var picFrame = $("<div class='picture-frame' position='" + position + "' contenteditable='false'/>").appendTo(picContainer);
-  $('<img src=' + link + '>').appendTo(picFrame);
+  $('<img src=' + PICTURES_SERVER_PATH + link + '>').appendTo(picFrame);
   var picControlers = $("<div class='picture-controls btn-group' />").appendTo(picFrame);
   $("<a class='btn btn-default picture-position'>Left</a>").click(function() {
                                                               picFrame.attr('position','left');
@@ -456,7 +456,7 @@ $(function() {
 
     fileReader.onload = function(ev2) {
       uploadImageToServer(function(data) {
-        addPicture(data.imageUrl)
+        addPicture(data[0])
       });
       $("#image-upload-input").replaceWith($("#image-upload-input").val('').clone(true));
     };
@@ -547,7 +547,7 @@ function closePublishPane() {
 }
 
 function addCover(imageUrl) {
-  $('#story-container-and-thumbnail').css('background-image','url(' + imageUrl + ')');
+  $('#story-container-and-thumbnail').css('background-image','url(' + PICTURES_SERVER_PATH + imageUrl + ')');
   $('#story-header, #content-tools').addClass('with-cover');
   $("#story-header #add-cover-btn").hide();
   $("#story-header #remove-cover-btn").show();
@@ -567,7 +567,7 @@ function populateStoryPublishPane() {
   $("#story-header #story-title").text(story.title);
   $("#story-header #story-summary").text(story.summary);
   if (story.thumbnail) {
-    $('#story-container-and-thumbnail').css('background-image','url(' + story.thumbnail + ')');
+    $('#story-container-and-thumbnail').css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')');
     $('#story-header, #content-tools').addClass('with-cover');
     $("#story-header #add-cover-btn").hide();
     $("#story-header #remove-cover-btn").show();
@@ -686,7 +686,7 @@ function convertStoryContentToObject() {
       }
       if (_thischild.hasClass('picture-container')) {
         itemObj.type = PICTURE_CONTAINER
-        itemObj.link = _thischild.find('img').attr('src')
+        itemObj.link = _thischild.find('img').attr('src').substring(PICTURES_SERVER_PATH.length)
         itemObj.text = _thischild.find('.picture-caption').text();
         itemObj.position = _thischild.find('.picture-frame').attr('position')
       }

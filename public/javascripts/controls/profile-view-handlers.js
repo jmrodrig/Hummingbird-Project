@@ -403,7 +403,7 @@ function buildStoryContainer(story) {
 
   if (story.thumbnail && story.thumbnail.length > 0) {
     $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',story.thumbnail);
+                                                  .attr('src',PICTURES_SERVER_PATH + story.thumbnail);
   }
 
   if (!story.summary || story.summary && story.summary.length == 0)
@@ -571,7 +571,7 @@ function openStoryView(story,option) {
   else if (option.new)
     window.location.href = LIR_SERVER_URL + '/story/create';
   else if (option.readonly)
-    window.location.href = LIR_SERVER_URL + '/story/' + story.id;
+    window.location.href = LIR_SERVER_URL + '/story/read/' + story.id;
 }
 
 // Open collection creation modal
