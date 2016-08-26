@@ -63,6 +63,7 @@ public class Users extends Controller {
 		User user = User.findByUserNumberId(numberId);
 		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
 		jsonUser.publicprofile = !(currentUser != null && currentUser.getNumberId() == user.getNumberId());
+		jsonUser.currentUserFollows = currentUser.isFollowing(user);
 		jsonUser.storyCollections = controllers.json.User.getStoryCollections(user);
 		String json = new Gson().toJson(jsonUser);
 		return ok(json);
@@ -161,11 +162,13 @@ public class Users extends Controller {
 	public static Result followUser(Long numberId) {
 		User currentuser = getCurrentUser();
 		User user = User.findByUserNumberId(numberId);
-		if (currentuser.isFollowing(user))
+		if (currentuser.isFollowing(user)) {
 			currentuser.removeFollowingUser(user);
-		else
+			return ok("false");
+		} else {
 			currentuser.addFollowingUser(user);
-		return ok();
+			return ok("true");
+		}
 	}
 
 }
