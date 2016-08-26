@@ -22,9 +22,8 @@ import java.util.Date;
 import play.api.Play;
 import models.utils.Constants;
 
-
-
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 
 public class Users extends Controller {
 
@@ -160,15 +159,19 @@ public class Users extends Controller {
 
 	@SecureSocial.SecuredAction
 	public static Result followUser(Long numberId) {
+		JsonObject jsonresult = new JsonObject();
 		User currentuser = getCurrentUser();
 		User user = User.findByUserNumberId(numberId);
 		if (currentuser.isFollowing(user)) {
 			currentuser.removeFollowingUser(user);
-			return ok("false");
+			jsonresult.addProperty("currentUserFollowsUser", "false");
 		} else {
 			currentuser.addFollowingUser(user);
-			return ok("true");
+			jsonresult.addProperty("currentUserFollowsUser", "true");
 		}
+    jsonresult.addProperty("noOfFollowersOfUser", user.getFollowers().size());
+		String json_ = new Gson().toJson(jsonresult);
+		return ok(json_);
 	}
 
 }
