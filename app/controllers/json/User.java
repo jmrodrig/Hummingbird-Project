@@ -18,6 +18,7 @@ public class User {
 	public Integer noOfFollowing;
 	public List<StoryCollection> storyCollections;
 	public List<StoryCollection> userFollowingCollections;
+	public Boolean publicprofile;
 
 
 	public static User getUser(models.User domainUser, Boolean fetchAll) {

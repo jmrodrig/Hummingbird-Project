@@ -192,9 +192,9 @@ public class Stories extends Controller {
 
 	@SecureSocial.UserAwareAction
 	public static Result listPublishedStoriesWithinBounds(Double w, Double n, Double e, Double s){
-		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s);
-		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s, currentUser);
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {
 			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
@@ -214,9 +214,9 @@ public class Stories extends Controller {
 
 	@SecureSocial.UserAwareAction
 	public static Result listPublishedStoriesWithinBoundsFromFollowingUsers(Double w, Double n, Double e, Double s){
-		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s);
-		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findPublicStoriesWithinBounds(w, n, e, s, currentUser);
+		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 		List<User> followingUsers = currentUser.getFollowingUsers();
 		followingUsers.add(currentUser);
 
@@ -275,7 +275,7 @@ public class Stories extends Controller {
 	public static Result listUserStories(Long numberId) {
 		User currentUser = getCurrentUser();
 		User user = User.findByUserNumberId(numberId);
-		List<models.Story> stories = models.Story.findAllUserStories(user);
+		List<models.Story> stories = models.Story.findUserPublicStories(user);
 		List<controllers.json.Story> result = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {

@@ -56,10 +56,13 @@ public class Users extends Controller {
 		return ok(json);
 	}
 
-	@SecureSocial.SecuredAction
+	@SecureSocial.UserAwareAction
 	public static Result getUserProfile(Long numberId) {
+		Identity identity = (Identity) ctx().args.get(SecureSocial.USER_KEY);
+		User currentUser = User.findByIdentityId(identity.identityId());
 		User user = User.findByUserNumberId(numberId);
 		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
+		jsonUser.publicprofile = !(currentUser != null && currentUser.getNumberId() == user.getNumberId());
 		jsonUser.storyCollections = controllers.json.User.getStoryCollections(user);
 		String json = new Gson().toJson(jsonUser);
 		return ok(json);

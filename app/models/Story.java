@@ -53,8 +53,6 @@ public class Story extends Model {
 
 	private static final long serialVersionUID = 1L;
 
-	private static final Integer CURRENT_MODEL_VERSION = 2;
-
 	private static HashMap<Long, com.lir.library.domain.Story> loadedStories = new HashMap<Long, com.lir.library.domain.Story>();
 
 	@Version
@@ -428,14 +426,22 @@ public class Story extends Model {
 
 	public static List<Story> findAllUserStories(User user) {
 		List<Story> stories = finder.where().in("id", UserStory.findStoryIdsByUser(user.getId()))
-																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
+																				.findList();
+		return stories;
+	}
+
+	public static List<Story> findUserPublicStories(User user) {
+		List<Story> stories = finder.where().in("id", UserStory.findStoryIdsByUser(user.getId()))
+																				.or(Expr.eq("published", Constants.PUBLISHED_STATE_PUBLISHED_ALL),Expr.eq("published", Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS))
+																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
 		return stories;
 	}
 
 	public static List<Story> findAllUserSavedStories(User user) {
 		List<Story> stories = finder.where().in("id", SavedStory.findStoryIdsByUser(user.getId()))
-																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
 		return stories;
 	}
@@ -456,19 +462,19 @@ public class Story extends Model {
 	}
 
 	public static List<models.Story> findAllByPublic() {
-		List<Story> stories = finder.where().eq("published", 1)
-																				.eq("model_version", CURRENT_MODEL_VERSION)
+		List<Story> stories = finder.where().eq("published", Constants.PUBLISHED_STATE_PUBLISHED_ALL)
+																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
 		return stories;
 	}
 
 	public static List<models.Story> findAllByPublicFollowingAndPrivate(User currentuser) {
 		List<Story> stories = finder.where().isNotNull("published")
-																				.ne("published", 0)
-																				.eq("model_version", CURRENT_MODEL_VERSION)
+																				.ne("published", Constants.PUBLISHED_STATE_DRAFT)
+																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
 		for (Story st : stories) {
-			if (st.isPublished() == 3 && !st.isOwnedByUser(currentuser))
+			if (st.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && !st.isOwnedByUser(currentuser))
 				stories.remove(st);
 		}
 		return stories;
@@ -480,8 +486,8 @@ public class Story extends Model {
 		for (Location location : Location.findAll()) {
 			Story story = location.getStory();
 			System.out.println("story : " + story);
-			if (story != null && story.isModelVersion(CURRENT_MODEL_VERSION)) {
-				if (story.isPublished() == 1 || story.isPublished() == 2 && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() != 0 && story.isOwnedByUser(currentuser)) {
+			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
+				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
 					Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
 					story.setDistance(distance);
 					stories.add(story);
@@ -493,13 +499,15 @@ public class Story extends Model {
 		return stories;
 	}
 
-	public static List<Story> findPublicStoriesWithinBounds(Double w, Double n, Double e, Double s){
+	public static List<Story> findPublicStoriesWithinBounds(Double w, Double n, Double e, Double s, User currentuser){
 		System.out.println("Location : " + w + ", " + n + ", " + e + ", " + s);
 		List<Story> stories = new ArrayList<Story>();
 		for (Location location : Location.findLocationsWithinBounds(w,n,e,s)) {
 			Story story = location.getStory();
-			if (story != null && story.isPublished() != 0 && !stories.contains(story) && story.isModelVersion(CURRENT_MODEL_VERSION)) {
-				stories.add(story);
+			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
+				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
+					stories.add(story);
+				}
 			}
 		}
 		return stories;
@@ -560,7 +568,7 @@ public class Story extends Model {
 
 		Story story = new Story();
 		setStory(story, title, summary, contentJSON, published,	locations);
-		story.setModelVersion(CURRENT_MODEL_VERSION);
+		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		story.setLabels(labels);
@@ -569,7 +577,7 @@ public class Story extends Model {
 
 	public static Story create(User user)	throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		Story story = new Story();
-		story.setModelVersion(CURRENT_MODEL_VERSION);
+		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.save(DBConstants.lir_backoffice);
 		System.out.println(story.getId());
 		UserStory.create(true, true, 0, "", user, story);

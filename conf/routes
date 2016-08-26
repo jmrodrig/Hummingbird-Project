@@ -23,7 +23,7 @@ GET	    /collection/:collectionId											controllers.Application.openCollecti
 #Users
 
 GET 		/user						            controllers.Users.getLoggedInUser()
-GET     /user/:numberId             controllers.Users.getUserProfile(numberId: Long)
+GET     /publicprofile/:numberId             controllers.Users.getUserProfile(numberId: Long)
 PUT     /user/update                controllers.Users.updateUserProfile()
 POST    /user/uploadimage           controllers.Users.uploadUserImage()
 GET     /user/search/:email         controllers.Users.findUsersByEmail(email: String)

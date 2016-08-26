@@ -248,7 +248,7 @@ public class User extends Model {
 	}
 
 	public Boolean isFollowedBy(User u) {
-		if (this.followers.contains(u))
+		if (u != null && this.followers.contains(u))
 			return true;
 		return false;
 	}
