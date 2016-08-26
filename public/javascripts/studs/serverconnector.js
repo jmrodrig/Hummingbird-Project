@@ -198,7 +198,7 @@ function stud_readLoggedUser(success, error){
 
 function stud_readUserDetails(numberId, success, error){
 	$.ajax({
-		url: "/user/" + numberId,
+		url: "/publicprofile/" + numberId,
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
