@@ -16,6 +16,7 @@ import javax.persistence.Version;
 
 import models.exceptions.ModelAlreadyExistsException;
 import models.utils.DBConstants;
+import models.utils.Constants;
 import play.db.ebean.Model;
 
 import com.avaje.ebean.Expr;
@@ -115,6 +116,18 @@ public class UserStory extends Model {
 	public static List<UserStory> findByUserId(String userId) {
 		List<UserStory> userStories = finder.where().eq("user_id", userId).findList();
 		return userStories;
+	}
+
+	public static List<Story> findByUserIdAndPublished(String userId) {
+		List<Story> stories = new ArrayList<>();
+		List<UserStory> userStories = findByUserId(userId);
+		for (UserStory us : userStories) {
+			Story story = us.getStory();
+			Integer publishedstate = story.isPublished();
+			if (publishedstate != Constants.PUBLISHED_STATE_DRAFT && publishedstate != Constants.PUBLISHED_STATE_PRIVATE)
+				stories.add(story);
+		}
+		return stories;
 	}
 
 	public static List<UserStory> findByStoryId(Long storyId) {

@@ -63,6 +63,9 @@ public class Users extends Controller {
 		controllers.json.User jsonUser = controllers.json.User.getUser(user,false);
 		jsonUser.publicprofile = !(currentUser != null && currentUser.getNumberId() == user.getNumberId());
 		jsonUser.currentUserFollows = currentUser.isFollowing(user);
+		if (jsonUser.publicprofile) {
+			jsonUser.noOfStories = models.Story.findUserPublicStories(user).size();
+		}
 		jsonUser.storyCollections = controllers.json.User.getStoryCollections(user);
 		String json = new Gson().toJson(jsonUser);
 		return ok(json);
