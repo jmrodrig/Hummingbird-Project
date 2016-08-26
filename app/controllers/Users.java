@@ -158,12 +158,13 @@ public class Users extends Controller {
 	}
 
 	@SecureSocial.SecuredAction
-	public static Result followUser(Long numberId, Boolean unfollow) {
+	public static Result followUser(Long numberId) {
 		User currentuser = getCurrentUser();
 		User user = User.findByUserNumberId(numberId);
-		if (unfollow)
+		if (currentuser.isFollowing(user))
 			currentuser.removeFollowingUser(user);
-		currentuser.addFollowingUser(user);
+		else
+			currentuser.addFollowingUser(user);
 		return ok();
 	}
 

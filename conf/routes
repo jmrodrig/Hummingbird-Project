@@ -28,7 +28,7 @@ PUT     /user/update                controllers.Users.updateUserProfile()
 POST    /user/uploadimage           controllers.Users.uploadUserImage()
 GET     /user/search/:email         controllers.Users.findUsersByEmail(email: String)
 PUT     /follow/collection/:collectionId,:unfollow         controllers.Users.followCollection(collectionId: Long, unfollow: Boolean)
-PUT     /follow/user/:numberId,:unfollow         controllers.Users.followUser(numberId: Long, unfollow: Boolean)
+PUT     /user/follow/:numberId        controllers.Users.followUser(numberId: Long)
 
 
 
@@ -43,7 +43,7 @@ GET			/validateInvite/:invitationCode				controllers.Application.validInvite(inv
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
 GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
-GET   /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
+GET     /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
 
 
 #Stories
