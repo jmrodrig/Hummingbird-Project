@@ -563,11 +563,11 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story create(User user, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations, List<String> labels)
+	public static Story create(User user, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels)
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
 		Story story = new Story();
-		setStory(story, title, summary, contentJSON, published,	locations);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
@@ -604,13 +604,13 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
 
-		setStory(story, title, summary, contentJSON, published,	locations);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
 		story.save(DBConstants.lir_backoffice);
 		story.setLabels(labels);
 		return story;
@@ -628,11 +628,11 @@ public class Story extends Model {
 		//story.setLocation(location);
 	}
 
-	private static void setStory(Story story, String title, String summary, String contentJSON, Integer published, List<controllers.json.Location> locations) throws IOException {
-		System.out.println("models.Story.setStory...");
+	private static void setStory(Story story, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(contentJSON);
+		story.setThumbnail(thumbnail);
 		story.setPublished(published);
 		story.setLocations(contentJSON);
 	}

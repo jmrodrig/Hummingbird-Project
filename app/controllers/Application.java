@@ -145,6 +145,17 @@ public class Application extends Controller {
 	public static Result createStoryMobile() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		User user = getCurrentUser();
 		models.Story story = models.Story.create(user);
+		if (request().body().asJson() != null) {
+			controllers.json.Story request = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
+			story = models.Story.update( story.getId(),
+													request.title,
+													request.summary,
+													request.content,
+													request.thumbnail,
+													request.published,
+													request.locations,
+													request.labels);
+		}
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, false);
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);

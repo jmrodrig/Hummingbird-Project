@@ -417,6 +417,7 @@ public class Stories extends Controller {
 												jsonStory.title,
 												jsonStory.summary,
 												jsonStory.content,
+												jsonStory.thumbnail,
 												jsonStory.published,
 												jsonStory.locations,
 												jsonStory.labels);

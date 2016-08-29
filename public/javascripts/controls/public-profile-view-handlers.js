@@ -124,6 +124,21 @@ function intializeEvents() {
 		ga('send','event','map', 'publish') //Google Analytics track event
 	});
 
+  if (user.domainUser.currentUserFollows) {
+    $("#profile-follow-btn").text("UNFOLLOW")
+  } else {
+    $("#profile-follow-btn").text("FOLLOW")
+  }
+	$("#profile-follow-btn").click( function() {
+    followUser(user.domainUser.numberId,function(data) {
+      if (data.currentUserFollowsUser == "true")
+        $("#profile-follow-btn").text("UNFOLLOW")
+      else
+        $("#profile-follow-btn").text("FOLLOW")
+      $('#profile-stat-user-followers #value').html(data.noOfFollowersOfUser);
+    });
+	});
+
 	//----------------
 	$(window).resize(function() {
 		$('#content-wrapper').css({ height: $(window).innerHeight() - $('nav.navbar').height() });
@@ -149,8 +164,8 @@ function  initializeProfileDetails() {
   //TODO: passar os seguintes dados com o json
   $('#profile-stat-user-created #value').html(user.domainUser.noOfStories);
   $('#profile-stat-user-saved #value').html(user.domainUser.noOfSaved);
-  $('#profile-stat-user-followers #value').html('0');
-  $('#profile-stat-user-folllowing #value').html('0');
+  $('#profile-stat-user-followers #value').html(user.domainUser.noOfFollowers);
+  $('#profile-stat-user-folllowing #value').html(user.domainUser.noOfFollowing);
 }
 
 function drawStoryItemOnMapView(story) {
@@ -280,7 +295,7 @@ function buildStoryContainer(story) {
 
   if (story.thumbnail && story.thumbnail.length > 0) {
     $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',story.thumbnail);
+                                                  .attr('src',PICTURES_SERVER_PATH + story.thumbnail);
   }
 
   if (!story.summary || story.summary && story.summary.length == 0)
@@ -443,7 +458,7 @@ function openStoryView(story,option) {
   else if (option.new)
     window.location.href = LIR_SERVER_URL + '/story/create';
   else if (option.readonly)
-    window.location.href = LIR_SERVER_URL + '/history/storyid=' + story.id;
+    window.location.href = LIR_SERVER_URL + '/story/read/' + story.id;
 }
 
 // Open collection creation modal
@@ -848,23 +863,13 @@ function getStoryText(jqTextElement) {
                                   .replace(/([\uE000-\uF8FF]|\uD83C[\uDF00-\uDFFF]|\uD83D[\uDC00-\uDDFF])/g, '');
 }
 
-function likeStory(storyId, onFinished){
+function followUser(userid, onFinished){
 	$.ajax({
-		url: "/story/" + storyId + "/like",
-		type: "POST",
+		url: "/user/follow/" + userid,
+		type: "PUT",
 		dataType: "json",
 		success: onFinished,
-		error: function() {console.log("Couln't like story");}
-	});
-}
-
-function saveStory(storyId, onFinished){
-	$.ajax({
-		url: "/story/" + storyId + "/save",
-		type: "POST",
-		dataType: "json",
-		success: onFinished,
-		error: function() {console.log("Couln't save story");}
+		error: function() {console.log("Couln't follow user");}
 	});
 }
 

@@ -60,7 +60,7 @@ GET		/story/read/:storyId												controllers.Application.readStory(storyId: 
 GET		/story/load/:storyId												controllers.Stories.loadStory(storyId: Long)
 DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
 GET	  /story/create														controllers.Application.createStory()
-POST	/story/createMobile											controllers.Application.createStoryMobile()
+POST	/story/createmobile											controllers.Application.createStoryMobile()
 PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)
 GET		/story/download/:storyId									controllers.Stories.downloadStory(storyId: Long)
 POST	/story/uploadthumbnail/:storyId								controllers.Stories.uploadThumbnail(storyId: Long)
@@ -122,4 +122,4 @@ POST    /password                   securesocial.controllers.PasswordChange.hand
 GET     /authenticate/:provider       securesocial.controllers.ProviderController.authenticate(provider)
 POST    /authenticate/:provider       securesocial.controllers.ProviderController.authenticateByPost(provider)
 GET     /not-authorized               securesocial.controllers.ProviderController.notAuthorized
-POST    /authenticateMobile/:provider @controllers.auth.AuthController.authenticateMobile(provider)
+POST    /authenticatemobile/:provider @controllers.auth.AuthController.authenticateMobile(provider)
