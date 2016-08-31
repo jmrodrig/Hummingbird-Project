@@ -127,8 +127,14 @@ public class Users extends Controller {
 				currentuser.setAvatarUrl("/uploads/profile_images/" + imageName);
 				currentuser.save(DBConstants.lir_backoffice);
 
-				String json = new Gson().toJson("/uploads/profile_images/" + imageName);
-				return ok(json);
+				JsonObject json = new JsonObject();
+
+		    json.addProperty("userId", currentuser.getNumberId());
+		    json.addProperty("imageUrl", "/uploads/profile_images/" + imageName);
+
+				String json_ = new Gson().toJson(json);
+
+				return ok(json_);
 
 			} else {
 				flash("error", "Missing file");
