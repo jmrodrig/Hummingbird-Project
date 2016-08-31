@@ -102,7 +102,7 @@ public class Users extends Controller {
 				String fileextension = filenameparts[filenameparts.length-1];
 
 				Long time= new java.util.Date().getTime();
-				String imageName = "image_profile_" + currentuser.getNumberId() + "_" + time + "." + fileextension;
+				String imageName = "user_avatar_" + currentuser.getNumberId() + "_" + time + "." + fileextension;
 
 
 				//String fileSrc = "images/";

@@ -25,7 +25,7 @@ GET	    /collection/:collectionId											controllers.Application.openCollecti
 GET 		/user						            controllers.Users.getLoggedInUser()
 GET     /publicprofile/:numberId             controllers.Users.getUserProfile(numberId: Long)
 PUT     /user/update                controllers.Users.updateUserProfile()
-POST    /user/uploadimage           controllers.Users.uploadUserImage()
+POST    /user/uploadavatar           controllers.Users.uploadUserImage()
 GET     /user/search/:email         controllers.Users.findUsersByEmail(email: String)
 PUT     /follow/collection/:collectionId,:unfollow         controllers.Users.followCollection(collectionId: Long, unfollow: Boolean)
 PUT     /user/follow/:numberId        controllers.Users.followUser(numberId: Long)

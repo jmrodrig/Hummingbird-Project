@@ -376,7 +376,7 @@ public class User extends Model {
 		this.setLastName(lastName);
 		// this.setFullName(identity.fullName());
 		this.setEmail(email);
-		this.setAvatarUrl(avatarUrl);
+		//this.setAvatarUrl(avatarUrl);
 		this.setPassword(passwordInfo);
 		this.update(DBConstants.lir_backoffice);
 	}
