@@ -100,7 +100,7 @@ public class Stories extends Controller {
 		return ok(json);
 	}
 
-	@SecureSocial.SecuredAction
+	@SecureSocial.UserAwareAction
 	public static Result listPublicFollowingAndPrivateStoriesWithLocation(Double latitude, Double longitude, int index, int size){
 		User currentUser = getCurrentUser();
 		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude,currentUser);
