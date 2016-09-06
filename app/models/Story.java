@@ -267,20 +267,32 @@ public class Story extends Model {
 	}
 
 	public void setLocations(String contentString) {
+		if (contentString == null) return;
 		System.out.println("Story CONTENT (before location set): " + this.getContent());
 		controllers.json.Story.ContentSection[] jsonContent = new Gson().fromJson(contentString, controllers.json.Story.ContentSection[].class);
+		if (jsonContent == null) return;
 		for (controllers.json.Story.ContentSection section : jsonContent) {
 			controllers.json.Location jsonlocation = section.location;
 			if (jsonlocation != null) {
-				Location location = Location.findByIdAndStoryId(jsonlocation.id,this.getId());
-				System.out.println("Found location with id " + jsonlocation.id + "?: " + location);
-				if (location != null) {
-					Location.update(jsonlocation,location);
+				if (jsonlocation.ismain != null && jsonlocation.ismain) {
+					Location location = this.getLocation();
+					if (location != null) {
+						Location.update(jsonlocation,location);
+					} else {
+						location = Location.create(jsonlocation,this);
+						locations.add(location);
+					}
 				} else {
-					location = Location.create(jsonlocation,this);
-					locations.add(location);
+					Location location = Location.findByIdAndStoryId(jsonlocation.id,this.getId());
+					System.out.println("Found location with id " + jsonlocation.id + "?: " + location);
+					if (location != null) {
+						Location.update(jsonlocation,location);
+					} else {
+						location = Location.create(jsonlocation,this);
+						locations.add(location);
+					}
+					jsonlocation.id = location.getId();
 				}
-				jsonlocation.id = location.getId();
 			}
 		}
 		this.setContent(new Gson().toJson(jsonContent));
