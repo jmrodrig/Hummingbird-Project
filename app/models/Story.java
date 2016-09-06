@@ -268,7 +268,7 @@ public class Story extends Model {
 
 	public void setLocations(String contentString) {
 		if (contentString == null) return;
-		System.out.println("Story CONTENT (before location set): " + this.getContent());
+		//System.out.println("Story CONTENT (before location set): " + this.getContent());
 		controllers.json.Story.ContentSection[] jsonContent = new Gson().fromJson(contentString, controllers.json.Story.ContentSection[].class);
 		if (jsonContent == null) return;
 		for (controllers.json.Story.ContentSection section : jsonContent) {
@@ -296,7 +296,7 @@ public class Story extends Model {
 			}
 		}
 		this.setContent(new Gson().toJson(jsonContent));
-		System.out.println("Story CONTENT: " + this.getContent());
+		//System.out.println("Story CONTENT: " + this.getContent());
 	}
 
 	public Location getLocation() {
@@ -499,7 +499,7 @@ public class Story extends Model {
 			Story story = location.getStory();
 			System.out.println("story : " + story);
 			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
-				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
+				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && (story.getAuthor().isFollowedBy(currentuser) || story.isOwnedByUser(currentuser)) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
 					Double distance = controllers.utils.Utils.distanceBetweenCoordinates(lat,lng,location.getLatitude(),location.getLongitude(),0.0,0.0);
 					story.setDistance(distance);
 					stories.add(story);
@@ -517,7 +517,7 @@ public class Story extends Model {
 		for (Location location : Location.findLocationsWithinBounds(w,n,e,s)) {
 			Story story = location.getStory();
 			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
-				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && story.getAuthor().isFollowedBy(currentuser) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
+				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && (story.getAuthor().isFollowedBy(currentuser) || story.isOwnedByUser(currentuser)) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
 					stories.add(story);
 				}
 			}
