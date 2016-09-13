@@ -208,8 +208,9 @@ function  initializeProfileDetails() {
 
   $('#profile-stat-user-created #value').html(user.domainUser.noOfStories);
   $('#profile-stat-user-saved #value').html(user.domainUser.noOfSaved);
-  $('#profile-stat-user-followers #value').html('0');
-  $('#profile-stat-user-folllowing #value').html('0');
+  $('#profile-stat-user-followers #value').html(user.domainUser.noOfFollowers);
+  $('#profile-stat-user-folllowing #value').html(user.domainUser.noOfFollowing);
+
 
 }
 
@@ -587,48 +588,9 @@ function openStoryView(story,option) {
   if (option.edit || option.readonly && story.published == 0)
     window.location.href = LIR_SERVER_URL + '/story/edit/' + story.id;
   else if (option.new)
-    window.location.href = LIR_SERVER_URL + '/story/create';
+    window.location.href = LIR_SERVER_URL + '/story/create'
   else if (option.readonly)
     window.location.href = LIR_SERVER_URL + '/story/read/' + story.id;
-}
-
-// Open collection creation modal
-function openCreateCollectionView(story) {
-  $('#create-collection-btn').click(function() {
-    createStoryCollection(story);
-    closeCreateCollectionView();
-  });
-  $('#create-story-collection-modal').modal('show');
-}
-
-// close collection creation modal
-function closeCreateCollectionView() {
-  $('#create-story-collection-modal').modal('hide');
-  $('#create-collection-btn').unbind();
-  $('#story-collection-title-input').val('');
-}
-
-function openChooseCollectionView(story) {
-  $('#choose-story-collection-modal .modal-body').empty();
-  var storyCollectionListContainer = $('<div class="list-group"/>').appendTo($('#choose-story-collection-modal .modal-body'));
-  user.domainUser.storyCollections.forEach(function(sc) {
-    $('<a href="#" class="list-group-item">' + sc.name + '</a>').appendTo(storyCollectionListContainer)
-                                                                .click(function() {
-                                                                  addStoryToCollection(story.id,sc.id);
-                                                                  closeChooseCollectionView();
-                                                                });
-  });
-  $('<a href="#" class="list-group-item active">+ new collection</a>').appendTo(storyCollectionListContainer)
-                                                .click(function() {
-                                                  openCreateCollectionView(story);
-                                                  closeChooseCollectionView();
-                                                });
-  $('#choose-story-collection-modal').modal('show');
-}
-
-function closeChooseCollectionView() {
-  $('#choose-story-collection-modal').modal('hide');
-  $('#choose-story-collection-modal .modal-body').empty();
 }
 
 

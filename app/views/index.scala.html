@@ -198,9 +198,9 @@
 		</div>
 	</section>
 
-	<!-------------------------------------------------->
-	<!--  Create Collections /Add Stories/Add Users   -->
-	<!-------------------------------------------------->
+	<!----------------------------------->
+	<!--  Create Story Options Modal   -->
+	<!----------------------------------->
 
 	<!-- Create Story modal -->
 	<div id="create-story-modal" class="modal fade">
@@ -216,30 +216,6 @@
 						<div id="regular-story-opt-btn" class="div-btn" onclick="openCreateStoryView()">
 							<h4>Story Article</h4>
 							<p>A story with unlimited locations, in an article like format.</p>
-						</div>
-					</div>
-					<div id="story-editing-container">
-						<div id="story-location"></div>
-						<div id="story-text" contenteditable="true"></div>
-						<div id="story-picture"></div>
-						<div id="tools">
-							<a class="btn btn-default" id="add-picture-btn"><span class="glyph icon-no-margins icon-20px flaticon-art"/>
-								<form enctype="multipart/form-data" id="image-upload-form" class="image-upload-form">
-									<input id="image-upload-input" name="profileImg[]" type="file" />
-								</form>
-							</a>
-							<div class="dropdown">
-							  <button class="btn btn-default dropdown-toggle" type="button" publish-type="2" id="publish-options-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
-							    <span class="publish-option-text">Share with followers</span>
-							    <span class="caret"></span>
-							  </button>
-							  <ul class="dropdown-menu" aria-labelledby="publish-options-dropdown">
-							    <li><a href="#" publish-type="1" onclick="setPublishingType(1,false)">Share with everyone</a></li>
-							    <li><a href="#" publish-type="2" onclick="setPublishingType(2,false)">Share with followers</a></li>
-							    <li><a href="#" publish-type="3" onclick="setPublishingType(3,false)">Share privately</a></li>
-							  </ul>
-							</div>
-							<button id="post-btn" type="button" class="btn btn-default" onclick="publishStory()">Post</button>
 						</div>
 					</div>
 	      </div>

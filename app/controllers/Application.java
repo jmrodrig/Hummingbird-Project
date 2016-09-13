@@ -128,12 +128,6 @@ public class Application extends Controller {
 		return ok(views.html.publicprofile.render(jsonUser));
 	}
 
-	public static Result openCollectionView(Long collectionId) {
-		StoryCollection storyCollection = StoryCollection.findCollectionById(collectionId);
-		controllers.json.StoryCollection jsonCollection = controllers.json.StoryCollection.getStoryCollection(storyCollection,false);
-		return ok(views.html.collection.render(jsonCollection));
-	}
-
 	@SecureSocial.SecuredAction
 	public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		User user = getCurrentUser();

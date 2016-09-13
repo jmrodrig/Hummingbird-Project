@@ -10,7 +10,6 @@ GET			/library							controllers.Application.library()
 GET 		/profile							controllers.Application.profile()
 GET 		/profile/:numberId  	controllers.Application.publicProfile(numberId: Long)
 GET     /scraper              controllers.Application.scraper()
-GET	    /collection/:collectionId											controllers.Application.openCollectionView(collectionId: Long)
 
 
 
@@ -26,7 +25,6 @@ GET     /publicprofile/:numberId             controllers.Users.getUserProfile(nu
 PUT     /user/update                controllers.Users.updateUserProfile()
 POST    /user/uploadavatar           controllers.Users.uploadUserImage()
 GET     /user/search/:email         controllers.Users.findUsersByEmail(email: String)
-PUT     /follow/collection/:collectionId,:unfollow         controllers.Users.followCollection(collectionId: Long, unfollow: Boolean)
 PUT     /user/follow/:numberId        controllers.Users.followUser(numberId: Long)
 
 
@@ -71,21 +69,6 @@ PUT	/story/save/:storyId												controllers.Stories.saveStory(storyId: Long)
 DELETE /story/deletethumbnail/:storyId                controllers.Stories.deleteImage(storyId: Long)
 GET /highlighted                                  controllers.Application.getHighlightedItems()
 GET /highlight/:itemId,:type                                    controllers.Application.highlightItem(itemId: Long, type: Integer)
-
-#Collections
-POST	/collection/:name												controllers.Stories.createStoryCollection(name: String)
-PUT	  /collection/:collectionId												controllers.Stories.updateStoryCollection(collectionId: Long)
-POST	/collection/:collectionId/story/:storyId												controllers.Stories.addStoryToCollection(collectionId: Long, storyId: Long)
-PUT	  /collection/:collectionId/story/:storyId												controllers.Stories.removeStoryFromCollection(collectionId: Long, storyId: Long)
-GET	  /collection/stories/:collectionId											controllers.Stories.readCollectionStories(collectionId: Long)
-GET	  /public/collection/stories/:collectionId											controllers.Stories.readPublicCollectionStories(collectionId: Long)
-GET	  /collection/details/:collectionId											controllers.Stories.readCollection(collectionId: Long)
-POST	/collection/:collectionId/uploadimage									controllers.Stories.uploadCollectionImage(collectionId: Long)
-PUT	/collection/:collectionId/adduser/:numberId									controllers.Stories.addUserToCollection(collectionId: Long, numberId: Long)
-PUT /collection/:collectionId/connect/:story1Id,:story2Id       controllers.Stories.connectStories(collectionId: Long, story1Id: Long, story2Id: Long)
-PUT /collection/:collectionId/disconnect/:story1Id,:story2Id       controllers.Stories.disconnectStories(collectionId: Long, story1Id: Long, story2Id: Long)
-POST /collection/:collectionId/create                               controllers.Stories.createStoryOnCollection(collectionId: Long)
-PUT /collection/:collectionId/publish/:publish                               controllers.Stories.publishCollection(collectionId: Long, publish: Integer)
 
 #Map
 GET		/map														controllers.Maps.index()
