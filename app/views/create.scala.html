@@ -38,18 +38,31 @@
 			<div id="placeholder-overlay" >
 			</div>
 			<div id="details-overlay" >
-				<h1 id="story-title" class="title text-title-size" contenteditable="true"></h1>
-				<div id="story-summary" contenteditable="true"></div>
-				<div id="story-location"></div>
-				<p id="story-status"></p>
-				<div id="actions">
-					<a id="add-cover-btn" class="btn btn-default">Add cover picture
+				<div id="story-details" >
+					<h1 id="story-title" class="title text-title-size" contenteditable="true"></h1>
+					<div id="story-summary" contenteditable="true"></div>
+					<div id="story-location"></div>
+					<a id="add-cover-btn" class="btn btn-transparent">Add cover picture
 						<form enctype="multipart/form-data" id="cover-upload-form" class="image-upload-form">
 							<input id="cover-upload-input" name="profileImg[]" type="file" />
 						</form>
 					</a>
-					<button id="remove-cover-btn" type="button" class="btn btn-primary" onclick="removeCover()">Remove cover</button>
-					<button id="post-btn" type="button" class="btn btn-primary" data-toggle="tooltip" data-placement="top" title="This will make your story available to everyone." onclick="publishStory()">Publish</button>
+					<button id="remove-cover-btn" type="button" class="btn btn-transparent highlighted" onclick="removeCover()">Remove cover</button>
+				</div>
+				<div id="publish-actions">
+					<p id="story-status"></p>
+					<div class="dropdown">
+					  <button class="btn btn-transparent dropdown-toggle" type="button" publish-type="2" id="publish-options-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true">
+					    <span class="publish-option-text">Share with followers</span>
+					    <span class="caret"></span>
+					  </button>
+					  <ul class="dropdown-menu" aria-labelledby="publish-options-dropdown">
+					    <li><a href="#" publish-type="1" onclick="setPublishingType(1,false)">Share with everyone</a></li>
+					    <li><a href="#" publish-type="2" onclick="setPublishingType(2,false)">Share with followers</a></li>
+					    <li><a href="#" publish-type="3" onclick="setPublishingType(3,false)">Share privately</a></li>
+					  </ul>
+					</div>
+					<button id="post-btn" type="button" class="btn btn-transparent" onclick="publishStory()">Post</button>
 				</div>
 			</div>
 		</div>

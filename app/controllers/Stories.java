@@ -420,7 +420,8 @@ public class Stories extends Controller {
 												jsonStory.thumbnail,
 												jsonStory.published,
 												jsonStory.locations,
-												jsonStory.labels);
+												jsonStory.labels,
+												jsonStory.format);
 
 		jsonStory = controllers.json.Story.getStory(story, currentuser, false);
 		String json = new Gson().toJson(jsonStory);

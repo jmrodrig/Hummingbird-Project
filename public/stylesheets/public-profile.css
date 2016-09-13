@@ -350,7 +350,7 @@ h1, h2, h3, h4, p, a {
   line-height: 22px;
 	text-align: initial;
 	overflow:hidden;
-	margin: 8px 0px;
+	margin: 8px;
 	max-height: 100px;
 }
 

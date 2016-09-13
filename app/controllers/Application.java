@@ -10,6 +10,8 @@ import models.User;
 import models.Story;
 import models.StoryCollection;
 import models.HighlightedItem;
+import models.utils.Constants;
+import models.utils.DBConstants;
 import models.exceptions.ModelAlreadyExistsException;
 import models.exceptions.ModelNotFountException;
 
@@ -66,7 +68,7 @@ public class Application extends Controller {
 		if (reg_b.matcher(userAgent).find() || reg_v.matcher(userAgent.substring(0,4)).find())
 			return ok(views.html.indexmobile.render());
 		else
-			return ok(views.html.index.render(null,null));
+			return ok(views.html.index.render(null,null,false));
 	}
 
 	public static Result dashboards() {
@@ -87,8 +89,7 @@ public class Application extends Controller {
 		if (reg_b.matcher(userAgent).find() || reg_v.matcher(userAgent.substring(0,4)).find())
 			return ok(views.html.readmobile.render(jsonStory,jsonLocation));
 		else
-			return ok(views.html.index.render(jsonStory,jsonStory.location));
-
+			return ok(views.html.index.render(jsonStory,jsonStory.location,false));
 	}
 
 	public static Result scraper() {
@@ -136,15 +137,15 @@ public class Application extends Controller {
 	@SecureSocial.SecuredAction
 	public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		User user = getCurrentUser();
-		models.Story story = models.Story.create(user);
+		models.Story story = models.Story.create(user,Constants.STORY_FORMAT_OPEN);
 		System.out.println("redirecting...");
-		return redirect("/publisher/create/" + story.getId());
+		return redirect("/story/edit/" + story.getId());
 	}
 
 	@SecureSocial.SecuredAction
-	public static Result createStoryMobile() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+	public static Result createStoryWithData(Integer format) throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		User user = getCurrentUser();
-		models.Story story = models.Story.create(user);
+		models.Story story = models.Story.create(user,format);
 		if (request().body().asJson() != null) {
 			controllers.json.Story request = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
 			story = models.Story.update( story.getId(),
@@ -154,7 +155,8 @@ public class Application extends Controller {
 													request.thumbnail,
 													request.published,
 													request.locations,
-													request.labels);
+													request.labels,
+													request.format);
 		}
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, false);
 		String json = new Gson().toJson(jsonStory);
@@ -173,7 +175,11 @@ public class Application extends Controller {
 			jsonLocation = new Gson().toJson(jsonStory.location);
 		else
 			jsonLocation = "";
-		return ok(views.html.create.render(jsonStory,jsonLocation));
+		if (story.getFormat() == Constants.STORY_FORMAT_OPEN)
+			return ok(views.html.create.render(jsonStory,jsonLocation));
+		else if (story.getFormat() == Constants.STORY_FORMAT_SINGLE)
+			return ok(views.html.index.render(jsonStory,jsonStory.location,true));
+		return badRequest("No format specified.");
 	}
 
 	// public static Result readStory(Long storyid) {
@@ -263,9 +269,9 @@ public class Application extends Controller {
 					throw new NumberFormatException();
 				location.zoom = Double.parseDouble(tags[0].split(",",3)[2]);
 				location.name = tags[1].replace("addr=","");
-				return ok(views.html.index.render(null,location));
+				return ok(views.html.index.render(null,location,false));
 			} catch (NumberFormatException e) {
-				return ok(views.html.index.render(null,null));
+				return ok(views.html.index.render(null,null,false));
 			}
 	}
 

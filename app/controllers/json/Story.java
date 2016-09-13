@@ -37,7 +37,7 @@ public class Story implements Comparable<Story> {
 	public String articleLanguage;
 	public Long nextStoryId;
 	public Long previousStoryId;
-	public Integer type;
+	public Integer format;
 	public Integer noStories;
 	public Integer noUsers;
 	public Integer noFollowers;
@@ -88,7 +88,7 @@ public class Story implements Comparable<Story> {
 		result.author = controllers.json.User.getUser(models.UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
 		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
 		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
-		result.type = 0;
+		result.format = story.getFormat();
 		result.isDummy = false;
 		result.distance = story.getDistance();
 		result.userCanEdit = false;

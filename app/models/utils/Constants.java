@@ -17,4 +17,7 @@ public class Constants {
 	public static final Integer PUBLISHED_STATE_PUBLISHED_ALL = 1;
 	public static final Integer PUBLISHED_STATE_PUBLISHED_FOLLOWERS = 2;
 	public static final Integer PUBLISHED_STATE_PRIVATE = 3;
+
+	public static final Integer STORY_FORMAT_OPEN = 0;
+	public static final Integer STORY_FORMAT_SINGLE = 1;
 }

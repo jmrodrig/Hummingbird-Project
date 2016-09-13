@@ -42,6 +42,9 @@ var lastAddress;
 
 var isgrabWebsiteMetadataBusy;
 
+var SINGLE_STORY = 1,
+OPEN_STORY = 0;
+
 //--- initialize method ---//
 function initialize() {
 
@@ -285,25 +288,40 @@ function buildStoryContainer(story) {
   $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-location"></div>').appendTo(locationContainer);
   $('<p class="location">' + story.locationName + '</p>').appendTo(locationContainer);
 
-  //Thumbnail: article image or story image
-  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
+  if (story.format == OPEN_STORY) {
+    //Thumbnail: article image or story image
+    var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
 
-  if (!story.title || story.title && story.summary.title == 0)
-    story.title = "(A Story Title)"
-  var titleContainer = $('<div class="title-container"/>').appendTo(storyContainerBody);
-  var title = $('<p class="story-title"/>').appendTo(titleContainer).text(story.title);
+    if (!story.title || story.title && story.summary.title == 0)
+      story.title = "(A Story Title)"
+    var titleContainer = $('<div class="title-container"/>').appendTo(storyContainerBody);
+    var title = $('<p class="story-title"/>').appendTo(titleContainer).text(story.title);
 
-  if (story.thumbnail && story.thumbnail.length > 0) {
-    $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
-                                                  .attr('src',PICTURES_SERVER_PATH + story.thumbnail);
+    if (story.thumbnail && story.thumbnail.length > 0) {
+      $('<img atl="image for ' + story.title + '">').appendTo(imageContainer)
+                                                    .attr('src',PICTURES_SERVER_PATH + story.thumbnail);
+    }
+
+    if (!story.summary || story.summary && story.summary.length == 0)
+      story.summary = "(a story summary...)"
+    var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+    var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+    setStoryText(story.summary,summary);
+    var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
+
+  } else if (story.format == SINGLE_STORY) {
+    if (!story.summary || story.summary && story.summary.length == 0)
+	    story.summary = "(a story summary...)"
+	  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
+	  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+	  setStoryText(story.summary,summary);
+
+		//Thumbnail: article image or story image
+	  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
+		if (story.thumbnail && story.thumbnail.length > 0) {
+	    $('<img>').appendTo(imageContainer).attr('src',PICTURES_SERVER_PATH + story.thumbnail);
+	  }
   }
-
-  if (!story.summary || story.summary && story.summary.length == 0)
-    story.summary = "(a story summary...)"
-  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
-  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-  setStoryText(story.summary,summary);
-  var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 
   //--- FOOTER ---//
 
@@ -454,7 +472,7 @@ function buildInstagramContainer(link,addToContainer,options) {
 
 function openStoryView(story,option) {
   if (option.edit || option.readonly && !story.published && story.userCanEdit)
-    window.location.href = LIR_SERVER_URL + '/publisher/create/' + story.id;
+    window.location.href = LIR_SERVER_URL + '/story/edit/' + story.id;
   else if (option.new)
     window.location.href = LIR_SERVER_URL + '/story/create';
   else if (option.readonly)

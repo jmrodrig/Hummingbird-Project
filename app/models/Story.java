@@ -87,8 +87,14 @@ public class Story extends Model {
 	@Column(name = "model_version")
 	private Integer modelversion;
 
-	@Column(name = "story_language")
+	@Column(name = "language")
 	private String language;
+
+	@Column(name = "format")
+	private Integer format;
+
+	@Column(name = "premium")
+	private Integer premium;
 
 	@OneToMany(mappedBy = "story", cascade = CascadeType.ALL)
 	private List<UserStory> userStories;
@@ -132,6 +138,10 @@ public class Story extends Model {
 	@Column(name = "date_created")
 	@Temporal(TemporalType.TIMESTAMP)
   private java.util.Date dateCreated;
+
+	@Column(name = "date_modified")
+	@Temporal(TemporalType.TIMESTAMP)
+  private java.util.Date dateModified;
 
 	@Transient
 	private com.lir.library.domain.Story domainStory;
@@ -210,6 +220,22 @@ public class Story extends Model {
 		this.cost = cost;
 	}
 
+	public void setFormat(Integer f) {
+		this.format = f;
+	}
+
+	public Integer getFormat() {
+		return format;
+	}
+
+	public void setPremium(Integer p) {
+		this.premium = p;
+	}
+
+	public Integer getPremium() {
+		return premium;
+	}
+
 	public List<UserStory> getUserStories() {
 		return userStories;
 	}
@@ -218,8 +244,9 @@ public class Story extends Model {
 		this.userStories = userStories;
 	}
 
-	public Boolean isOwnedByUser(User user) {
-		UserStory userStory = UserStory.fingByUserIdAndStoryId(user.getId(),this.id);
+	public Boolean isOwnedByUser(User u) {
+		if (u == null) return false;
+		UserStory userStory = UserStory.fingByUserIdAndStoryId(u.getId(),this.id);
 		if (userStory != null)
 			return true;
 		return false;
@@ -385,6 +412,14 @@ public class Story extends Model {
 
 	public void setDateCreated(java.util.Date date) {
 		this.dateCreated = date;
+	}
+
+	public void setDateModified(java.util.Date date) {
+		this.dateModified = date;
+	}
+
+	public java.util.Date getDateModified() {
+		return this.dateModified;
 	}
 
 	public com.lir.library.domain.Story getDomainStory() {
@@ -569,29 +604,34 @@ public class Story extends Model {
 				articleLanguage,
 				location);
 		// System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
+		story.setDateCreated(new java.util.Date());
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		story.setLabels(labels);
 		return story;
 	}
 
-	public static Story create(User user, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels)
+	public static Story create(User user, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels, Integer format)
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
 		Story story = new Story();
-		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations, format);
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
+		story.setDateCreated(new java.util.Date());
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		story.setLabels(labels);
 		return story;
 	}
 
-	public static Story create(User user)	throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+	public static Story create(User user, Integer format)	throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 		Story story = new Story();
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
+		story.setDateCreated(new java.util.Date());
+		story.setFormat(format);
 		story.save(DBConstants.lir_backoffice);
 		System.out.println(story.getId());
+		System.out.println(story.getFormat());
 		UserStory.create(true, true, 0, "", user, story);
 		return story;
 	}
@@ -611,18 +651,20 @@ public class Story extends Model {
 				articleAuthor,
 				articleLanguage,
 				location);
+		story.setDateModified(new java.util.Date());
 		story.save(DBConstants.lir_backoffice);
 		story.setLabels(labels);
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels, Integer format) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
 
-		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations, format);
+		story.setDateModified(new java.util.Date());
 		story.save(DBConstants.lir_backoffice);
 		story.setLabels(labels);
 		return story;
@@ -640,13 +682,14 @@ public class Story extends Model {
 		//story.setLocation(location);
 	}
 
-	private static void setStory(Story story, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations) throws IOException {
+	private static void setStory(Story story, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, Integer format) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(contentJSON);
 		story.setThumbnail(thumbnail);
 		story.setPublished(published);
 		story.setLocations(contentJSON);
+		story.setFormat(format);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {

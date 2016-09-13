@@ -122,19 +122,14 @@ h1, h2, h3, h4, p, a, input, div {
 	position: relative;
 	color: white;
 	height: 0px;
-	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	overflow: hidden;
 }
 
 #story-header.open {
-	height: 340px;
+	overflow: visible;;
 }
 
 #story-header.open.with-cover {
-	position: relative;
-	height: 450px;
 }
 
 #story-container-and-thumbnail {
@@ -147,34 +142,26 @@ h1, h2, h3, h4, p, a, input, div {
 	background-size: cover;
   background-position: center;
 	background-repeat: no-repeat;
-	overflow: hidden;
 }
 
 #placeholder-overlay{
 	flex-grow: 1;
 	-webkit-flex-grow: 1;
 	background-color: rgba(51, 51, 51, 0.54);
-	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
 #details-overlay {
 	position: relative;
-	padding: 0px 30px;
+	padding: 20px 30px;
 	width: 100%;
 	margin: auto;
 	background-color: rgba(51, 51, 51, 0.54);
-	overflow: hidden;
-	-webkit-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-moz-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	-o-transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
-	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
+	opacity: 1;
 }
 
 #story-header.open #details-overlay {
 	padding: 20px 30px;
+	opacity: 1;
 }
 
 #hide-pane-btn {
@@ -219,43 +206,36 @@ h1, h2, h3, h4, p, a, input, div {
 
 #story-status {
 	font-weight: 200;
+	display: inline-block;
 }
 
-#actions {
+#story-details {
+	margin-bottom: 10px;
+}
+
+#publish-actions {
 	text-align: center;
 }
 
-#add-cover-btn, #remove-cover-btn, #post-btn {
-	position: relative;
-	overflow: hidden;
-	background: transparent;
-	border: 2px solid white;
-	color: white;
-	border-radius: 10px;
-	margin-left: 20px;
+#publish-actions > * {
+	display: inline-block;
+	margin-left: 7px;
+	margin-right: 7px;
 }
+
+#add-cover-btn, #remove-cover-btn {
+}
+
+#post-btn {
+
+}
+
 
 #remove-cover-btn {
 	display: none;
 }
 
-#add-cover-btn:hover, #post-btn:hover {
-	background: rgba(0, 0, 0, 0.4);
-}
 
-#remove-cover-btn, #post-btn.highlighted {
-	background: rgba(61, 243, 184, 0.55);
-	color: rgb(255, 255, 255);
-}
-
-#remove-cover-btn:hover, #post-btn:hover.highlighted {
-	background: rgba(61, 243, 184, 0.7);
-	color: rgb(255, 255, 255);
-}
-
-#add-cover-btn:focus, #remove-cover-btn:focus, #post-btn:focus {
-	outline: none;
-}
 
 /******************************************************************
 	Story Content
@@ -618,6 +598,35 @@ p.picture-caption:empty::before {
 	border: none;
 	opacity: 1;
 	outline: none;
+}
+
+.btn-transparent {
+	position: relative;
+	overflow: hidden;
+	background: transparent;
+	border: 1px solid white;
+	color: white;
+	border-radius: 10px;
+}
+
+.btn-transparent:hover {
+	background: rgba(255, 255, 255, 0.1);
+	color: white;
+}
+
+.btn-transparent:focus {
+	outline: none;
+	color: white;
+}
+
+.btn-transparent.highlighted {
+	background: rgba(61, 243, 184, 0.55);
+	color: rgb(255, 255, 255);
+}
+
+.btn-transparent:hover.highlighted {
+	background: rgba(61, 243, 184, 0.7);
+	color: rgb(255, 255, 255);
 }
 
 .image-upload-form {

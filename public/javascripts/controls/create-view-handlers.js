@@ -7,7 +7,16 @@ STORY_SUBTITLE = 12,
 PICTURE_CONTAINER = 11,
 DEFAULT_ZOOM = 4,
 DEFAULT_LATITUDE = 39.432031,
-DEFAULT_LONGITUDE = -8.084700;
+DEFAULT_LONGITUDE = -8.084700,
+SINGLE_STORY = 1,
+OPEN_STORY = 0,
+DRAFT = 0,
+PUBLISH_WITH_EVERYONE = 1,
+PUBLISH_WITH_FOLLOWERS = 2,
+PUBLISH_PRIVATELY = 3.
+PUBLISH_PANE_OPEN_WITH_COVER = 450,
+PUBLISH_PANE_OPEN = 340,
+PUBLISH_PANE_CLOSED = 0;
 
 
 var ctrlDown = false,
@@ -91,7 +100,6 @@ function addSectionAtEnd() {
   var firstp = $('<p class="section-item story-text text-normal-size" />').appendTo(section);
   section.appendTo($('#story-content'));
   resetCaretPositionOnElement(firstp[0],0);
-  setSectionKeyListners(section);
 }
 
 function addSectionWithLocation() {
@@ -144,7 +152,18 @@ function setSectionKeyListners(sectionelement) {
         }
       }
     }
-  });
+  })
+  .bind('paste', function(e) {
+	  var pastedText = undefined;
+	  if (e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData) { // IE
+	    pastedText = e.originalEvent.clipboardData.getData('Text');
+	  } else if (e.clipboardData && e.clipboardData.getData) {
+	    pastedText = e.clipboardData.getData('text/plain');
+	  }
+		document.execCommand("insertText", false, pastedText);
+    console.log(pastedText);
+	  return false; // Prevent the default handler from running.
+	});
 }
 
 function toggleTextSize() {
@@ -420,10 +439,6 @@ function isCaretAtBegining() {
       image controls
 -------------------------*/
 
-function positionPictureFrame(position) {
-
-}
-
 function uploadImageToServer(onFinished) {
   var imageData = new FormData($('#image-upload-form')[0]);
   stud_uploadStoryImage(imageData,story.id,function(data) {
@@ -470,6 +485,7 @@ $(function() {
 
     fileReader.onload = function(ev2) {
       uploadStoryThumbnailToServer(function(data) {
+        story.thumbnail = data.imageUrl;
         addCover(data.imageUrl)
       });
       $("#cover-upload-input").replaceWith($("#cover-upload-input").val('').clone(true));
@@ -529,13 +545,18 @@ $(function() {
   $("#publish-link").click(function() {
     openPublishPane();
   });
-
   initializeUser();
 })
 
 function openPublishPane() {
   window.scrollTo(0, 0);
-  $('#story-header').addClass('open');
+  if ($('#story-header').hasClass('with-cover'))
+    var height = PUBLISH_PANE_OPEN_WITH_COVER;
+  else
+    var height = PUBLISH_PANE_OPEN;
+  $('#story-header').animate({height:height}, 500,"easeOutQuart", function() {
+    $('#story-header').addClass('open');
+  });
   $('#content-tools').addClass('publish-pane-open');
   saveStoryOnServer();
 }
@@ -544,11 +565,15 @@ function closePublishPane() {
   $('#story-header .map-popover').removeClass('open');
   $('#story-header').removeClass('open');
   $('#content-tools').removeClass('publish-pane-open');
+  $('#story-header').animate({height:PUBLISH_PANE_CLOSED}, 500,"easeOutQuart", function() {});
 }
 
 function addCover(imageUrl) {
   $('#story-container-and-thumbnail').css('background-image','url(' + PICTURES_SERVER_PATH + imageUrl + ')');
-  $('#story-header, #content-tools').addClass('with-cover');
+  $('#story-header').animate({height:PUBLISH_PANE_OPEN_WITH_COVER}, 500,"easeOutQuart", function() {
+    $('#story-header').addClass('with-cover');
+  });
+  $('#content-tools').addClass('with-cover');
   $("#story-header #add-cover-btn").hide();
   $("#story-header #remove-cover-btn").show();
 }
@@ -576,13 +601,35 @@ function populateStoryPublishPane() {
   if (story.location != null)
     loc = story.location;
   locationbanner = buildLocationBannerForPublishPane(loc);
-  if (locationbanner)
+  if (locationbanner) {
     locationbanner.appendTo($("#story-header #story-location"))
-  if (story.published != 0) {
-    $("#story-header #story-status").text("published");
+  }
+  setPublishingType(story.published,true)
+  if (story.published != DRAFT) {
     $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
   } else {
     $("#story-header #story-status").text("draft");
+  }
+}
+
+function setPublishingType(opt,updatestatus) {
+  switch (parseInt(opt)) {
+    case PUBLISH_WITH_EVERYONE:
+      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
+      $("#publish-options-dropdown .publish-option-text").text("Share with everyone")
+      if (updatestatus) $("#story-status").text("Shared with everyone")
+      break;
+    case PUBLISH_WITH_FOLLOWERS:
+      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
+      $("#publish-options-dropdown .publish-option-text").text("Share with followers")
+      if (updatestatus) $("#story-status").text("Shared with followers")
+      break;
+    case PUBLISH_PRIVATELY:
+      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
+      $("#publish-options-dropdown .publish-option-text").text("Share privately")
+      if (updatestatus) $("#story-status").text("Shared privately")
+      break;
+    default:
   }
 }
 
@@ -764,6 +811,8 @@ function saveStoryOnServer(onFinished) {
   var storycontent = convertStoryContentToObject();
   story.title = $("#story-header #story-title").text();
   story.summary = $("#story-header #story-summary").text();
+  story.format = OPEN_STORY;
+
   if (story.location) {
     storycontent.push({location:story.location,type:HEADER_SECTION})
   }
@@ -782,17 +831,17 @@ function saveStoryOnServer(onFinished) {
 }
 
 function publishStory() {
-  if (story.published == 0) {
-    story.published = 1;
+  if (story.published == DRAFT) {
+    story.published = $("#publish-options-dropdown").attr('publish-type');
     saveStoryOnServer(function() {
-      $("#story-header #story-status").text("published");
+      setPublishingType(story.published,true);
       $("#story-header #post-btn").addClass('highlighted').text('Unpublish');
     });
   } else {
-    story.published = 0;
+    story.published = DRAFT;
     saveStoryOnServer(function() {
       $("#story-header #story-status").text("draft");
-      $("#story-header #post-btn").removeClass('highlighted').text('Publish');
+      $("#story-header #post-btn").removeClass('highlighted').text('Post');
     });
   }
 }
