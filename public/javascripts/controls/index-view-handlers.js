@@ -357,8 +357,10 @@ function openStoryView(story,options) {
 		fitMarkersOnView(storySectionsMarkerList.values(),map);
 	} else if (story.format == SINGLE_STORY && !options.new) {
 		var marker = indexStoriesMarkerList.get(story.id);
-		marker.setMap(map);
-		if (marker) fitMarkersOnView([marker],map);
+		if (marker) {
+			marker.setMap(map);
+			fitMarkersOnView([marker],map);
+		}
 	}
 
 
@@ -421,7 +423,10 @@ function openCreateSingleStoryView() {
 	}
 	story = new Object()
 	story.format = SINGLE_STORY;
-	openStoryView(story,{editable:true,new:true})
+  stud_createStory(story,function(st) {
+		story = st;
+		openStoryView(story,{editable:true})
+	})
 }
 
 function openEditStoryView(story) {
@@ -778,6 +783,7 @@ function buildSingleStoryLargeContainer(story,options) {
 		var addPictureBtn = $('<a class="btn btn-default" id="add-picture-btn"><span class="glyph icon-no-margins icon-20px flaticon-art"/></a>').appendTo(optionsBtnContainer)
 		$('<form enctype="multipart/form-data" id="image-upload-form" class="image-upload-form"/>')
 			.append('<input id="image-upload-input" name="profileImg[]" type="file" />').appendTo(addPictureBtn);
+		var saveBtn = $('<button id="save-btn" type="button" class="btn btn-default" onclick="saveStory('+ story.id +')"><span class="glyph icon-no-margins icon-15px flaticon-save"/></button>').appendTo(optionsBtnContainer)
 		var dropdownmenu = $('<div class="dropdown"/>').appendTo(optionsBtnContainer)
 		var publishoptionsBtn = $('<button class="btn btn-default dropdown-toggle" type="button" publish-type="2" id="publish-options-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></button>').appendTo(dropdownmenu)
 		publishoptionsBtn.append('<span class="publish-option-text">Share with followers</span>')
@@ -786,12 +792,12 @@ function buildSingleStoryLargeContainer(story,options) {
 		dropdownlist.append('<li><a publish-type="1" onclick="setPublishingType(1,false)">Share with everyone</a></li>')
 		dropdownlist.append('<li><a publish-type="2" onclick="setPublishingType(2,false)">Share with followers</a></li>')
 		dropdownlist.append('<li><a publish-type="3" onclick="setPublishingType(3,false)">Share privately</a></li>')
-		if (options.new) {
-			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default" onclick="createStory()">Post</button>').appendTo(optionsBtnContainer)
+		if (story.published > 0) {
+			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default highlighted" onclick="publishStory('+ story.id +')">Unpost</button>').appendTo(optionsBtnContainer)
 		} else {
-			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default" onclick="editStory('+ story.id +')">Post</button>').appendTo(optionsBtnContainer)
+			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default" onclick="publishStory('+ story.id +')">Post</button>').appendTo(optionsBtnContainer)
 		}
-
+		postBtn.attr('published-status',story.published);
 
 		addPictureBtn.find("#image-upload-input").change(function(ev) {
 	    var saveimagefile = ev.target.files[0];
@@ -993,7 +999,7 @@ function buildSaveStoryButton(story) {
   var saveStoryButton = $('<a storyId= ' + id + ' role="button" data-toggle="popover" tabindex="0" class="story-save-button btn btn-icon ' + saveStoryButtonClass + '" >' + icon + '  <span class="badge">' + story.noOfSaves + '</span></a>')
               .click(function() {
 								var storyId = $(this).attr('storyId');
-                saveStory(storyId, function(result) {
+                bookmarkStory(storyId, function(result) {
                   $('.story-save-button[storyId=' + storyId + '] span').html(result.noOfSaves);
 									var story = getStoryById(result.storyId,indexStories);
 									story.noOfSaves = result.noOfSaves;
@@ -1440,54 +1446,15 @@ function showAllStoriesMarkersFromMap() {
 }
 
 /******************************************************************
-	CREATE AND EDIT STORY
+	SAVE AND PUBLISH STORY
 ******************************************************************/
 
-//--- createStory method ---//
-function createStory() {
+function saveStory(storyid,publish) {
 
 	if (!user) {
     displayAlertMessage('Failed to post. User not logged in.')
     return;
   }
-
-  $('.lg-container.single-story #post-btn').text('Posting...').attr('disabled','disabled');
-
-	var story = new Object();
-	story.content = JSON.stringify([{location:getStoryLocationFromMap(map),type:HEADER_SECTION}])
-	story.summary = getStoryText($('.lg-container.single-story .story-text'));
-	story.format = SINGLE_STORY;
-	story.published = parseInt($('.lg-container.single-story #publish-options-dropdown').attr('publish-type'));
-
-  //save story on server
-	stud_createStory(story,function(st){
-		//upload story pics
-		if (uploadimagedata != null) {
-			uploadStoryImage(st.id,function(data) {
-				st.thumbnail = data.imageUrl;
-        postingFinished(st);
-			},
-      function() {
-        postingError();
-			});
-		} else {
-			//publish
-      postingFinished(st);
-		}
-	},
-  function() {
-    postingError();
-  });
-}
-
-function editStory(storyid) {
-
-	if (!user) {
-    displayAlertMessage('Failed to post. User not logged in.')
-    return;
-  }
-
-  $('#story-publish-button').text('Posting...').attr('disabled','disabled');
 
 	var story = new Object();
 	story.id = storyid;
@@ -1497,33 +1464,42 @@ function editStory(storyid) {
 	var thumbnaillink = $(".single-story .picture-frame img").attr('src');
 	if (thumbnaillink != null && thumbnaillink.indexOf(PICTURES_SERVER_PATH) > -1)
 		story.thumbnail = thumbnaillink.substring(PICTURES_SERVER_PATH.length);
-	story.published = parseInt($('.lg-container.single-story #publish-options-dropdown').attr('publish-type'));
+	if (publish != null)
+		story.published = publish;
+	else
+		story.published = parseInt($('#post-btn').attr('published-status'));
 
   //save story on server
-	stud_editStory(story,function(st){
+	stud_saveStory(story,function(st){
 		//upload story pics
 		var storyId = st.id;
 		if (uploadimagedata != null) {
 			uploadStoryImage(storyId,function(data) {
 				st.thumbnail = data.imageUrl;
-        editFinished(st);
+        saveFinished(st);
 			});
 		//} else if (hasImageToDelete(st)) {
       // deleteStoryImage(storyId, function(thumbnail) {
 			// 	st.thumbnail = thumbnail;
-			// 	editFinished(st);
+			// 	saveFinished(st);
       // })
 		} else {
-      editFinished(st);
+      saveFinished(st);
     }
 	},
   function() {
-    postingError();
+    saveError();
   });
 }
 
-function editFinished(story) {
-  $('#story-publish-button').text('Post').removeAttr('disabled');
+function saveFinished(story) {
+	$('#post-btn').attr('published-status',story.published)
+	if (story.published > 0) {
+		$('#post-btn').addClass('highlighted').text('Unpost');
+	} else {
+		$('#post-btn').removeClass('highlighted').text('Post');
+	}
+	if (indexStories == null) indexStories = [];
   updateStoryFromIndexList(story);
   //if position changes the marker must be updated
 	if (story.location) {
@@ -1534,23 +1510,21 @@ function editFinished(story) {
 			indexStoriesMarkerList.remove(story.id);
 		}
 	}
-  drawLayout(indexStories);
-	closeStoryView({keepMapPosition:true});
+  //drawLayout(indexStories);
+	//closeStoryView({keepMapPosition:true});
 }
 
-function postingFinished(story) {
-  $('.single-story #post-btn').text('Post').removeAttr('disabled');
-	if (indexStories == null) indexStories = [];
-	indexStories.push(story);
-	var marker = drawStoryMarkerOnMap(story)
-	indexStoriesMarkerList.put(story.id,marker)
-  drawLayout(indexStories);
-	closeStoryView({keepMapPosition:true});
-}
-
-function postingError() {
-  $('#story-publish-button').text('Post').removeAttr('disabled');
+function saveError() {
   displayAlertMessage('Posting Failed. Error while posting the story.')
+}
+
+function publishStory(storyid) {
+	publishedstatus = parseInt($('#post-btn').attr('published-status'));
+	if (publishedstatus > 0)
+		publish = 0;
+	else
+		publish = parseInt($('#publish-options-dropdown').attr('publish-type'));
+	saveStory(storyid,publish);
 }
 
 /******************************************************************
@@ -1579,15 +1553,24 @@ function updateStoryFromIndexList(story) {
   for (var i in indexStories) {
     if (indexStories[i].id == story.id) {
       indexStories[i] = story;
+			return;
     }
   }
+	indexStories.push(story);
 }
 
 function updateMarkerPosition(story) {
 	if (story.location == null) return;
-	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true),
-	marker = indexStoriesMarkerList.get(story.id).setPosition(position,position,true)
-  indexStoriesMarkerList.get(story.id).story = story;
+	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
+	var marker = indexStoriesMarkerList.get(story.id)
+	if (marker) {
+	 marker.setPosition(position,position,true)
+	 indexStoriesMarkerList.get(story.id).story = story;
+ 	} else {
+		var marker = drawStoryMarkerOnMap(story)
+		marker.story = story;
+		indexStoriesMarkerList.put(story.id,marker)
+	}
 }
 
 function setLayoutDimensions(stories) {
@@ -2142,7 +2125,7 @@ function likeStory(storyId, onFinished){
 	});
 }
 
-function saveStory(storyId, onFinished){
+function bookmarkStory(storyId, onFinished){
 	$.ajax({
 		url: "/story/save/" + storyId,
 		type: "PUT",
@@ -2253,19 +2236,17 @@ function stud_nominatimReverseGeoCoding(lat,lng,zoom, success, error){
 	});
 }
 
-function stud_createStory(story, success, error){
+function stud_createStory(story,success, error){
 	$.ajax({
 		url: "/story/create/" + story.format,
 		type: "POST",
 		dataType: "json",
-		data: JSON.stringify(story),
-		contentType:"application/json",
 		success: success,
 		error: error,
 	});
 }
 
-function stud_editStory(story, success, error){
+function stud_saveStory(story, success, error){
 	$.ajax({
 		url: "/story/" + story.id,
 		type: "PUT",

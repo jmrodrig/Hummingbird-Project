@@ -41,6 +41,7 @@ public class Story implements Comparable<Story> {
 	public Integer noStories;
 	public Integer noUsers;
 	public Integer noFollowers;
+	public Integer noViews;
 	public List<StoryCollection> collections;
 	public List<String> labels;
 	public Double distance;
@@ -88,6 +89,7 @@ public class Story implements Comparable<Story> {
 		result.author = controllers.json.User.getUser(models.UserStory.fingByStoryIdAndIsAuthor(story.getId(), true).getUser(),false);
 		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
 		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
+		result.noViews = story.getNOViews();
 		result.format = story.getFormat();
 		result.isDummy = false;
 		result.distance = story.getDistance();

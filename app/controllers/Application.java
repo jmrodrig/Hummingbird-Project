@@ -75,9 +75,13 @@ public class Application extends Controller {
 		return ok(views.html.dashboard.dashboard.render());
 	}
 
+	@SecureSocial.UserAwareAction
 	public static Result readStory(Long storyId) {
 		models.Story story = models.Story.findById(storyId);
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, false);
+		if (story == null) return badRequest("Invalid story id.");
+		story.incrementNOViews();
+		User currentuser = getCurrentUser();
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentuser, false);
 		String jsonLocation;
 		if (jsonStory.location != null)
 			jsonLocation = new Gson().toJson(jsonStory.location);
@@ -90,6 +94,13 @@ public class Application extends Controller {
 			return ok(views.html.readmobile.render(jsonStory,jsonLocation));
 		else
 			return ok(views.html.index.render(jsonStory,jsonStory.location,false));
+	}
+
+	public static Result readTriggered(Long storyId) {
+		models.Story story = models.Story.findById(storyId);
+		if (story == null) return badRequest("Invalid story id.");
+		story.incrementNOViews();
+		return ok();
 	}
 
 	public static Result scraper() {

@@ -111,6 +111,9 @@ public class Story extends Model {
 	@Column(name = "path")
 	private String path;
 
+	@Column(name = "views")
+	private Integer noViews;
+
 	@Column(name = "article_title")
 	private String articleTitle;
 
@@ -234,6 +237,19 @@ public class Story extends Model {
 
 	public Integer getPremium() {
 		return premium;
+	}
+
+	public void setNOViews(Integer v) {
+		this.noViews = v;
+	}
+
+	public void incrementNOViews() {
+		this.noViews = ++this.noViews;
+		this.save(DBConstants.lir_backoffice);
+	}
+
+	public Integer getNOViews() {
+		return noViews;
 	}
 
 	public List<UserStory> getUserStories() {

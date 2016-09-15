@@ -368,10 +368,11 @@ public class Stories extends Controller {
 	public static Result loadStory(Long storyId) {
 		models.User currentuser = getCurrentUser();
 		models.Story story = models.Story.findById(storyId);
+		story.incrementNOViews();
 		if (story == null) {
 			return badRequest("Invalid story id");
 		}
-		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentuser, true);
+		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentuser, false);
 		String json = new Gson().toJson(jsonStory);
 		return ok(json);
 	}

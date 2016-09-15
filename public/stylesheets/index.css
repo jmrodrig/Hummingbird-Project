@@ -1299,15 +1299,29 @@ p.picture-caption:empty:not([readonly])::before {
   width: 180px;
 }
 
+.lg-container.single-story #cancel-btn {
+  border: none;
+}
+
 .lg-container.single-story #post-btn {
   background: rgba(61, 243, 184, 0.55);
   color: white;
-  width: 100px;
+  width: 76px;
 }
+
 
 .lg-container.single-story #post-btn:hover {
   background: rgba(61, 243, 184, 0.7);
   color: white;
+}
+
+.lg-container.single-story #post-btn.highlighted {
+  background: rgba(243, 61, 61, 0.55);
+}
+
+
+.lg-container.single-story #post-btn.highlighted:hover {
+  background: rgba(243, 61, 61, 0.7);
 }
 
 .single-story #story-location {
