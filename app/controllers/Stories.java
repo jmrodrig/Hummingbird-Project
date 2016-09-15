@@ -399,7 +399,6 @@ public class Stories extends Controller {
 		JsonObject json = new JsonObject();
     json.addProperty("noOfStories", noOfStories);
 		String json_ = new Gson().toJson(json);
-
 		return ok(json_);
 	}
 

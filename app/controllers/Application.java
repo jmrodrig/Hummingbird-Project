@@ -16,6 +16,7 @@ import models.exceptions.ModelAlreadyExistsException;
 import models.exceptions.ModelNotFountException;
 
 import com.google.gson.Gson;
+import com.google.gson.JsonObject;
 import com.typesafe.plugin.*;
 
 import controllers.utils.HtmlFetcher;
@@ -100,7 +101,10 @@ public class Application extends Controller {
 		models.Story story = models.Story.findById(storyId);
 		if (story == null) return badRequest("Invalid story id.");
 		story.incrementNOViews();
-		return ok();
+		JsonObject json = new JsonObject();
+    json.addProperty("noOfViews", story.getNOViews());
+		String json_ = new Gson().toJson(json);
+		return ok(json_);
 	}
 
 	public static Result scraper() {
