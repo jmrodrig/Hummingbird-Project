@@ -621,6 +621,7 @@ public class Story extends Model {
 				location);
 		// System.out.println(articleLanguage + ";;" + articleAuthor + ";;" +articleSource  + ";;" + articleDate  + ";;" + articleLink + ";;" + articleImage + ";;" + articleTitle);
 		story.setDateCreated(new java.util.Date());
+		story.setNOViews(0);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		story.setLabels(labels);
@@ -634,6 +635,7 @@ public class Story extends Model {
 		setStory(story, title, summary, contentJSON, thumbnail, published,	locations, format);
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.setDateCreated(new java.util.Date());
+		story.setNOViews(0);
 		story.save(DBConstants.lir_backoffice);
 		UserStory.create(true, true, 0, "", user, story);
 		story.setLabels(labels);
@@ -644,6 +646,7 @@ public class Story extends Model {
 		Story story = new Story();
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.setDateCreated(new java.util.Date());
+		story.setNOViews(0);
 		story.setFormat(format);
 		story.save(DBConstants.lir_backoffice);
 		System.out.println(story.getId());
