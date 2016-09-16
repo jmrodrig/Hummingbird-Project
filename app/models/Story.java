@@ -632,7 +632,7 @@ public class Story extends Model {
 								throws ModelAlreadyExistsException, IOException, ModelNotFountException {
 
 		Story story = new Story();
-		setStory(story, title, summary, contentJSON, thumbnail, published,	locations, format);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
 		story.setModelVersion(Constants.CURRENT_MODEL_VERSION);
 		story.setDateCreated(new java.util.Date());
 		story.setNOViews(0);
@@ -701,7 +701,7 @@ public class Story extends Model {
 		//story.setLocation(location);
 	}
 
-	private static void setStory(Story story, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, Integer format) throws IOException {
+	private static void setStory(Story story, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations) throws IOException {
 		story.setTitle(title);
 		story.setSummary(summary);
 		story.setContent(contentJSON);
