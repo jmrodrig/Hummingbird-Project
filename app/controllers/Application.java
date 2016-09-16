@@ -164,8 +164,7 @@ public class Application extends Controller {
 													request.thumbnail,
 													request.published,
 													request.locations,
-													request.labels,
-													request.format);
+													request.labels);
 		}
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story, user, false);
 		String json = new Gson().toJson(jsonStory);

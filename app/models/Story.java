@@ -676,13 +676,13 @@ public class Story extends Model {
 		return story;
 	}
 
-	public static Story update(long id, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels, Integer format) throws ModelNotFountException, IOException {
+	public static Story update(long id, String title, String summary, String contentJSON, String thumbnail, Integer published, List<controllers.json.Location> locations, List<String> labels) throws ModelNotFountException, IOException {
 		Story story = Story.findById(id);
 		if (story == null) {
 			throw new ModelNotFountException();
 		}
 
-		setStory(story, title, summary, contentJSON, thumbnail, published,	locations, format);
+		setStory(story, title, summary, contentJSON, thumbnail, published,	locations);
 		story.setDateModified(new java.util.Date());
 		story.save(DBConstants.lir_backoffice);
 		story.setLabels(labels);
@@ -708,7 +708,6 @@ public class Story extends Model {
 		story.setThumbnail(thumbnail);
 		story.setPublished(published);
 		story.setLocations(contentJSON);
-		story.setFormat(format);
 	}
 
 	public static void delete(Long id) throws ModelNotFountException {
