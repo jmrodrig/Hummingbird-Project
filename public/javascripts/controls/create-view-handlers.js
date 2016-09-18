@@ -5,7 +5,7 @@ HEADER_SECTION = 2,
 STORY_TEXT = 10,
 STORY_SUBTITLE = 12,
 PICTURE_CONTAINER = 11,
-DEFAULT_ZOOM = 4,
+DEFAULT_ZOOM = 8,
 DEFAULT_LATITUDE = 39.432031,
 DEFAULT_LONGITUDE = -8.084700,
 SINGLE_STORY = 1,
@@ -377,7 +377,7 @@ function initiateMap(mapelem,searchboxelem,coords) {
   } else {
     map.marker = new google.maps.Marker({map: map, position:coords.position});
   }
-  map.setZoom(coords.zoom);
+  map.setZoom(Math.round(coords.zoom));
   map.setCenter(coords.position);
 
 
@@ -394,7 +394,7 @@ function initiateMap(mapelem,searchboxelem,coords) {
     if (places.length == 0)
       return;
     map.setCenter(places[0].geometry.location);
-    map.setZoom(8);
+    map.setZoom(DEFAULT_ZOOM);
   });
 
   return map;

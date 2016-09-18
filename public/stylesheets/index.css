@@ -625,7 +625,9 @@ h1, h2, h3, h4, p, a {
 	width: 100%;
   overflow-y: scroll;
   pointer-events: all;
-  background-color: rgba(0, 0, 0, 0.23)
+  background: -moz-linear-gradient(left, rgba(255,255,255,0.65) 0%, rgba(255,255,255,0.65) 99%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(left, rgba(255,255,255,0.65) 0%,rgba(255,255,255,0.65) 99%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to right, rgba(255,255,255,0.65) 0%,rgba(255,255,255,0.65) 99%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 }
 
 .layout-column {

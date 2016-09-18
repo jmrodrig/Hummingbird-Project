@@ -72,7 +72,7 @@ HEADER_SECTION = 2,
 STORY_TEXT = 10,
 PICTURE_CONTAINER = 11,
 STORY_SUBTITLE = 12,
-DEFAULT_ZOOM = 4,
+DEFAULT_ZOOM = 8,
 DEFAULT_LATITUDE = 39.432031,
 DEFAULT_LONGITUDE = -8.084700,
 SINGLE_STORY = 1,
@@ -401,7 +401,7 @@ function closeStoryView(options) {
 	$('.marker-div').removeClass('highlighted');
 	if (!options.keepMapPosition) {
 		map.panTo(previousCenter);
-		map.setZoom(previousZoom);
+		map.setZoom(Math.round(previousZoom));
 	}
 	isStoryViewOpen = false;
 	uploadimagedata = null;
@@ -1195,7 +1195,7 @@ function fitMapBoundsOnLayout(bounds) {
 	// 	map : map,
 	// 	draggable : false
 	// });
-	map.setZoom(zoom);
+	map.setZoom(Math.round(zoom));
 	map.panTo(center);
 }
 
@@ -1216,7 +1216,7 @@ function zoomInMap() {
 	var center = getMapCenterOnLayout(map),
 	zoom = map.getZoom()
 	if (zoom <= 20)
-		map.setZoom(zoom+1)
+		map.setZoom(Math.round(zoom)+1);
 	centerMapOnLayout(center,map);
 	loadStories(null,function(stories) { drawLayout(stories);});
 }
@@ -1225,7 +1225,7 @@ function zoomOutMap() {
 	var center = getMapCenterOnLayout(map),
 	zoom = map.getZoom()
 	if (zoom > 3)
-		map.setZoom(zoom-1)
+		map.setZoom(Math.round(zoom)-1)
 	centerMapOnLayout(center,map);
 	loadStories(null,function(stories) { drawLayout(stories);});
 }
@@ -1263,7 +1263,7 @@ function fitMarkersOnView(markers,map) {
 		indexZoom = (zoom >= 2) ? zoom : 2;
 		var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
 		indexCenter = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - ($('#map-canvas').innerWidth()-storiesGridListContainerWidth)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-		map.setZoom(indexZoom);
+		map.setZoom(Math.round(indexZoom));
 		map.panTo(indexCenter);
 	}
 }
@@ -1308,7 +1308,7 @@ function fitStoriesOnView(stories,map) {
 		// 	map : map,
 		// 	draggable : false
 		// });
-		map.setZoom(indexZoom);
+		map.setZoom(Math.round(indexZoom));
 		map.panTo(indexCenter);
 	}
 }
@@ -1320,7 +1320,7 @@ function fitLocationOnView(location,map) {
 		width_pix = $('#map-viewport').innerWidth(),
 		delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
 		center = new google.maps.LatLng(location.latitude, location.longitude - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-		map.setZoom(zoom);
+		map.setZoom(Math.round(zoom));
 		map.panTo(center);
 		return {zoom:zoom, center:center}
 	}
@@ -1330,7 +1330,7 @@ function fitPositionOnView(lat,lng,zoom,map) {
 	width_pix = $('#map-viewport').innerWidth(),
 	delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
 	center = new google.maps.LatLng(lat, lng - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-	map.setZoom(zoom);
+	map.setZoom(Math.round(zoom));
 	map.panTo(center);
 	return {zoom:zoom, center:center}
 }
