@@ -1198,8 +1198,8 @@ h1, h2, h3, h4, p, a {
 
 .picture-frame[position=right] {
 	margin: 20px;
-	margin-right: 10%;
-	width: 50%;
+	margin-right: 20%;
+	width: 27%;
 	float: right;
 }
 
@@ -1210,8 +1210,8 @@ h1, h2, h3, h4, p, a {
 
 .picture-frame[position=left] {
 	margin: 20px;
-	margin-left: 10%;
-	width: 50%;
+	margin-left: 20%;
+	width: 27%;
 	float: left;
 }
 
