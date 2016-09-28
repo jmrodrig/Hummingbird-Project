@@ -56,15 +56,16 @@ var ctrlDown = false,
         arrowLeftKey = 37,
         arrowRightKey = 39;
 
-var EMBED_MAX_WIDTH = 570,
-EMBED_MAX_HEIGHT = 440,
-DEFAULT_VIEWPORT_SIZE = 0.2
-
 var COLUMN_WIDTH = 400,
 COLUMN_PADDING_LEFT = 25,
 COLUMN_PADDING_RIGHT = 14,
 COLUMN_MARGIN = 14,
-MAX_NO_COLUMNS = 1;
+MAX_NO_COLUMNS = 1,
+GRID_LAYOUT_MARGIN_LEFT = 50;
+
+var EMBED_MAX_WIDTH = 570,
+EMBED_MAX_HEIGHT = 440,
+DEFAULT_VIEWPORT_SIZE = 0.2
 
 var SECTION = 0,
 LOCATION_SECTION = 1,
@@ -1588,7 +1589,7 @@ function setLayoutDimensions(stories) {
 
 	if (noColumns > MAX_NO_COLUMNS) noColumns = MAX_NO_COLUMNS;
 
-	storiesGridListContainerWidth = noColumns*(COLUMN_WIDTH + COLUMN_MARGIN) + COLUMN_PADDING_LEFT + COLUMN_PADDING_LEFT;
+	storiesGridListContainerWidth = noColumns*(COLUMN_WIDTH + COLUMN_MARGIN) + COLUMN_PADDING_LEFT + COLUMN_PADDING_LEFT + GRID_LAYOUT_MARGIN_LEFT;
 	storiesListContainer.outerWidth(storiesGridListContainerWidth);
 	if (isStoryViewOpen)
 		$('#map-viewport').innerWidth(contentwidth-$("#story-large-layout").outerWidth());
