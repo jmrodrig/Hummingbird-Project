@@ -179,10 +179,12 @@ public class Application extends Controller {
 		if (story == null) return badRequest("Invalid story id.");
 		controllers.json.Story jsonStory = controllers.json.Story.getStory(story,currentuser,false);
 		String jsonLocation;
+		System.out.println("getting story location");
 		if (jsonStory.location != null)
 			jsonLocation = new Gson().toJson(jsonStory.location);
 		else
 			jsonLocation = "";
+		System.out.println("got story location??: " + jsonStory.location);
 		if (story.getFormat() == Constants.STORY_FORMAT_OPEN)
 			return ok(views.html.create.render(jsonStory,jsonLocation));
 		else if (story.getFormat() == Constants.STORY_FORMAT_SINGLE)

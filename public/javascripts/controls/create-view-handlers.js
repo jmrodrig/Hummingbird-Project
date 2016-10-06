@@ -466,7 +466,8 @@ function uploadStoryThumbnailToServer(onFinished) {
 $(function() {
   loadStory(story.id, function(loadedstory) {
     story = loadedstory;
-    story.content = JSON.parse(loadedstory.content);
+    if (loadedstory.content != null)
+      story.content = JSON.parse(loadedstory.content);
     readStoryDataAndLoadOnDOM(story);
     /* Set caret position at the firstchild of the article has the article is loaded */
     resetCaretPosition();

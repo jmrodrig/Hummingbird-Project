@@ -73,7 +73,7 @@ HEADER_SECTION = 2,
 STORY_TEXT = 10,
 PICTURE_CONTAINER = 11,
 STORY_SUBTITLE = 12,
-DEFAULT_ZOOM = 8,
+DEFAULT_ZOOM = 3,
 DEFAULT_LATITUDE = 39.432031,
 DEFAULT_LONGITUDE = -8.084700,
 SINGLE_STORY = 1,
@@ -227,14 +227,15 @@ function intializeEvents() {
     if(e.state){
 			var center = new google.maps.LatLng(e.state.latitude,e.state.longitude);
 			fitPositionOnView(e.state.latitude,e.state.longitude,e.state.zoom,map);
-			loadStories(null,function(stories) {
-				if (e.state.story)
-					openStoryView(e.state.story);
-				else
-					drawLayout(stories);
-			});
+      if (e.state.story)
+        openStoryView(e.state.story,{loadstoriesfirst:false});
+      else {
+        if (isStoryViewOpen)
+          closeStoryView({updatePageHistory:false});
+        loadStories(null,function(stories) { drawLayout(stories);});
+      }
     } else {
-			closeStoryLayoutView();
+			//closeStoryLayoutView();
 		}
 	};
 
@@ -385,7 +386,7 @@ function openStoryView(story,options) {
 }
 
 function closeStoryView(options) {
-	if (!options) var options = {keephidden:false,featured:false,keepMapPosition:true}
+	if (!options) var options = {keephidden:false,featured:false,keepMapPosition:true,updatePageHistory:true}
 	$('#map-viewport').innerWidth(contentwidth - $('#story-grid-layout').outerWidth());
 	$('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
 		$('#story-large-layout').removeClass('active')
@@ -409,7 +410,8 @@ function closeStoryView(options) {
 	editingMode = false;
 	clearStorySectionsMarkersFromMap();
 	showAllStoriesMarkersFromMap();
-	updatePageHistory();
+  if (options.updatePageHistory)
+	 updatePageHistory();
 }
 
 function openCreateStoryView() {
@@ -780,7 +782,7 @@ function buildSingleStoryLargeContainer(story,options) {
 																																					closeStoryView();
 																																				});
 	} else {
-		var cancelBtn = $('<button id="cancel-btn" type="button" class="btn btn-default" onclick="closeStoryView({keepMapPosition:true})"><span class="glyph icon-no-margins icon-15px flaticon-cross"/></button>').appendTo(optionsBtnContainer)
+		var cancelBtn = $('<button id="cancel-btn" type="button" class="btn btn-default" onclick="closeStoryView({keepMapPosition:true,updatePageHistory:true})"><span class="glyph icon-no-margins icon-15px flaticon-cross"/></button>').appendTo(optionsBtnContainer)
 		var addPictureBtn = $('<a class="btn btn-default" id="add-picture-btn"><span class="glyph icon-no-margins icon-20px flaticon-art"/></a>').appendTo(optionsBtnContainer)
 		$('<form enctype="multipart/form-data" id="image-upload-form" class="image-upload-form"/>')
 			.append('<input id="image-upload-input" name="profileImg[]" type="file" />').appendTo(addPictureBtn);
@@ -2063,18 +2065,25 @@ function openPageOnTarget(target) {
 
 function setUpOpeningTarget() {
 	// If opening page with a story/location target
-	fitPositionOnView(openingtarget.latitude,openingtarget.longitude,openingtarget.zoom,map)
-	loadStories(null,function(stories) {
-		if (openingtarget.storyid) {
-			var story = getStoryById(openingtarget.storyid,stories);
-			if (editingMode) {
-				openStoryView(story,{editable:true,loadstoriesfirst:true});
-			} else {
-				openStoryView(story,{editable:false,loadstoriesfirst:true});
-			}
-		} else
-			drawLayout(stories);
-	});
+  if (openingtarget.location != null) {
+    var loc = openingtarget.location
+    fitPositionOnView(loc.latitude,loc.longitude,loc.zoom,map)
+  }
+  else {
+    fitPositionOnView(DEFAULT_LATITUDE,DEFAULT_LONGITUDE,DEFAULT_ZOOM,map)
+  }
+  if (openingtarget.storyid) {
+    stud_readStory(openingtarget.storyid, function(loadedstory) {
+      var story = loadedstory;
+      if (editingMode) {
+        openStoryView(story,{editable:true,loadstoriesfirst:true});
+      } else {
+        openStoryView(story,{editable:false,loadstoriesfirst:true});
+      }
+    });
+  } else {
+    loadStories(null,function(stories) {drawLayout(stories);});
+  }
 }
 
 function uploadImageToServer(onFinished) {

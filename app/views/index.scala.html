@@ -225,19 +225,17 @@
 
 	<script type="text/javascript">
 		var editingMode = ("@edit" == "true") ? true : false;
-	</script>
-	@if(story != null || location != null) {
-		<script type="text/javascript">
-			var target = {
+		var target = new Object();
+		@if(location != null) {
+			target.location = {
 				latitude:@location.latitude,
 				longitude:@location.longitude,
 				zoom:@location.zoom
 			}
-			@if(story != null) {
-				target.storyid = @story.id;
-			}
-			openPageOnTarget(target)
-		</script>
-	}
-
+		}
+		@if(story != null) {
+			target.storyid = @story.id;
+		}
+		openPageOnTarget(target);
+	</script>
 }
