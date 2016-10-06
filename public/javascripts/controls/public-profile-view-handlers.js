@@ -160,7 +160,7 @@ function  initializeProfileDetails() {
     avatarUrl = user.getAvatarUrl();
   else
     avatarUrl = defaultAvatarPic
-  $('#profile-image').attr('src',avatarUrl)
+  $('#profile-image').css('background-image','url(' + avatarUrl + ')');
 
   $('#profile-name').html(user.getFullName());
 

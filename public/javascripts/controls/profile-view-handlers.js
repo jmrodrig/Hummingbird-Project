@@ -192,7 +192,7 @@ function intializeEvents() {
 		var fileReader = new FileReader();
 
     fileReader.onload = function(ev2) {
-			$('#profile-settings-view #profile-image').attr('src', ev2.target.result);
+			$('#profile-settings-view #profile-image').css('background-image','url(' + ev2.target.result + ')');
 		};
 		fileReader.readAsDataURL(profileimagefile);
 	});
@@ -203,7 +203,7 @@ function  initializeProfileDetails() {
     avatarUrl = user.getAvatarUrl();
   else
     avatarUrl = defaultAvatarPic
-  $('#profile-image').attr('src',avatarUrl)
+  $('#profile-image').css('background-image','url(' + avatarUrl + ')');
   $('#profile-name').html(user.getFullName());
 
   $('#profile-stat-user-created #value').html(user.domainUser.noOfStories);
@@ -219,7 +219,7 @@ function openProfileSettingsView() {
     avatarUrl = user.getAvatarUrl();
   else
     avatarUrl = defaultAvatarPic
-  $('#profile-settings-view #profile-image').attr('src',avatarUrl);
+  $('#profile-settings-view #profile-image').css('background-image','url(' + avatarUrl + ')');
   $('#profile-settings-view #profile-name').val(user.getFullName());
   $('#profile-settings-view').modal('show');
 }
@@ -229,10 +229,10 @@ function saveProfileSettings() {
   stud_updateUser(user.domainUser,function(user_) {
     user.domainUser = user_;
     if (profileimagefile)
-      uploadProfileImage(function(url) {
-        user.domainUser.avatarUrl = url;
-        $('#profile-details-container #profile-image').attr('src',url);
-        $('#user-link div').css('background-image','url(' + url + ')');
+      uploadProfileImage(function(data) {
+        user.domainUser.avatarUrl = data.imageUrl;
+        $('#profile-details-container #profile-image').css('background-image','url(' + data.imageUrl + ')');
+        $('#user-link div').css('background-image','url(' + data.imageUrl + ')');
       });
     profileimagefile = null;
     $('#profile-details-container #profile-name, .username').text(user.domainUser.fullName);
@@ -1258,7 +1258,7 @@ function uploadStoryImage(storyId,onFinished) {
 }
 
 function uploadProfileImage(onFinished) {
-	url = '/user/uploadimage';
+	url = '/user/uploadavatar';
 	var uploadImageForm = new FormData($('#profile-settings-view #image-upload-form')[0]);
 	$.ajax( {
 	  url: url,
