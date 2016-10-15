@@ -16,7 +16,8 @@ PUBLISH_WITH_FOLLOWERS = 2,
 PUBLISH_PRIVATELY = 3.
 PUBLISH_PANE_OPEN_WITH_COVER = 450,
 PUBLISH_PANE_OPEN = 340,
-PUBLISH_PANE_CLOSED = 0;
+PUBLISH_PANE_CLOSED = 0,
+DEFAULT_AVATAR_PICTURE = "/assets/images/user-avatar.jpg";
 
 
 var ctrlDown = false,
@@ -42,7 +43,7 @@ function initializeUser() {
 		if (user.getAvatarUrl())
 			avatarUrl = user.getAvatarUrl();
 		else
-			avatarUrl = defaultAvatarPic
+			avatarUrl = DEFAULT_AVATAR_PICTURE
 		$('#user-link').html('<div/><span>' + user.getFullName() + '  <span class="caret"></span></span>')
 						.css('display' , 'block' );
 
@@ -147,7 +148,7 @@ function setSectionKeyListners(sectionelement) {
         if (currentElement.innerHTML.length == 0 || currentElement.innerHTML == "<br>") {
           e.preventDefault();
           currentElement.innerHTML = "";
-          if (thissection[0].children.length == 1 && thissection[0].previousElementSibling != null)
+          if (thissection[0].children.length == 1)
             removeSection(thissection);
         }
       }
@@ -788,7 +789,7 @@ function readStoryDataAndLoadOnDOM(story) {
       } else {
         $('<p class="section-item story-text text-normal-size" />').appendTo(sectionElem);
       }
-    } else {
+    } else if (sectionObj.type == SECTION) {
       var sectionElem = $("<div class='section' contenteditable='true' section-id='" + sectionObj.id +"'/>").appendTo(contentElement);
       if (sectionObj.content) {
         sectionObj.content.forEach(function(itemObj) {

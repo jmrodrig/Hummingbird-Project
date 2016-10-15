@@ -34,6 +34,7 @@ var isgrabWebsiteMetadataBusy = false;
 var animationBusy = false;
 var isStoryViewOpen = false;
 var openingtarget = null;
+var poppingWindowState = false;
 
 var locationSetMode = 'pinpoint';
 
@@ -64,11 +65,11 @@ COLUMN_PADDING_LEFT = 25,
 COLUMN_PADDING_RIGHT = 14,
 COLUMN_MARGIN = 14,
 MAX_NO_COLUMNS = 1,
-GRID_LAYOUT_MARGIN_LEFT = 50;
+GRID_LAYOUT_MARGIN_LEFT = 75; //also change on index.css: .story-grid-layout
 
 var EMBED_MAX_WIDTH = 570,
 EMBED_MAX_HEIGHT = 440,
-DEFAULT_VIEWPORT_SIZE = 0.2
+DEFAULT_VIEWPORT_SIZE = 0.001
 
 var SECTION = 0,
 LOCATION_SECTION = 1,
@@ -77,6 +78,7 @@ STORY_TEXT = 10,
 PICTURE_CONTAINER = 11,
 STORY_SUBTITLE = 12,
 DEFAULT_ZOOM = 3,
+NO_VIEWPORT_ZOOM = 14,
 DEFAULT_LATITUDE = 39.432031,
 DEFAULT_LONGITUDE = -8.084700,
 SINGLE_STORY = 1,
@@ -232,6 +234,7 @@ function intializeEvents() {
 	}, 2000);
 
 	window.onpopstate = function(e){
+    poppingWindowState = true;
     if(e.state){
 			var center = new google.maps.LatLng(e.state.latitude,e.state.longitude);
 			fitPositionOnView(e.state.latitude,e.state.longitude,e.state.zoom,map);
@@ -240,7 +243,10 @@ function intializeEvents() {
       else {
         if (isStoryViewOpen)
           closeStoryView({updatePageHistory:false});
-        loadStories(null,function(stories) { drawLayout(stories);});
+        loadStories(null,function(stories) {
+          drawLayout(stories);
+          poppingWindowState = false;
+        });
       }
     } else {
 			//closeStoryLayoutView();
@@ -357,6 +363,12 @@ function openStoryView(story,options) {
 		largeStoryContainer = buildStoryLargeContainer(story,options);
 	}
 
+  if (options.editable)
+		editingMode = true;
+
+  updatePageHistory(story);
+	isStoryViewOpen = true;
+
 	//clear map markers
 	hideAllStoriesMarkersFromMap();
 
@@ -378,7 +390,6 @@ function openStoryView(story,options) {
 		}
 	}
 
-
 	// Show
 	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
 	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart", function() {
@@ -386,14 +397,9 @@ function openStoryView(story,options) {
 		$('#story-grid-layout').removeClass('active')
 	});
 
-	if (options.editable)
-		editingMode = true;
-
 	if (options.editable || options.new)
 		$('#map-region, #map-sight').show();
 
-	updatePageHistory(story);
-	isStoryViewOpen = true;
 	updateLayoutDimensions();
 }
 
@@ -477,6 +483,7 @@ function buildLocationBannerForSingleStory(story,l,editable) {
     location = l;
 
   var locationBanner = $('<div class="location-banner" contenteditable="false" />');
+  if (editable) locationBanner.addClass('edit')
   addLocationDataAttrOnElement(locationBanner,location)
   $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner)
   var locationNameelem = $('<p class="location-name" contenteditable="'+editable+'">' + location.name + '</p>').appendTo(locationBanner);
@@ -1054,7 +1061,7 @@ function initiateMap() {
 
 	var mapOptions = {
 		zoom : 2,
-    scrollwheel: false,
+    scrollwheel: true,
 		streetViewControl: false,
 		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
     scaleControl : false,
@@ -1071,13 +1078,8 @@ function initiateMap() {
 	//--- Map Event Handlers ---//
 	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
 		google.maps.event.addListener(map, 'dragstart', function() {$('#map-region').removeClass('selected') });
-		google.maps.event.addListener(map, 'dragend', function() {
-			loadStories(null,function(stories) {
-				drawLayout(stories);
-			});
-			updatePageHistory();
-			getAddressNameOnEditingMode();
-		});
+		google.maps.event.addListener(map, 'zoom_changed', function() {updateMapState()});
+    google.maps.event.addListener(map, 'dragend', function() {updateMapState()});
 		if (openingtarget)
 			setUpOpeningTarget();
 		google.maps.event.removeListener(listener);
@@ -1134,6 +1136,16 @@ function initiateMap() {
   });
 }
 
+function updateMapState() {
+  //getAddressNameOnEditingMode();
+  if (!isStoryViewOpen && !openingtarget && !poppingWindowState) {
+    loadStories(null,function(stories) {
+      drawLayout(stories);
+    });
+    updatePageHistory();
+  }
+}
+
 function searchBoxGetPlaces(sb) {
 	var places = sb.getPlaces();
 	var bounds;
@@ -1157,6 +1169,11 @@ function searchBoxGetPlaces(sb) {
 			west:places[0].geometry.location.lng() - DEFAULT_VIEWPORT_SIZE
 		}
 	}
+
+  if (editingMode) {
+    $(".single-story #story-location .location-name").text($('#search-and-controls-bar #search-input').val());
+  }
+
 	fitMapBoundsOnLayout(bounds);
 	loadStories(bounds,function(stories) {
 		drawLayout(stories);
@@ -2240,7 +2257,10 @@ function setUpOpeningTarget() {
       }
     });
   } else {
-    loadStories(null,function(stories) {drawLayout(stories);});
+    loadStories(null,function(stories) {
+      drawLayout(stories);
+      openingtarget = null;
+    });
   }
 }
 
