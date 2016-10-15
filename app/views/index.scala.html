@@ -211,7 +211,7 @@
 						<h4 class="modal-title">Which type of story?</h4>
 						<div id="single-story-opt-btn" class="div-btn" onclick="openCreateSingleStoryView()">
 							<h4>One-Shot Story</h4>
-							<p>A single location story for fast and short stories, memoires and notes.</p>
+							<p>A single location story for a fast and short story, a memoir or a note.</p>
 						</div>
 						<div id="regular-story-opt-btn" class="div-btn" onclick="openCreateStoryView()">
 							<h4>Story Article</h4>
@@ -223,18 +223,90 @@
 	  </div>
 	</div>
 
+	<!----------------------------------->
+	<!--  Login/Signup Modal   -->
+	<!----------------------------------->
+
+	<!-- Signup modal -->
+	<div id="signup-modal" class="signup-modal modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body animate-transition">
+					<h4 class="modal-title">Enter your email to sign up</h4>
+					<p>An email will be sent to this address with further sign up instructions.</p>
+					<input id="signup-email-input" placeholder="your email" type="email"/>
+					<div class="signup-alert-message"><p></p></div>
+					<div class="controls">
+						<button id="signup-btn" class="btn btn-success" type=button onclick="sendSignupEmail()">Sign Up</button>
+						<button id="cancel-btn" data-dismiss="modal" class="btn btn-default" type=button>Not now, thanks!</button>
+					</div>
+				</div>
+				<div class="grad-bar"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Login modal -->
+	<div id="login-modal" class="login-modal modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body animate-transition">
+					<h4 class="modal-title">Enter your login credentials.</h4>
+					<input id="login-email-input-1" placeholder="your email" type="email"/>
+					<input id="login-password-input-1" placeholder="password" type="password"/>
+					<div class="login-alert-message"><p></p></div>
+					<button id="login-btn" class="btn btn-primary" type=button onclick="loginWithUserCredentials()">Log in</button>
+					<button id="signup-btn" class="btn btn-success" type=button onclick="startSignup()">Sign Up</button>
+					<button id="facebook-login-btn" class="btn btn-default" type=button onclick="loginWithFacebook()"></button>
+					<button id="cancel-btn" data-dismiss="modal" class="btn btn-default" type=button>Not now, thanks!</button>
+					<img id="lir-logo" src="/assets/images/lir-logo-banner-simple-small.png" alt="lir-logo">
+				</div>
+				<div class="grad-bar"></div>
+			</div>
+		</div>
+	</div>
+
+	<!-- Need login warning modal -->
+	<div id="need-login-warning-modal" class="login-modal modal fade">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-body animate-transition">
+					<h4 class="modal-title warning">You need to log in first!</h4>
+					<input id="login-email-input-2" placeholder="your email" type="email"/>
+					<input id="login-password-input-2" placeholder="password" type="password"/>
+					<div class="login-alert-message"><p></p></div>
+					<button id="login-btn" class="btn btn-primary" type=button onclick="loginWithUserCredentials()">Log in</button>
+					<button id="signup-btn" class="btn btn-success" type=button onclick="startSignup()">Sign Up</button>
+					<a id="recover-password-link" href="/reset">Did you forget your password?</a>
+					<button id="facebook-login-btn" class="btn" type=button onclick="loginWithFacebook()"></button>
+					<button id="cancel-btn" data-dismiss="modal" class="btn btn-default" type=button>Not now, thanks!</button>
+					<img id="lir-logo" src="/assets/images/lir-logo-banner-simple-small.png" alt="lir-logo">
+				</div>
+				<div class="grad-bar"></div>
+			</div>
+		</div>
+	</div>
+
 	<script type="text/javascript">
 		var editingMode = ("@edit" == "true") ? true : false;
 		var target = new Object();
-		@if(location != null) {
-			target.location = {
-				latitude:@location.latitude,
-				longitude:@location.longitude,
-				zoom:@location.zoom
+		if (document.cookie.includes(COOKIE_HISTORY_TAG)) {
+			lircookie = document.cookie.split(COOKIE_HISTORY_TAG)[1]
+			if (lircookie!= null && !lircookie.includes("undefined")) {
+				var target = JSON.parse(document.cookie.split(COOKIE_HISTORY_TAG)[1]);
 			}
-		}
-		@if(story != null) {
-			target.storyid = @story.id;
+			document.cookie = COOKIE_HISTORY_TAG + "; expires=Thu, 03 Jul 1987 13:13:13 UTC";
+		} else {
+			@if(location != null) {
+				target.location = {
+					latitude:@location.latitude,
+					longitude:@location.longitude,
+					zoom:@location.zoom
+				}
+			}
+			@if(story != null) {
+				target.storyid = @story.id;
+			}
 		}
 		openPageOnTarget(target);
 	</script>
