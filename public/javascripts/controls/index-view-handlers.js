@@ -559,6 +559,9 @@ function buildStorySmallContainer(story,options) {
 
   var storyContainer = $('<div/>').attr('id', 'story-' + story.id).attr('storyId', story.id)
             .addClass('story-container sm-container');
+  if (story.format == SINGLE_STORY) {
+    storyContainer.addClass('single-story');
+  }
 
 	storyContainer.hover(function() {
 		$('#story-' + story.id + '.story-container.sm-container').addClass('highlighted');
@@ -669,14 +672,13 @@ function buildStorySmallContainer(story,options) {
 	  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
 	  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
 	  setStoryText(story.summary,summary);
-	  //var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 	} else if (story.format == SINGLE_STORY) {
 		if (!story.summary || story.summary && story.summary.length == 0)
 	    story.summary = "(a story summary...)"
 	  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
 	  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
 	  setStoryText(story.summary,summary);
-
+    var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
 		//Thumbnail: article image or story image
 	  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
 		if (story.thumbnail && story.thumbnail.length > 0) {
@@ -2255,6 +2257,7 @@ function setUpOpeningTarget() {
       } else {
         openStoryView(story,{editable:false,loadstoriesfirst:true});
       }
+      openingtarget = null;
     });
   } else {
     loadStories(null,function(stories) {

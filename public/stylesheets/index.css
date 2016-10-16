@@ -839,7 +839,7 @@ h1, h2, h3, h4, p, a {
 
 .sm-container .title-container {
   background-color: white;
-  padding: 2px 7px;
+  padding: 2px 12px;
 }
 
 .sm-container .story-title {
@@ -857,7 +857,7 @@ h1, h2, h3, h4, p, a {
 
 .sm-container .summary-container {
 	position: relative;
-	padding: 2px 7px;
+	padding: 2px 12px;
 	overflow: hidden;
 	width: 100%;
 	background-color: white;
@@ -873,20 +873,21 @@ h1, h2, h3, h4, p, a {
 	background-color: transparent;
 	text-align: initial;
 	overflow:hidden;
-	margin: 8px;
+}
+
+.sm-container.single-story .story-summary, .sm-container.single-story .story-summary:focus {
 	max-height: 100px;
 }
 
 .sm-container .summary-container-overlay {
-	height: 30px;
+	height: 40px;
 	width: 100%;
 	position: absolute;
-	top: 80px;
+	top: 65px;
 	left: 0px;
-	background: -webkit-linear-gradient(bottom, rgba(255,255,255,1), rgba(255,255,255,0.88));
-	background: -o-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
-	background: -moz-linear-gradient(top, rgba(255,255,255,1), rgba(255,255,255,0.88));
-	background: linear-gradient(to top, rgba(255,255,255,1), rgba(255,255,255,0.88));
+  background: -moz-linear-gradient(top, rgba(255,255,255,1) 0%, rgba(255,255,255,0.6) 70%, rgba(255,255,255,0) 100%); /* FF3.6-15 */
+  background: -webkit-linear-gradient(bottom, rgba(255,255,255,1) 0%,rgba(255,255,255,0.6) 70%,rgba(255,255,255,0) 100%); /* Chrome10-25,Safari5.1-6 */
+  background: linear-gradient(to top, rgba(255,255,255,1) 0%,rgba(255,255,255,0.6) 70%,rgba(255,255,255,0) 100%); /* W3C, IE10+, FF16+, Chrome26+, Opera12+, Safari7+ */
 }
 
 .story-container .option-remove {
