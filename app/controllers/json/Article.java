@@ -11,5 +11,6 @@ public class Article {
 	public String imageUrl;
 	public String source;
 	public String url;
+	public String icon;
 	public ArrayList<String> imagelinks;
 }

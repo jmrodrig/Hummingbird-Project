@@ -4,6 +4,7 @@
 ******************************************************************/
 
 var map;
+var mapbox;
 var herosearchBox;
 var hero5searchBox;
 var mapsearchBox;
@@ -77,10 +78,12 @@ HEADER_SECTION = 2,
 STORY_TEXT = 10,
 PICTURE_CONTAINER = 11,
 STORY_SUBTITLE = 12,
+STORY_ARTICLE = 13,
 DEFAULT_ZOOM = 3,
 NO_VIEWPORT_ZOOM = 14,
 DEFAULT_LATITUDE = 39.432031,
 DEFAULT_LONGITUDE = -8.084700,
+ARTICLE_STORY = 2,
 SINGLE_STORY = 1,
 OPEN_STORY = 0,
 DRAFT = 0,
@@ -275,6 +278,20 @@ function intializeEvents() {
     $(".login-modal .login-alert-message, .signup-modal .signup-alert-message").hide();
   });
 
+  $('#create-article-story-modal').on('shown.bs.modal', function() {
+    initiateMapBox();
+    initiateSearchBox('story-location-input');
+    stud_loadLabels(function(results) {
+      console.log(results);
+      $("#create-article-story-modal #story-keywords-input").autocomplete({
+        source:results
+      })
+    })
+  })
+
+  $("#create-article-story-modal #story-image-url-input").change(function() {
+    updateImageUrlFromArticle();
+  });
 }
 
 /******************************************************************
@@ -437,6 +454,11 @@ function openCreateStoryView() {
 	window.location.href = LIR_SERVER_URL + '/story/create';
 }
 
+function openCreateArticleStoryView() {
+	$('#create-story-modal').modal('hide');
+  $('#create-article-story-modal').modal('show');
+}
+
 function openCreateSingleStoryView() {
 	$('#create-story-modal').modal('hide');
 	if (!$("#content-wrapper").hasClass('showing-map')) {
@@ -458,9 +480,85 @@ function openEditStoryView(story) {
 		openStoryView(story,{editable:true})
 }
 
+/******************************************************************
+	ARTICLE STORY CREATION CONTAINER
+******************************************************************/
+
+function fetchMetadataFromUrl() {
+  var url = $("#create-article-story-modal #story-url-prompt").val();
+  stud_fetchHtml(url,function(data) {
+    $("#create-article-story-modal #story-image-container").css('background-image','url(' + data.imageUrl + ')')
+    $("#create-article-story-modal #story-image-url-input").val(data.imageUrl)
+    $("#create-article-story-modal #story-title-input").val(data.title)
+    $("#create-article-story-modal #story-description-input").val(data.description)
+    $("#create-article-story-modal #story-author-input").val(data.author)
+    $("#create-article-story-modal #story-date-input").val(data.date)
+    $("#create-article-story-modal #story-source-icon").attr('src',data.icon)
+    $("#create-article-story-modal #story-source-input").val(data.source)
+    $("#create-article-story-modal #story-url-input").val(data.url)
+  })
+}
+
+function addKeywordToArticle() {
+  var kw = $("#create-article-story-modal #story-keywords").text(),
+  newkw = $("#create-article-story-modal #story-keywords-input").val();
+  if (newkw.length > 0) {
+    if (kw.length > 0)
+      $("#create-article-story-modal #story-keywords").text(kw + ", " + newkw);
+    else
+      $("#create-article-story-modal #story-keywords").text(newkw);
+  }
+  $("#create-article-story-modal #story-keywords-input").val("");
+}
+
+function updateMetadataFromUrl() {
+  fetchMetadataFromUrl();
+}
+
+function updateImageUrlFromArticle() {
+  var imageurl = $("#create-article-story-modal #story-image-url-input").val();
+  $("#create-article-story-modal #story-image-container").css('background-image','url(' + imageurl + ')')
+}
+
+function saveArticleStory(storyid) {
+  var storyData = new Object();
+  var articleItem = new Object();
+
+  articleItem.author = $("#create-article-story-modal #story-author-input").val()
+  articleItem.date = $("#create-article-story-modal #story-date-input").val()
+  articleItem.source = $("#create-article-story-modal #story-source-input").val()
+  articleItem.url = $("#create-article-story-modal #story-url-input").val()
+  articleItem.title = $("#create-article-story-modal #story-title-input").val();
+  articleItem.description = $("#create-article-story-modal #story-description-input").val();
+  articleItem.imageUrl = $("#create-article-story-modal #story-image-url-input").val();
+  articleItem.icon = $("#create-article-story-modal #story-source-icon").attr('src');
+  if (storyid) storyData.id = storyid;
+	storyData.summary = articleItem.description;
+  storyData.location = {
+		name: $("#create-article-story-modal #story-location-input").val(),
+    latitude:mapbox.getCenter().lat,
+    longitude:mapbox.getCenter().lng,
+		zoom: mapbox.getZoom(),
+		ismain:true,
+    showpin:true,
+    radius:0
+  }
+  storyData.lables = $("#create-article-story-modal #story-description-input").val().split(", ");
+	storyData.format = ARTICLE_STORY;
+  storyData.published = 1;
+	storyData.thumbnail = articleItem.imageUrl;
+  storyData.content = JSON.stringify([{
+    type:HEADER_SECTION,
+    location:storyData.location,
+    content:[{type:STORY_ARTICLE,text:JSON.stringify(articleItem)}]
+  }]);
+  saveStoryData(storyData,function() {
+    $("#create-article-story-modal").modal('hide');
+  });
+}
 
 /******************************************************************
-	SINGLE LOCATION STORY CREATION CONTAINER CONTAINER
+	SINGLE LOCATION STORY CREATION CONTAINER
 ******************************************************************/
 
 function openCreateStoryPromptModal() {
@@ -1138,6 +1236,27 @@ function initiateMap() {
   });
 }
 
+function initiateMapBox() {
+  mapbox = new mapboxgl.Map({
+    container: 'mapbox-canvas',
+    style: 'mapbox://styles/jozie-blueyes/cizcm816700am2smcjyqd2pvb'
+  });
+}
+
+function initiateSearchBox(map) {
+  var input = document.getElementById('story-location-input');
+  var searchBox = new google.maps.places.SearchBox(input);
+  //Bias the SearchBox results towards current map's viewport.
+
+  // searchBox.setBounds(mapbox.getBounds());
+  // mapbox.addListener('bounds_changed', function() {
+  //   searchBox.setBounds(mapbox.getBounds());
+  // });
+  searchBox.addListener('places_changed', function() {
+    searchBoxCenterMap(this,mapbox);
+  });
+}
+
 function updateMapState() {
   //getAddressNameOnEditingMode();
   if (!isStoryViewOpen && !openingtarget && !poppingWindowState) {
@@ -1182,14 +1301,45 @@ function searchBoxGetPlaces(sb) {
 	});
 }
 
-function getStoryLocationFromMap() {
+function searchBoxCenterMap(sb,map) {
+	var places = sb.getPlaces();
+	var bounds;
+	if (!places || places.length == 0) {
+		displayAlertMessage('No places found!')
+		return;
+	}
+	if (places[0].geometry.viewport) {
+		bounds = {
+			north:places[0].geometry.viewport.getNorthEast().lat(),
+			east:places[0].geometry.viewport.getNorthEast().lng(),
+			south:places[0].geometry.viewport.getSouthWest().lat(),
+			west:places[0].geometry.viewport.getSouthWest().lng()
+		}
+		// fitMapBoundsOnLayout(bounds);
+	} else {
+		bounds = {
+			north:places[0].geometry.location.lat(),
+			east:places[0].geometry.location.lng(),
+			south:places[0].geometry.location.lat(),
+			west:places[0].geometry.location.lng()
+		}
+	}
+
+	map.fitBounds([
+    [bounds.west,bounds.south],
+    [bounds.east,bounds.north]])
+}
+
+function getStoryLocationFromMap(map) {
 	var loc = getMapCenterOnLayout(map);
 	var storylocation = {
 		name: $('.single-story #story-location .location-name').text(),
     latitude:loc.lat(),
     longitude:loc.lng(),
 		zoom: map.getZoom(),
-		ismain:true
+		ismain:true,
+    showpin:true,
+    radius:0
   }
 	var mapregiondiameter = $('#map-region').innerWidth();
 	if (mapregiondiameter < 10) {
@@ -1507,47 +1657,20 @@ function showAllStoriesMarkersFromMap() {
 	SAVE AND PUBLISH STORY
 ******************************************************************/
 
-function saveStory(storyid,publish) {
-
-	if (!user) {
-    displayAlertMessage('Failed to post. User not logged in.')
-    return;
+function saveStoryData(storydata,onFinished) {
+  if (storydata.id != null) {
+    stud_updateStory(storydata,function(st){
+  		onFinished();
+  	}, function() {
+      saveError();
+    });
+  } else {
+    stud_createStory(storydata,function(st){
+  		onFinished();
+  	}, function() {
+      saveError();
+    });
   }
-
-	var story = new Object();
-	story.id = storyid;
-	story.content = JSON.stringify([{location:getStoryLocationFromMap(map),type:HEADER_SECTION}])
-	story.summary = getStoryText($('.lg-container.single-story .story-text'));
-	story.format = SINGLE_STORY;
-	var thumbnaillink = $(".single-story .picture-frame img").attr('src');
-	if (thumbnaillink != null && thumbnaillink.indexOf(PICTURES_SERVER_PATH) > -1)
-		story.thumbnail = thumbnaillink.substring(PICTURES_SERVER_PATH.length);
-	if (publish != null)
-		story.published = publish;
-	else
-		story.published = parseInt($('#post-btn').attr('published-status'));
-
-  //save story on server
-	stud_saveStory(story,function(st){
-		//upload story pics
-		var storyId = st.id;
-		if (uploadimagedata != null) {
-			uploadStoryImage(storyId,function(data) {
-				st.thumbnail = data.imageUrl;
-        saveFinished(st);
-			});
-		//} else if (hasImageToDelete(st)) {
-      // deleteStoryImage(storyId, function(thumbnail) {
-			// 	st.thumbnail = thumbnail;
-			// 	saveFinished(st);
-      // })
-		} else {
-      saveFinished(st);
-    }
-	},
-  function() {
-    saveError();
-  });
 }
 
 function saveFinished(story) {
@@ -2327,7 +2450,7 @@ function bookmarkStory(storyId, onFinished){
 
 function deleteStory(storyId, success, error){
 	$.ajax({
-		url: "/story/" + storyId,
+		url: "/story/delete/" + storyId,
 		type: "DELETE",
     dataType: "json",
 		success: success,
@@ -2426,22 +2549,24 @@ function stud_nominatimReverseGeoCoding(lat,lng,zoom, success, error){
 	});
 }
 
-function stud_createStory(story,success, error){
+function stud_createStory(storydata,success, error){
 	$.ajax({
-		url: "/story/create/" + story.format,
+		url: "/story/create/" + storydata.format,
 		type: "POST",
 		dataType: "json",
+    data: JSON.stringify(storydata),
+		contentType:"application/json",
 		success: success,
 		error: error,
 	});
 }
 
-function stud_saveStory(story, success, error){
+function stud_updateStory(storydata, success, error){
 	$.ajax({
-		url: "/story/" + story.id,
+		url: "/story/update/" + storydata.id,
 		type: "PUT",
 		dataType: "json",
-		data: JSON.stringify(story),
+		data: JSON.stringify(storydata),
 		contentType:"application/json",
 		success: success,
 		error: error,

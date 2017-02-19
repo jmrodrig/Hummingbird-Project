@@ -205,6 +205,11 @@ public class Location extends Model {
 		return location;
 	}
 
+	public static List<Location> findSimilarAddresses(String value) {
+		List<Location> locations = finder.where().ilike("name", value).findList();
+		return locations;
+	}
+
 	public static Location create(controllers.json.Location l, models.Story story) {
 		Location location = new Location();
 		location.setName(l.name);

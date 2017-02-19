@@ -39,8 +39,7 @@ public class Application extends Controller {
 	}
 
 	@SecureSocial.SecuredAction
-	public static Result fetchHtml(){
-		String url = request().body().asJson().get("url").textValue();
+	public static Result fetchHtml(String url){
 		String html;
 
 		HtmlFetcher fetcher = new HtmlFetcher();
@@ -259,9 +258,20 @@ public class Application extends Controller {
 	}
 
 	@SecuredAction
-	public static Result findLabelsStartingWith(String value) {
+	public static Result findLabelsSimilarTo(String value) {
 		List<String> result = new ArrayList<String>();
-		List<models.Label> labels = models.Label.findByStartingWith(value);
+		List<models.Label> labels = models.Label.findBySimilarTo(value);
+		for (models.Label label : labels) {
+			result.add(label.getName());
+		}
+		String json = new Gson().toJson(result);
+		return ok(json);
+	}
+
+	@SecuredAction
+	public static Result getAllLabels() {
+		List<String> result = new ArrayList<String>();
+		List<models.Label> labels = models.Label.getAllLabels();
 		for (models.Label label : labels) {
 			result.add(label.getName());
 		}
@@ -293,4 +303,6 @@ public class Application extends Controller {
 		User user = User.findByIdentityId(identity.identityId());
 		return user;
 	}
+
+
 }

@@ -6,24 +6,33 @@
     <head>
 
     <script>
-      //var LIR_SERVER_URL = "http://localhost:9000";
-      var LIR_SERVER_URL = "http://www.lostinreality.io"
+      var LIR_SERVER_URL = "http://localhost:9000";
+      //var LIR_SERVER_URL = "http://www.lostinreality.io"
       var PICTURES_SERVER_PATH = LIR_SERVER_URL + "/uploads/images/";
     </script>
 
-    <!-- <title>@title</title> -->
+    <!-- Metadata -->
     <link rel="shortcut icon" type="image/png" href="@routes.Assets.at("images/lir-logo.png")">
+    <meta name="keywords" content="Story,Storytelling,Location-based Storytelling,Travel,Travel App,App">
 
     <!-- Google Maps API -->
 		<script src="https://maps.googleapis.com/maps/api/js?key=AIzaSyBn5VBgm952_mApaQiMG-Xxazk-NVmEz0Q&&libraries=geometry,places" ></script>
 
-    <meta name="keywords" content="Story,Storytelling,Location-based Storytelling,Travel,Travel App,App">
+    <!-- Mapbox GL API -->
+    <script src='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.js'></script>
+    <link href='https://api.tiles.mapbox.com/mapbox-gl-js/v0.32.1/mapbox-gl.css' rel='stylesheet' />
+    <script>
+      mapboxgl.accessToken = 'pk.eyJ1Ijoiam96aWUtYmx1ZXllcyIsImEiOiJjaXpjbTcwdzUwMDRsMzNudnByNzA4eW8xIn0.3ayia4nECgBw2LrAFrC4Tg';
+    </script>
 
 		<!-- modules -->
 
-		<script src="@routes.Assets.at("javascripts/jquery-1.12.1.min.js")" type="text/javascript"></script>
+		<!-- <script src="@routes.Assets.at("javascripts/jquery-1.12.1.min.js")" type="text/javascript"></script> -->
+    <script src="https://code.jquery.com/jquery-1.12.4.js"></script>
 		<script src="@routes.Assets.at("flexigrid/js/flexigrid.pack.js")" type="text/javascript"></script>
-    <script src="@routes.Assets.at("jquery-ui-1.11.4/jquery-ui.min.js")" type="text/javascript"></script>
+    <!-- <script src="@routes.Assets.at("jquery-ui-1.11.4/jquery-ui.min.js")" type="text/javascript"></script> -->
+    <script src="https://code.jquery.com/ui/1.12.1/jquery-ui.js"></script>
+
     <!--  Handle jQuery plugin naming conflict between jQuery UI and Bootstrap -->
     <script>
       $.widget.bridge('uibutton', $.ui.button);
@@ -95,7 +104,8 @@
     <link rel="stylesheet" media="screen" href="@routes.Assets.at("jquery-ui-1.11.4/jquery-ui.min.css")">
 		<link rel="stylesheet" media="screen" href="@routes.Assets.at("flexigrid/css/flexigrid.pack.css")">
 		<link rel="stylesheet" href="@routes.Assets.at("jQuery-File-Upload-9.5.4/css/jquery.fileupload.css")">
-		<link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css">
+		<!-- <link rel="stylesheet" href="http://code.jquery.com/ui/1.10.3/themes/smoothness/jquery-ui.css"> -->
+    <link rel="stylesheet" href="http://code.jquery.com/ui/1.12.1/themes/base/jquery-ui.css">
 		<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap.min.css")">
 		<link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap.css")">
 		<!-- <link rel="stylesheet" media="screen" href="@routes.Assets.at("bootstrap-3.3.6/css/bootstrap-theme.min.css")"> -->

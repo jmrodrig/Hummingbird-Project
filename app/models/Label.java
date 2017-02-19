@@ -54,13 +54,17 @@ public class Label extends Model {
 	private static Finder<Long, Label> finder = new Finder<Long, Label>(Long.class, Label.class);
 
 	public static Label findByName(String name) {
-		Label label = finder.where().eq("name", name).findUnique();
+		Label label = finder.where().ieq("name", name).findUnique();
 		return label;
 	}
 
-	public static List<Label> findByStartingWith(String value) {
-		List<Label> labels = finder.where().startsWith("name", value).findList();
+	public static List<Label> findBySimilarTo(String value) {
+		List<Label> labels = finder.where().istartsWith("name", value).findList();
 		return labels;
+	}
+
+	public static List<Label> getAllLabels() {
+		return finder.all();
 	}
 
 	public static Label create(String name) {

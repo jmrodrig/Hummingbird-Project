@@ -30,17 +30,18 @@ PUT     /user/follow/:numberId        controllers.Users.followUser(numberId: Lon
 
 
 #Utils
-POST 		/fetchhtml									controllers.Application.fetchHtml()
-GET 		/fetch/category								controllers.utils.FeedsFetcher.fetchCategories()
-GET 		/fetch/category/:id/:options								controllers.utils.FeedsFetcher.fetchItemsFromCategories(id: String, options: String)
-GET 		/fetch/item/:id								controllers.utils.FeedsFetcher.fetchItemDetails(id: String)
-GET     /fetch/html/:url              controllers.utils.FeedsFetcher.fetchArticle(url: String)
-GET     /fetch/html/:url/:levels       controllers.utils.FeedsFetcher.fetchmoreArticle(url: String, levels: Integer)
+GET 		/fetchhtml=:url									controllers.Application.fetchHtml(url: String)
+GET 		/feeds/fetch/category								controllers.utils.FeedsFetcher.fetchCategories()
+GET 		/feeds/fetch/category/:id/:options								controllers.utils.FeedsFetcher.fetchItemsFromCategories(id: String, options: String)
+GET 		/feeds/fetch/item/:id								controllers.utils.FeedsFetcher.fetchItemDetails(id: String)
+GET     /feeds/fetch/html/:url              controllers.utils.FeedsFetcher.fetchArticle(url: String)
+GET     /feeds/fetch/html/:url/:levels       controllers.utils.FeedsFetcher.fetchmoreArticle(url: String, levels: Integer)
 GET			/validateInvite/:invitationCode				controllers.Application.validInvite(invitationCode: String)
 GET			/notify/:storyId							controllers.Application.sendNotification(storyId: Long)
 POST    /rules/setRule                controllers.utils.Rules.setNewRule()
-GET     /fetchinstagram/:link          controllers.utils.FeedsFetcher.fetchInstagramEmbedHTML(link: String)
-GET     /tagsstartingwith=:value            controllers.Application.findLabelsStartingWith(value: String)
+GET     /fetchinstagram=:link          controllers.utils.HtmlFetcher.fetchInstagramEmbedHTML(link: String)
+GET     /labelsimilarto=:value            controllers.Application.findLabelsSimilarTo(value: String)
+GET     /labels                       controllers.Application.getAllLabels()
 
 
 #Stories
@@ -57,10 +58,10 @@ GET		/story/read/:storyId												controllers.Application.readStory(storyId: 
 PUT		/story/read/trigger/:storyId												controllers.Application.readTriggered(storyId: Long)
 GET		/story/edit/:storyId												controllers.Application.editStory(storyId: Long)
 GET		/story/load/:storyId												controllers.Stories.loadStory(storyId: Long)
-DELETE	/story/:storyId												controllers.Stories.deleteStory(storyId: Long)
+DELETE	/story/delete/:storyId												controllers.Stories.deleteStory(storyId: Long)
 GET	  /story/create														controllers.Application.createStory()
 POST	/story/create/:format										      controllers.Application.createStoryWithData(format: Integer)
-PUT		/story/:storyId												controllers.Stories.updateStory(storyId: Long)
+PUT		/story/update/:storyId												controllers.Stories.updateStory(storyId: Long)
 GET		/story/download/:storyId									controllers.Stories.downloadStory(storyId: Long)
 POST	/story/uploadthumbnail/:storyId								controllers.Stories.uploadThumbnail(storyId: Long)
 POST	/story/uploadimage/:storyId									controllers.Stories.uploadImage(storyId: Long)

@@ -214,11 +214,57 @@
 							<p>A single location story for a fast and short story, a memoir or a note.</p>
 						</div>
 						<div id="regular-story-opt-btn" class="div-btn" onclick="openCreateStoryView()">
-							<h4>Story Article</h4>
-							<p>A story with unlimited locations, in an article like format.</p>
+							<h4>Blank Page</h4>
+							<p>A blank page to write freely with unlimited locations, in an article like format.</p>
+						</div>
+						<div id="article-story-opt-btn" class="div-btn" onclick="openCreateArticleStoryView()">
+							<h4>Article</h4>
+							<p>A story based on an article from other sources on the web.</p>
 						</div>
 					</div>
 	      </div>
+	    </div>
+	  </div>
+	</div>
+
+	<!------------------------------------------->
+	<!--  Create Article Story Options Modal   -->
+	<!------------------------------------------->
+
+	<!-- Create Story modal -->
+	<div id="create-article-story-modal" class="modal fade">
+	  <div class="modal-dialog">
+	    <div class="modal-content">
+	      <div class="modal-body animate-transition">
+					<div id="url-prompt">
+						<span>url:</span><input id="story-url-prompt" type="text">
+						<button id="fetch-btn" class="btn btn-success" type=button onclick="fetchMetadataFromUrl()">Go</button>
+					</div>
+					<div id="story-block">
+						<div id="story-image-container"></div>
+						<span>Image link:</span><input id="story-image-url-input" type="text">
+						<div id="story-details">
+							<span>Title:</span><input id="story-title-input" type="text"> <br>
+							<span>Description:</span><textarea id="story-description-input" type="text" rows="3"></textarea>
+							<span>Tags: </span><span id="story-keywords"></span><input id="story-keywords-input" type="text">
+							<button id="add-keyword-btn" class="btn btn-success" type=button onclick="addKeywordToArticle()">add</button> <br>
+							<span>Location:</span><input id="story-location-input" > <br>
+							<span>Author:</span><input id="story-author-input" type="text">
+							<span>Date:</span><input id="story-date-input" type="text"> <br>
+							<span>Source:</span><img id="story-source-icon"><input id="story-source-input" type="text"><br>
+							<span>url:</span><input id="story-url-input" type="text">
+						</div>
+						<div id="map-container">
+							<div id="mapbox-canvas"></div>
+							<div id="map-viewport">
+								<div id="map-sight"></div>
+								<div id="map-region"></div>
+							</div>
+						</div>
+						<button id="save-btn" class="btn btn-success" type=button onclick="saveArticleStory()">Save</button>
+						<button id="cancel-btn" data-dismiss="modal" class="btn btn-default" type=button>Cancel</button>
+		      </div>
+				</div>
 	    </div>
 	  </div>
 	</div>
@@ -286,6 +332,10 @@
 			</div>
 		</div>
 	</div>
+
+	<!---------------->
+	<!--  Scripts   -->
+	<!---------------->
 
 	<script type="text/javascript">
 		var editingMode = ("@edit" == "true") ? true : false;

@@ -301,41 +301,25 @@ public class Stories extends Controller {
 		return ok(json);
 	}
 
-	// @SecureSocial.SecuredAction
-	// public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
-	//
-	// 	controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
-	//
-	// 	if (jsonStory.title == null || jsonStory.title.length() == 0){
-	// 		jsonStory.title = "Untitled Story";
-	// 	}
-	//
-	// 	User user = getCurrentUser();
-	// 	Story domainStory = new Story();
-	//
-	// 	models.Story story = models.Story.create(user,
-	// 										jsonStory.title,
-	// 										jsonStory.summary,
-	// 										jsonStory.content,
-	// 										0.0,
-	// 										jsonStory.published,
-	// 										null,
-	// 										jsonStory.locationName,
-	// 										jsonStory.articleTitle,
-	// 										jsonStory.articleDescription,
-	// 										jsonStory.articleImage,
-	// 										jsonStory.articleLink,
-	// 										jsonStory.articleDate,
-	// 										jsonStory.articleSource,
-	// 										jsonStory.articleAuthor,
-	// 										jsonStory.articleLanguage,
-	// 										jsonStory.location,
-	// 										jsonStory.labels);
-	//
-	// 	jsonStory = controllers.json.Story.getStory(story, user, true);
-	// 	String json = new Gson().toJson(jsonStory);
-	// 	return ok(json);
-	// }
+	@SecureSocial.SecuredAction
+	public static Result createStory() throws ModelAlreadyExistsException, IOException, ModelNotFountException {
+		controllers.json.Story jsonStory = new Gson().fromJson(request().body().asJson().toString(), controllers.json.Story.class);
+		User user = getCurrentUser();
+		models.Story story = models.Story.create(user,
+																						jsonStory.title,
+																						jsonStory.summary,
+																						jsonStory.content,
+																						jsonStory.thumbnail,
+																						jsonStory.published,
+																						jsonStory.locations,
+																						jsonStory.labels,
+																						jsonStory.format
+																						);
+
+		jsonStory = controllers.json.Story.getStory(story, user, false);
+		String json = new Gson().toJson(jsonStory);
+		return ok(json);
+	}
 
 	@SecureSocial.SecuredAction
 	public static Result publishStory(Long storyId, Integer published){

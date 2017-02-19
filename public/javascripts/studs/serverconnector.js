@@ -242,7 +242,7 @@ function stud_logoutUser(success, error){
 
 function stud_fetchHtml(url,success, error){
 	$.ajax({
-		url: "/fetch/html/" + encodeURIComponent(url),
+		url: "/fetchhtml=" + encodeURIComponent(url),
 		type: "GET",
 		dataType: "json",
 		contentType:"application/json",
@@ -250,6 +250,29 @@ function stud_fetchHtml(url,success, error){
 		error: error
 	});
 }
+
+function stud_findSimilarTo(label,success, error){
+	$.ajax({
+		url: "/labelsimilarto=" + label,
+		type: "GET",
+		dataType: "json",
+		contentType:"application/json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_loadLabels(success, error){
+	$.ajax({
+		url: "/labels",
+		type: "GET",
+		dataType: "json",
+		contentType:"application/json",
+		success: success,
+		error: error
+	});
+}
+
 
 function stud_uploadStoryImage(imageData,storyId,onFinished) {
 	url = '/story/uploadimage/' +storyId;

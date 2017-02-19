@@ -52,6 +52,7 @@ import controllers.utils.Rule;
 import play.mvc.Result;
 import play.mvc.Controller;
 
+
 public class FeedsFetcher extends Controller {
 
 	private final String USER_AGENT = "Mozilla/5.0";
@@ -390,8 +391,6 @@ public class FeedsFetcher extends Controller {
 	}
 
 
-
-
 	private static Element getElementParent(Document doc, Element el, Integer levels) {
 		for(Integer i = 0; i < levels+1; i++) {
 			//System.out.println("ELEMENT : " + el.tagName());
@@ -425,6 +424,4 @@ public class FeedsFetcher extends Controller {
 		String responseString = responseStrBuilder.toString();
 		return ok(responseString);
 	}
-
-
 }
