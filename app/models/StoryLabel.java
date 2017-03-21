@@ -28,9 +28,6 @@ public class StoryLabel extends Model {
 
 	private static final long serialVersionUID = 1L;
 
-	@Version
-  public long version;
-
 	@Id
 	@GeneratedValue
 	@Column(name="id")
@@ -66,6 +63,10 @@ public class StoryLabel extends Model {
 	public static StoryLabel findByStoryIdAndLabelId(long storyId, long labelId) {
 		StoryLabel storylabel = finder.where(Expr.and(Expr.eq("story_id", storyId), Expr.eq("label_id", labelId))).findUnique();
 		return storylabel;
+	}
+
+	public static List<StoryLabel> findByStoriesByLabelId(long labelId) {
+		return finder.where().eq("label_id", labelId).findList();
 	}
 
 	public static StoryLabel create(Story story, Label label) {

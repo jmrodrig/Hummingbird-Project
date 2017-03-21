@@ -41,7 +41,7 @@
 
 		<script src="@routes.Assets.at("bootstrap-3.3.6/js/bootstrap.min.js")" type="text/javascript"></script>
     <script src="@routes.Assets.at("formplugin/js/jquery.form.js")" type="text/javascript"></script>
-		<script src="@routes.Assets.at("javascripts/jquery.debounce-1.0.5.js")" type="text/javascript"></script>
+    <script src="@routes.Assets.at("javascripts/jquery.debounce-1.0.5.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("javascripts/jshashtable-3.0.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("javascripts/jquery.json-2.4.min.js")" type="text/javascript"></script>
 		<script src="@routes.Assets.at("javascripts/studs/serverconnector.js")" type="text/javascript"></script>
@@ -88,8 +88,6 @@
 		<script src="@routes.Assets.at("javascripts/controls/simplemapoverlay.js")" type="text/javascript"></script>
 		<!-- <script src="@routes.Assets.at("javascripts/controls/postwindow.js")" type="text/javascript"></script> -->
 
-    <!-- embed vines -->
-    <script src="https://platform.vine.co/static/scripts/embed.js"></script>
     <!-- embed Instagrams -->
     <script async defer src="//platform.instagram.com/en_US/embeds.js"></script>
 
@@ -130,167 +128,6 @@
 			window.scrollTo(0,1);
 		</script>
 
-		<!--<script>
-			function retractNavBar(lastScrollTop, currentScrollTop) {
-				var st = currentScrollTop,
-					navbarHeight = $('.navbar').outerHeight(true);
-				if ($('.navbar').hasClass('withdrawing')) {
-					return st;
-				}
-
-
-				if (st > lastScrollTop){
-					//scrolling down
-					if ($('.navbar').hasClass('withdrawn')) {
-						return st;
-					}
-					//$('.navbar-collapse').collapse('hide')
-					$('.navbar').addClass('withdrawing')
-								.addClass('withdrawn')
-								.animate( {top: -1*navbarHeight}, 200, 'easeOutCubic', function() {
-									$(this).removeClass('withdrawing')
-					});
-				} else {
-					//scrolling up
-					if (!$('.navbar').hasClass('withdrawn')) {
-						return st;
-					}
-					$('.navbar').addClass('withdrawing')
-								.removeClass('withdrawn')
-								.animate( {top: 0}, 200, 'easeOutCubic', function() {
-									$(this).removeClass('withdrawing')
-					});
-			   }
-			   return st;
-			}
-
-			$(function() {
-				var lastScrollTop = $(window).scrollTop();
-
-				$(window).scroll(function() {
-					var currentScrollTop = $(window).scrollTop();
-					lastScrollTop = retractNavBar(lastScrollTop,currentScrollTop);
-				});
-			});
-		</script>-->
-
-
-
-		<!-- MAP STYLE -->
-		<!-- <script>
-		var mapstyles = [
-			{
-				"featureType": "all",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "on"
-					}
-				]
-			},
-			{
-				"featureType": "administrative",
-				"elementType": "labels.text.fill",
-				"stylers": [
-					{
-						"color": "#444444"
-					}
-				]
-			},
-			{
-				"featureType": "landscape",
-				"elementType": "all",
-				"stylers": [
-					{
-						"color": "#f2f2f2"
-					}
-				]
-			},
-			{
-				"featureType": "poi",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "off"
-					}
-				]
-			},
-			{
-				"featureType": "poi.attraction",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "on"
-					}
-				]
-			},
-			{
-				"featureType": "poi.park",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "on"
-					},
-					{
-						"saturation": "-43"
-					}
-				]
-			},
-			{
-				"featureType": "road",
-				"elementType": "all",
-				"stylers": [
-					{
-						"saturation": -100
-					},
-					{
-						"lightness": 45
-					}
-				]
-			},
-			{
-				"featureType": "road.highway",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "simplified"
-					}
-				]
-			},
-			{
-				"featureType": "road.arterial",
-				"elementType": "labels.icon",
-				"stylers": [
-					{
-						"visibility": "off"
-					}
-				]
-			},
-			{
-				"featureType": "transit",
-				"elementType": "all",
-				"stylers": [
-					{
-						"visibility": "off"
-					}
-				]
-			},
-			{
-				"featureType": "water",
-				"elementType": "all",
-				"stylers": [
-					{
-						"color": "#2a444e"
-					},
-					{
-						"visibility": "on"
-					}
-				]
-			}
-		]
-
-	</script>-->
-
         @header
 
     </head>
@@ -306,14 +143,14 @@
       });
     };
 
-  (function(d, s, id){
-     var js, fjs = d.getElementsByTagName(s)[0];
-     if (d.getElementById(id)) {return;}
-     js = d.createElement(s); js.id = id;
-     js.src = "//connect.facebook.net/en_US/sdk.js";
-     fjs.parentNode.insertBefore(js, fjs);
-   }(document, 'script', 'facebook-jssdk'));
-</script>
+      (function(d, s, id){
+         var js, fjs = d.getElementsByTagName(s)[0];
+         if (d.getElementById(id)) {return;}
+         js = d.createElement(s); js.id = id;
+         js.src = "//connect.facebook.net/en_US/sdk.js";
+         fjs.parentNode.insertBefore(js, fjs);
+       }(document, 'script', 'facebook-jssdk'));
+    </script>
 
 		<!-- TWITTER -->
 		<script>
@@ -339,48 +176,29 @@
 		<!--   NavBar   -->
 		<!---------------->
 
-		<nav class="lir-style navbar navbar-default animate-transition">
-		  <div class="container-fluid">
-			<!-- Brand and toggle get grouped for better mobile display -->
-			<div class="navbar-header">
-			  <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#lir-collapsed-navbar">
-				<span class="sr-only">Toggle navigation</span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-				<span class="icon-bar"></span>
-			  </button>
-			  <a class="lir-style navbar-brand" href="/">
-				<img id="lir-logo" src="/assets/images/lir-logo-banner-simple-small.png" alt="lir-logo">
-				<img id="lir-logo-small" src="/assets/images/lir-logo.png" alt="lir-logo">
-			  </a>
-			  <input id="title-input" />
-			</div>
-
-			<!-- Collect the nav links, forms, and other content for toggling -->
-			<div class="collapse navbar-collapse" id="lir-collapsed-navbar">
-			  <ul class="nav navbar-nav pull-right">
-			    <li><a id="blog-link" href="http://blog.lostinreality.net/">Blog</a></li>
-				<li><a id="create-link" class="ga-event-navbar-createstory" >+ Create a Story<span class="sr-only">(current)</span></a></li>
-				<li><a id="publish-link" class="ga-event-navbar-publish">Publish</a></li>
-				<li><a id="signup-link" class="ga-event-navbar-signup" href="/signup">Sign Up</a></li>
-				<li><a id="login-link" class="ga-event-navbar-login" onclick="openLoginModal()">Log in</a></li>
-				<li class="dropdown">
-				  <a id="user-link" href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false">
-					<span class="caret"></span>
-				  </a>
+		<div class="lir-navbar">
+      <div class="navbar-content">
+        <div id="lir-logo"></div>
+        <div id="search-bar">
+    			<div id="search-input-container"><span class="glyph-icon icon-no-margins icon-no-padding icon-20px flaticon-tool"></span><input id="search-bar-input" type="text" placeholder="search for places and tags"></div>
+    			<div id="search-results"><ul></ul></div>
+    		</div>
+        <a id="create-link" class="ga-event-navbar-createstory" >+ Create a Story<span class="sr-only">(current)</span></a>
+				<a id="signup-link" class="ga-event-navbar-signup" href="/signup">Sign Up</a>
+				<a id="login-link" class="ga-event-navbar-login" onclick="openLoginModal()">Log in</a>
+				<div class="dropdown">
+				  <a id="user-link" href="" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-expanded="false"><span class="caret"></span></a>
 				  <ul class="dropdown-menu" role="menu">
-					<li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li>
-					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">+ Create a Story</a></li> -->
-					<li><a href="/" class="ga-event-navbar-library">Map</a></li>
-					<li class="divider"></li>
-					<li><a href="/logout">Log out</a></li>
+  					<li><a href="/profile" class="ga-event-navbar-mystories">My Stories</a></li>
+  					<!-- <li><a href="/profile" class="ga-event-navbar-mystories">+ Create a Story</a></li> -->
+  					<li><a href="/" class="ga-event-navbar-library">Map</a></li>
+  					<li class="divider"></li>
+  					<li><a href="/logout">Log out</a></li>
 				  </ul>
-				</li>
-			  </ul>
-			</div><!-- /.navbar-collapse -->
-		  </div><!-- /.container-fluid -->
-		  <div class="grad-bar"></div>
-		</nav>
+				</div>
+      </div>
+      <div class="grad-bar"></div>
+		</div>
 
 		@content
 

@@ -19,11 +19,22 @@ html,body,section {
 	/* height: 100%; */
 	width: 100%;
 	color: #252525;
-  min-width: 1200px;
+  /*min-width: 1200px;*/
 }
 
 section {
 	height: 100%;
+}
+
+a:focus, a:hover {
+  text-decoration: none !important;
+}
+
+input, input:active, input:focus, input:hover, textarea, textarea:active, textarea:focus, textarea:hover {
+  outline: none;
+  border: none;
+  background-color: transparent;
+  resize: none;
 }
 
 .grad-bar {
@@ -122,133 +133,77 @@ section {
 	transition: 0.5s cubic-bezier(0.215, 0.61, 0.355, 1);
 }
 
+.loader {
+    border: 16px solid #f3f3f3; /* Light grey */
+    border-top: 16px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 120px;
+    height: 120px;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
 /******************************************************************
 	Navbar
 ******************************************************************/
 
-.lir-style.navbar, .lir-style.navbar-default  {
-	/*position: fixed;*/
+.lir-navbar {
+	position: fixed;
 	width: 100%;
 	top: 0px;
-	height:auto;
-	margin-bottom:0px;
-	border: none;
-	border-radius: 0px;
 	z-index:300;
-	-webkit-box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
-	-moz-box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
-	box-shadow: 0px 0px 10px 1px rgba(0,0,0,0.4);
+  background-color: white;
+
 }
 
-@media (min-width: 768px) {
-	.lir-style.navbar, .lir-style.navbar-default  {
-		/*height:64px;*/
-	}
+.lir-navbar .navbar-content {
+  display: flex;
+	display: -webkit-flex; /* Safari */
+	flex-direction: row;
+  -webkit-flex-direction: row; /* Safari 6.1+ */
+  width: 100%;
+  height: 50px;
 }
 
-.lir-style  .navbar-brand {
-	padding: 5px 15px;
+.lir-navbar .navbar-content a {
+  cursor: pointer;
+  color: #000;
+  opacity: .6;
+  padding: 12px 10px;
 }
 
-.lir-style  .navbar-nav {
-	margin: auto;
-	padding: inherit;
-	width:100%;
+.lir-navbar .navbar-content a:hover {
+  opacity: 1;
 }
 
-.lir-style  .navbar-nav  > li > a {
-	width:100%;
-	text-align: center;
-  padding-top: 15px;
-  padding-bottom: 12px;
-  font-size: 16px;
-	color:#252525;
-	background-color: #F8F8F8;
-	border-bottom: 4px solid rgba(1,1,1,0);
-}
-
-.lir-style  .navbar-nav  > li > a:hover, .lir-style  .navbar-nav  .open > a {
-	background-color: #e7e7e7;
-	border-bottom-color: rgba(1,1,1,.4);
-}
-
-@media (min-width: 768px) {
-	.lir-style  .navbar-nav {
-		margin-right: 2%;
-		width:auto;
-	}
-
-	.lir-style  .navbar-nav  > li > a {
-		width:auto;
-	}
-
-	.lir-style  .navbar-nav  > li > a:hover, .lir-style  .navbar-nav  .open > a {
-		border-bottom: 4px solid rgba(1,1,1,.4);
-	}
-}
-
-.lir-style  .navbar-collapse {
-	max-height:none;
-	padding:inherit;
-}
-
-.lir-style.navbar .grad-bar {
+.lir-navbar .grad-bar {
 	margin-top:-4px;
 }
 
-#lir-logo {
-	display:none;
+.lir-navbar #lir-logo {
 	height: 40px;
+  width: 180px;
+  margin: 3px 15px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  background-image: url("/assets/images/lir-logo-banner-simple-small.png");
 }
 
-#lir-logo-small {
-	display:block;
-	height: 40px;
-}
-
-@media (min-width: 768px) {
-	#lir-logo {
-		display:block;
-		height: 40px;
+@media (max-width: 768px) {
+	.lir-navbar #lir-logo {
+    width: 40px;
+    background-image: url("/assets/images/lir-logo.png");
 	}
-	#lir-logo-small {
-		display:none;
-		height: 40px;
-	}
-}
-
-#title-input {
-	display:none;
-}
-
-#create-link {
-	display:block;
-  cursor: pointer;
-}
-
-#publish-link {
-	display:none;
-  cursor: pointer;
-}
-
-#stories-link{
-	display:none;
-  cursor: pointer;
-}
-
-#blog-link{
-	display:none;
-  cursor: pointer;
 }
 
 #login-link {
 	display:none;
-	background-color: rgba(111, 203, 66, .7);
-	color: white;
-}
-
-#login-link:hover {
 	background-color: rgba(111, 203, 66, 1);
+	color: white;
 }
 
 #user-link  {
@@ -283,12 +238,69 @@ section {
 	background-color: rgba(111, 203, 66, 1);
 }
 
-#delete-link {
-	display:none;
-	background-color: rgba(203, 66, 66, .7);
-	color: white;
+/******************************************************************
+	Search bar View
+******************************************************************/
+
+#search-bar {
+  flex-grow: 1;
+	-webkit-flex-grow: 1;
 }
 
-#delete-link:hover {
-	background-color: rgba(203, 66, 66, 1);
+#search-bar div:first-child {
+  display: flex;
+	display: -webkit-flex; /* Safari */
+	flex-direction: row;
+  -webkit-flex-direction: row; /* Safari 6.1+ */
+  padding: 12px 10px;
+  width: 100%;
+}
+
+#search-bar input {
+  flex-grow: 1;
+	-webkit-flex-grow: 1;
+  margin-left: 10px;
+}
+
+#search-results {
+  display: none;
+  padding: 10px 0px;
+  background-color: #fff;
+  margin-top: 2px;
+}
+
+#search-results ul {
+  list-style: none;
+  padding: 0px;
+}
+
+#search-results li {
+  display: flex;
+	display: -webkit-flex; /* Safari */
+	flex-direction: row;
+  -webkit-flex-direction: row; /* Safari 6.1+ */
+  padding: 0px 30px;
+}
+
+#search-results li:hover , #search-results li.selected  {
+  background-color: #5e7abd;
+  color: white;
+}
+
+#search-results li:hover a , #search-results li.selected a {
+  color: white;
+}
+
+#search-results a {
+  display: inline-block;
+  padding: 3px 6px;
+  width: calc(100% - 10px);
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+}
+
+#search-results .glyph-icon {
+  opacity: .6;
+  padding: 3px 0px !important;
 }

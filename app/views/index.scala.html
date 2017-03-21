@@ -64,207 +64,138 @@
 
 	<section id="content-wrapper">
 
-		<div id="index-heros">
-			<div id="heros-container">
-				<div id="hero-1" class="hero-container" tab="1">
-					<h1>Pick one place</h1>
-					<div class="input-group">
-			      <div class="input-group-btn">
-			        <button class="btn btn-default ga-event-index-search" type="button"><span class="glyph icon-no-margins icon-15px flaticon-tool"></button>
-			      </div>
-						<input id="hero1-search-input" class="form-control ga-event-index-search" placeholder="Search for a place...">
-			    </div>
-					<div id="scroll-down-indicator">
-						<div id="scroll-down-arrow">
-							<span class="glyph icon-no-margins icon-40px flaticon-arrows-2">
-						</div>
-						<p><em>Or scroll down...</em></p>
-					</div>
-				</div>
+		<!------------------->
+		<!--  Story List   -->
+		<!------------------->
 
+		<div id="story-list">
+		</div>
 
-				<div id="hero-2" class="hero-container" tab="2">
-					<h1>Stories here, Stories there...</h1>
-					<h4>
-						Build a map with your favorite stories, your pictures and videos, and share them with friends.
-						Check the stories and maps we picked for you.
-					</h4>
-					<div id="featured-stories-container" >
-						<!-- <div class="lg-arrow-left"></div>
-						<div class="lg-arrow-right"></div> -->
-					</div>
-				</div>
+		<!----------->
+		<!--  MAP  -->
+		<!----------->
 
-
-				<!-- <div id="hero-3" class="hero-container" tab="3">
-					<h1>Save stories as you surf the web.</h1>
-					<h4>
-						Save articles from the web directly at your browser with the Web Clipper Chrome Extension.
-						Clip any web page, youtube, vimeo and vine videos, instagrams, etc, and save them to your maps.<br>
-						You can download it <a href="https://chrome.google.com/webstore/detail/lost-in-realitys-web-clip/mcmkieobolpjmddiobfhoaeceepnefih" >here</a>.
-					</h4>
-					<div id="web-clipper-banner" onclick="chrome.webstore.install()"></div>
-				</div> -->
-
-
-				<div id="hero-4" class="hero-container" tab="4">
-					<h1>Sign up and spread the word.</h1>
-					<div id="sign-up">
-						<button id="sign-up-btn" type="button" class="btn btn-success btn-lg ga-event-navbar-signup">Sign up</button>
-					</div>
-					<div id="social">
-						<a id="share-facebook-btn" href="https://www.facebook.com/pages/Lost-in-Reality-LiR/387253791289181" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-social-2"></a>
-						<a id="share-twitter-btn" href="https://twitter.com/LstnReality" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-social-1"></a>
-						<a id="share-email-btn" href="mailto:feedback@@lostinreality.pt?Subject=Feedback" type="button" class="btn btn-icon"><span class="glyph-icon icon-no-margins icon-40px flaticon-internet"></a>
-					</div>
-				</div>
-
-
-				<div id="hero-5" class="hero-container" tab="5">
-					<h1>Ready? Pick one place.</h1>
-					<div class="input-group">
-			      <div class="input-group-btn">
-			        <button class="btn btn-default" type="button"><span class="glyph icon-no-margins icon-15px flaticon-tool ga-event-index-search"></button>
-			      </div>
-						<input id="hero5-search-input" class="form-control ga-event-index-search" placeholder="Search for a place...">
-			    </div>
-					<div id="logo-hero"></div>
-				</div>
-
+		<div id="index-map-and-location-wrapper">
+			<div id="location-name-container">
+				<p id="location-name"></p>
+			</div>
+			<div class="map-container">
+				<div class="mapbox-canvas"></div>
 			</div>
 		</div>
 
-		<!-------------------------------->
-		<!--  Index Map & Stories  -->
-		<!-------------------------------->
+		<!-------------------------->
+		<!--  Create Story Pane   -->
+		<!-------------------------->
 
-		<div id="index-map-and-stories-container">
-
-			<!----------------------->
-			<!--  Index Map   -->
-			<!----------------------->
-
-			<div id="index-map-container" >
-				<div id="map-canvas"></div>
-				<div id="map-viewport">
-					<div id="map-sight"></div>
-					<div id="map-region"></div>
-				</div>
-			</div>
-
-			<!------------------------------->
-			<!--  Index Map Details   -->
-			<!------------------------------->
-
-			<div id="index-map-details-container">
-				<div id="index-thumbnail-container">
-					<span class="glyph-icon icon-no-margins icon-20px flaticon-nature">
-				</div>
-				<p id="index-details-name"></p>
-			</div>
-
-			<!----------------------------->
-			<!--  Search & Controls Bar  -->
-			<!----------------------------->
-
-			<div id="search-and-controls-bar">
-				<div class="input-group">
-					<input id="search-input" class="form-control ga-event-index-search" placeholder="Search for a place...">
-					<div class="input-group-btn">
-						<!-- <button id="search-btn" type="button" class="btn btn-success" onclick="searchBoxGetPlaces()"><span class="glyph icon-no-margins icon-15px flaticon-search"></button> -->
-						<button id="zoom-in" type="button" class="btn btn-default" onclick="zoomInMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom in"><span class="glyph icon-no-margins icon-20px flaticon-multimedia"></button>
-						<button id="zoom-out" type="button" class="btn btn-default" onclick="zoomOutMap()" data-toggle="tooltip" data-placement="bottom" title="Zoom out"><span class="glyph icon-no-margins icon-20px flaticon-search"></button>
+		<div id="create-edit-story-pane" class="animate-transition">
+	    <div id="pane-dialog">
+				<div id="prompt" class="animate-transition collapsed">
+					<div>
+						<input id="story-url-input" placeholder="paste an article link" type="text">
+						<input id="search-query-input" placeholder="search for book title, author" type="text">
+						<div class="loader"></div>
+						<ul id="search-query-results"></ul>
 					</div>
 				</div>
-				<button id="create-story-btn" type="button" class="btn btn-default ga-event-index-createstory" data-toggle="tooltip" data-placement="left" title="Create a new story."><span class="glyph icon-no-margins icon-15px flaticon-draw"></button>
+				<div id="edit-story-container" class="animate-transition collapsed">
+					<div id="story-image-container" class="animate-transition">
+						<div><input id="story-image-url-input" placeholder="Image link" type="text"></div>
+					</div>
+					<div id="pane-content" class="animate-transition">
+						<div id="story-details">
+							<div id="article-story-details" class="details-container collapsed">
+								<input id="story-title-input" placeholder="Title" type="text">
+								<textarea id="story-description-input" placeholder="Description" class="story-text" type="text"></textarea>
+								<div>
+									<input id="story-author-input" placeholder="Author" type="text">
+									<input id="story-date-input" placeholder="Date" type="text">
+								</div>
+								<div>
+									<img id="story-source-icon"><input id="story-source-input" placeholder="Source" type="text">
+									<input id="story-url-input" placeholder="article url" type="text">
+								</div>
+							</div>
+							<div id="bookref-story-details" class="details-container collapsed">
+								<input id="story-title-input" placeholder="Title" type="text">
+								<textarea id="story-description-input" placeholder="Description" class="story-text" type="text"></textarea>
+								<div>
+									<input id="story-author-input" placeholder="Author" type="text">
+									<input id="story-date-input" placeholder="Date" type="text">
+								</div>
+								<div>
+									<img id="story-publisher-icon"><input id="story-publisher-input" placeholder="Publisher" type="text">
+									<input id="story-url-input" placeholder="Google Books link" type="text">
+									<input id="search-query-input" placeholder="search book title, author" type="text">
+									<ul id="search-query-results"></ul>
+								</div>
+							</div>
+							<div id="single-story-details" class="details-container collapsed">
+								<textarea id="story-description-input" placeholder="Description" class="story-text" type="text"></textarea>
+							</div>
+							<div id="story-keywords-container">
+								<div>
+									<input id="story-keywords-input" placeholder="add tag" type="text">
+									<button id="add-keyword-btn" id="btn btn-success" type=button onclick="addNewKeyword()">add</button>
+								</div>
+								<p id="story-keywords"></p>
+							</div>
+						</div>
+						<div id="map-and-location-wrapper">
+							<div>
+								<input id="story-location-input" type="text" placeholder="Location" >
+								<input id="location-showpin" type="checkbox" placeholder="Location" > show pin
+							</div>
+							<div id="map-container">
+								<div id="mapbox-canvas"></div>
+								<div id="map-viewport">
+									<div id="map-sight"></div>
+									<div id="map-region"></div>
+								</div>
+							</div>
+						</div>
+						<div id="pane-footer">
+							<button id="cancel-btn" class="btn btn-default" type=button onclick="closeCreateStoryPane()">Cancel</button>
+							<button id="delete-btn" class="btn btn-danger" type=button onclick="deleteStory()">Delete</button>
+							<button id="save-btn" class="btn btn-success" type=button onclick="saveStory()">Save</button>
+						</div>
+					</div>
 			</div>
-
-			<!--------------->
-			<!--  Stories  -->
-			<!--------------->
-
-			<div id="story-containers-wrapper">
-				<div id="story-grid-layout"></div>
-				<div id="story-large-layout">
-					<!-- <div id="story-large-layout-controllers">
-						<div class="lg-arrow-left"></div>
-						<div class="lg-arrow-right"></div>
-					</div> -->
-					<div id="story-large-layout-container"></div>
-				</div>
-
-			</div>
-
 		</div>
 	</section>
 
 	<!----------------------------------->
-	<!--  Create Story Options Modal   -->
+	<!--  Create Story Options Prompt Modal   -->
 	<!----------------------------------->
 
-	<!-- Create Story modal -->
-	<div id="create-story-modal" class="modal fade">
+	<div id="create-story-prompt-modal" class="modal fade">
 	  <div class="modal-dialog">
 	    <div class="modal-content">
 	      <div class="modal-body animate-transition">
 					<div id="options">
 						<h4 class="modal-title">Which type of story?</h4>
-						<div id="single-story-opt-btn" class="div-btn" onclick="openCreateSingleStoryView()">
+						<div id="single-story-opt-btn" class="div-btn" onclick="openCreateStoryPane(1)">
 							<h4>One-Shot Story</h4>
 							<p>A single location story for a fast and short story, a memoir or a note.</p>
 						</div>
-						<div id="regular-story-opt-btn" class="div-btn" onclick="openCreateStoryView()">
+						<!-- <div id="regular-story-opt-btn" class="div-btn">
 							<h4>Blank Page</h4>
 							<p>A blank page to write freely with unlimited locations, in an article like format.</p>
-						</div>
-						<div id="article-story-opt-btn" class="div-btn" onclick="openCreateArticleStoryView()">
+						</div> -->
+						<div id="article-story-opt-btn" class="div-btn" onclick="openCreateStoryPane(2)">
 							<h4>Article</h4>
 							<p>A story based on an article from other sources on the web.</p>
 						</div>
+						<div id="bookref-story-opt-btn" class="div-btn" onclick="openCreateStoryPane(3)">
+							<h4>Book Reference</h4>
+							<p>A reference to a passage in a book.</p>
+						</div>
+						<div id="instagram-story-opt-btn" class="div-btn" onclick="openCreateStoryPane(4)">
+							<h4>An Instagram</h4>
+							<p>Nothing more :)</p>
+						</div>
 					</div>
 	      </div>
-	    </div>
-	  </div>
-	</div>
-
-	<!------------------------------------------->
-	<!--  Create Article Story Options Modal   -->
-	<!------------------------------------------->
-
-	<!-- Create Story modal -->
-	<div id="create-article-story-modal" class="modal fade">
-	  <div class="modal-dialog">
-	    <div class="modal-content">
-	      <div class="modal-body animate-transition">
-					<div id="url-prompt">
-						<span>url:</span><input id="story-url-prompt" type="text">
-						<button id="fetch-btn" class="btn btn-success" type=button onclick="fetchMetadataFromUrl()">Go</button>
-					</div>
-					<div id="story-block">
-						<div id="story-image-container"></div>
-						<span>Image link:</span><input id="story-image-url-input" type="text">
-						<div id="story-details">
-							<span>Title:</span><input id="story-title-input" type="text"> <br>
-							<span>Description:</span><textarea id="story-description-input" type="text" rows="3"></textarea>
-							<span>Tags: </span><span id="story-keywords"></span><input id="story-keywords-input" type="text">
-							<button id="add-keyword-btn" class="btn btn-success" type=button onclick="addKeywordToArticle()">add</button> <br>
-							<span>Location:</span><input id="story-location-input" > <br>
-							<span>Author:</span><input id="story-author-input" type="text">
-							<span>Date:</span><input id="story-date-input" type="text"> <br>
-							<span>Source:</span><img id="story-source-icon"><input id="story-source-input" type="text"><br>
-							<span>url:</span><input id="story-url-input" type="text">
-						</div>
-						<div id="map-container">
-							<div id="mapbox-canvas"></div>
-							<div id="map-viewport">
-								<div id="map-sight"></div>
-								<div id="map-region"></div>
-							</div>
-						</div>
-						<button id="save-btn" class="btn btn-success" type=button onclick="saveArticleStory()">Save</button>
-						<button id="cancel-btn" data-dismiss="modal" class="btn btn-default" type=button>Cancel</button>
-		      </div>
-				</div>
 	    </div>
 	  </div>
 	</div>
@@ -333,31 +264,4 @@
 		</div>
 	</div>
 
-	<!---------------->
-	<!--  Scripts   -->
-	<!---------------->
-
-	<script type="text/javascript">
-		var editingMode = ("@edit" == "true") ? true : false;
-		var target = new Object();
-		if (document.cookie.includes(COOKIE_HISTORY_TAG)) {
-			lircookie = document.cookie.split(COOKIE_HISTORY_TAG)[1]
-			if (lircookie!= null && !lircookie.includes("undefined")) {
-				var target = JSON.parse(document.cookie.split(COOKIE_HISTORY_TAG)[1]);
-			}
-			document.cookie = COOKIE_HISTORY_TAG + "; expires=Thu, 03 Jul 1987 13:13:13 UTC";
-		} else {
-			@if(location != null) {
-				target.location = {
-					latitude:@location.latitude,
-					longitude:@location.longitude,
-					zoom:@location.zoom
-				}
-			}
-			@if(story != null) {
-				target.storyid = @story.id;
-			}
-		}
-		openPageOnTarget(target);
-	</script>
 }

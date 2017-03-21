@@ -268,7 +268,6 @@ public class Application extends Controller {
 		return ok(json);
 	}
 
-	@SecuredAction
 	public static Result getAllLabels() {
 		List<String> result = new ArrayList<String>();
 		List<models.Label> labels = models.Label.getAllLabels();

@@ -184,6 +184,13 @@ public class Location extends Model {
 		return locations;
 	}
 
+	public static List<Location> findAllMain() {
+		List<Location> locations =  finder.where().eq("model_version", CURRENT_MODEL_VERSION)
+																				.eq("ismain", true)
+																				.findList();
+		return locations;
+	}
+
 	public static Location findById(Long id) {
 		if (id == null) return null;
 		Location location = finder.where().eq("id", id).findUnique();

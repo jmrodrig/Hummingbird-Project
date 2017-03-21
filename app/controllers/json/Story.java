@@ -90,6 +90,7 @@ public class Story implements Comparable<Story> {
 		result.noOfLikes = models.Like.findByStoryId(story.getId()).size();
 		result.noOfSaves = models.SavedStory.findByStoryId(story.getId()).size();
 		result.noViews = story.getNOViews();
+		result.labels = story.getLabels();
 		result.format = story.getFormat();
 		result.isDummy = false;
 		result.distance = story.getDistance();
@@ -163,7 +164,7 @@ public class Story implements Comparable<Story> {
                           = new Comparator<Story>() {
 
 	    public int compare(Story story1, Story story2) {
-	      return (story2.distance).compareTo(story1.distance);
+	      return (story1.distance).compareTo(story2.distance);
 	    }
 
 	};

@@ -5,6 +5,8 @@
 
 var map;
 var mapbox;
+var autocompleteService;
+var placeService;
 var herosearchBox;
 var hero5searchBox;
 var mapsearchBox;
@@ -16,9 +18,14 @@ var uploadimagedata;
 
 var defaultLocation = new google.maps.LatLng(37, -20);
 
+
+
 var indexStories;
+var storyLabels;
 var indexStoriesMarkerList = new Hashtable();
 var storySectionsMarkerList = new Hashtable();
+var scrollSpyStoryMap = new Hashtable();
+var currentStoryInViewport;
 var indexStoryPathsList;
 var previousCenter = defaultLocation;
 var previousZoom = 2;
@@ -36,6 +43,8 @@ var animationBusy = false;
 var isStoryViewOpen = false;
 var openingtarget = null;
 var poppingWindowState = false;
+
+var loadingMoreStories = false;
 
 var locationSetMode = 'pinpoint';
 
@@ -61,12 +70,8 @@ var ctrlDown = false,
         arrowLeftKey = 37,
         arrowRightKey = 39;
 
-var COLUMN_WIDTH = 400,
-COLUMN_PADDING_LEFT = 25,
-COLUMN_PADDING_RIGHT = 14,
-COLUMN_MARGIN = 14,
-MAX_NO_COLUMNS = 1,
-GRID_LAYOUT_MARGIN_LEFT = 75; //also change on index.css: .story-grid-layout
+var STORY_DETAILS_WIDTH = 500,
+STORY_CONTAINER_HEIGHT = 700;
 
 var EMBED_MAX_WIDTH = 570,
 EMBED_MAX_HEIGHT = 440,
@@ -79,10 +84,12 @@ STORY_TEXT = 10,
 PICTURE_CONTAINER = 11,
 STORY_SUBTITLE = 12,
 STORY_ARTICLE = 13,
+STORY_BOOKDATA = 14,
+STORY_INSTAGRAM = 15,
 DEFAULT_ZOOM = 3,
 NO_VIEWPORT_ZOOM = 14,
-DEFAULT_LATITUDE = 39.432031,
-DEFAULT_LONGITUDE = -8.084700,
+INSTAGRAM_STORY = 4,
+BOOKREF_STORY = 3,
 ARTICLE_STORY = 2,
 SINGLE_STORY = 1,
 OPEN_STORY = 0,
@@ -91,22 +98,24 @@ PUBLISH_WITH_EVERYONE = 1,
 PUBLISH_WITH_FOLLOWERS = 2,
 PUBLISH_PRIVATELY = 3;
 
+var SORTED_BY_RELEVANCE = 0,
+SORTED_BY_LABEL = 1,
+SORTED_BY_LOCATION = 2;
+
+var DEFAULT_LATITUDE = 39.432031,
+DEFAULT_LONGITUDE = -8.084700;
+
 var SECTION_MARKER_COLOR = '#e808d7',
-STORY_MARKER_COLOR = '#ff2c2c'
-
-var MAX_ZOOM = 20;
-var MIN_ZOOM = 2;
-
+STORY_MARKER_COLOR = '#ff2c2c';
 
 var COOKIE_HISTORY_TAG = "lir-15452345=";
+
+
 /******************************************************************
 	INITIALIZATION
 ******************************************************************/
 
-function initialize() {
-
-	//$('#blog-link').css('display' , 'block' );
-
+$(function() {
 	user = newUserObj();
 	user.constructor();
 	user.readLoggedUser(function (user){
@@ -119,151 +128,195 @@ function initialize() {
 						.css('display' , 'block' );
 
 		$('#user-link div').css('background-image','url(' + avatarUrl + ')');
+    loadStories(0,function() {
+      loadStoriesOnLayout();
+    })
 	},
 	function (){
 		user = null
 		$('#login-link, #stories-link').css('display' , 'block' );
+    loadStoriesByRelevance(0,20,function() {
+      //intializeEvents();
+      loadStoriesOnLayout();
+    })
 	});
-	initiateMap();
 	intializeEvents();
-	loadHighlightedStories();
-	setLayoutDimensions();
+});
+
+function reloadStories(onFinished) {
+  var noStories = parseInt($("#story-list").attr('noStories')),
+  sortedBy = parseInt($("#story-list").attr('sortedBy'))
+  switch (sortedBy) {
+    case SORTED_BY_RELEVANCE:
+      loadStoriesByRelevance(0,noStories,function() {
+        if (onFinished) onFinished(stories);
+      })
+      return;
+    case SORTED_BY_LABEL:
+      var label = $("#story-list").attr('label')
+      loadStoriesByLabel(label,0,noStories,function() {
+        if (onFinished) onFinished(stories);
+      })
+      return;
+    case SORTED_BY_LOCATION:
+      var lat = $("#story-list").attr('lat'),
+      lng = $("#story-list").attr('lng')
+      loadStoriesByLocation(lat,lng,0,noStories,function() {
+        if (onFinished) onFinished(stories);
+      })
+      return;
+  }
 }
 
-function loadStories(bounds_,onFinished) {
-	if (isStoryViewOpen) return;
-	if (!bounds_) {
-		var bounds_ = getBounds()
-	}
-	var w = bounds_.west,
-	n = bounds_.north,
-	e = bounds_.east,
-	s = bounds_.south;
-  stud_readPublicStoriesWithinBounds(w, n, e, s, 20, function(stories) {
+function loadMoreStories() {
+  if (loadingMoreStories) return;
+  loadingMoreStories = true;
+  var noStories = parseInt($("#story-list").attr('noStories')),
+  sortedBy = parseInt($("#story-list").attr('sortedBy'))
+  switch (sortedBy) {
+    case SORTED_BY_RELEVANCE:
+      addStoriesByRelevance(noStories+1,20,function(strs) {
+        addStoriesToLayout(strs);
+        resetScrollSpy();
+        loadingMoreStories = false;
+      })
+      return;
+    case SORTED_BY_LABEL:
+      var label = $("#story-list").attr('label')
+      addStoriesByLabel(label,noStories+1,20,function(strs) {
+        addStoriesToLayout(strs);
+        resetScrollSpy();
+        loadingMoreStories = false;
+      })
+      return;
+    case SORTED_BY_LOCATION:
+      var lat = $("#story-list").attr('lat'),
+      lng = $("#story-list").attr('lng')
+      addStoriesByLocation(lat,lng,noStories+1,20,function(strs) {
+        addStoriesToLayout(strs);
+        resetScrollSpy();
+        loadingMoreStories = false;
+      })
+      return;
+  }
+}
+
+function loadStoriesByRelevance(index,noStories,onFinished) {
+  stud_loadStories(index,noStories, function(stories) {
 		indexStories = stories;
-		setLayoutDimensions(indexStories);
-		indexStoriesMarkerList = drawStoriesMarkersOnMap(indexStories,markerIcon);
-		if (indexStories.length == 0) displayAlertMessage('There are no stories here');
+    $("#story-list").attr('noStories',indexStories.length)
+    $("#story-list").attr('sortedBy',SORTED_BY_RELEVANCE)
+    indexStories = readStoryContent(indexStories);
 		if (onFinished) onFinished(stories);
   });
 }
 
-//--- Listener for window ---//
-google.maps.event.addDomListener(window, 'load', initialize);
+function loadStoriesByLabel(label,index,noStories,onFinished) {
+  stud_loadStoriesByLabel(label,index,noStories, function(stories) {
+    if (stories.length == 0 ) return;
+		indexStories = stories;
+    $("#story-list").attr('noStories',indexStories.length)
+    $("#story-list").attr('sortedBy',SORTED_BY_LABEL)
+    $("#story-list").attr('label',label)
+    indexStories = readStoryContent(indexStories);
+		if (onFinished) onFinished(stories);
+  });
+}
+
+function loadStoriesByLocation(lat,lng,index,noStories,onFinished) {
+  stud_loadStoriesByLocation(lat,lng,index,noStories, function(stories) {
+    if (stories.length == 0 ) return;
+		indexStories = stories;
+    $("#story-list").attr('noStories',indexStories.length)
+    $("#story-list").attr('sortedBy',SORTED_BY_LOCATION)
+    $("#story-list").attr('lat',lat)
+    $("#story-list").attr('lng',lng)
+    indexStories = readStoryContent(indexStories);
+		if (onFinished) onFinished(stories);
+  });
+}
+
+function addStoriesByRelevance(index,noStories,onFinished) {
+  stud_loadStories(index,noStories, function(stories) {
+    if (stories.length == 0 ) return;
+    stories = readStoryContent(stories);
+    indexStories = indexStories.concat(stories);
+    $("#story-list").attr('noStories',indexStories.length)
+		if (onFinished) onFinished(stories);
+  });
+}
+
+function addStoriesByLabel(label,index,noStories,onFinished) {
+  stud_loadStoriesByLabel(label,index,noStories, function(stories) {
+    if (stories.length == 0 ) return;
+    stories = readStoryContent(stories);
+    indexStories = indexStories.concat(stories);
+    $("#story-list").attr('noStories',indexStories.length)
+		if (onFinished) onFinished(stories);
+  });
+}
+
+function addStoriesByLocation(lat,lng,index,noStories,onFinished) {
+  stud_loadStoriesByLocation(lat,lng,index,noStories, function(stories) {
+    if (stories.length == 0 ) return;
+    stories = readStoryContent(stories);
+    indexStories = indexStories.concat(stories);
+    $("#story-list").attr('noStories',indexStories.length)
+		if (onFinished) onFinished(stories);
+  });
+}
+
+function loadStoriesOnLayout() {
+  drawLayout();
+  resetScrollSpy();
+  //intializeEvents();
+}
 
 function intializeEvents() {
-	contentheight = $(window).innerHeight() - $('nav.navbar').height();
+  //--- MAIN LAYOUT DIMENSIONS ---//
+	contentheight = $(window).innerHeight() - $('.lir-navbar').height();
 	contentwidth = $('#content-wrapper').innerWidth();
-	$('#content-wrapper, .hero-container').css({ height: contentheight });
+  $('#content-wrapper').innerHeight(contentheight)
+                       .css('margin-top',$('.lir-navbar').height());
 
-	//----------------
-	storyContainersWrapperHeight = contentheight - $('#story-containers-wrapper').css('margin-top').replace("px", "");
-	storyContainersWrapperWidth = contentwidth;
-
-	$('#story-containers-wrapper').css({
-		height: storyContainersWrapperHeight,
-		width: storyContainersWrapperWidth
-	});
-
-	//----------------
 	if ($(window).innerWidth() < 768) $('#content-wrapper').addClass('container-collapsed');
 
-	//Map Sight
-	$('#map-viewport').css({
-		height: contentheight,
-	});
+  //--- INITIALIZE MAP ---//
+  initiateMapBox();
 
-	$('#map-region').resizable({
-		resize: function( event, ui ) {
-			var width = ui.size.width;
-			ui.element.css({
-				marginTop: -width/2,
-				marginLeft: -width/2,
-				width: width,
-				height: width
-			});
-			$('#map-region').removeClass('selected');
-		}
-  });
-
-  // COVER OPEN AND CLOSE DOMMouseScroll WheelEvent
-  $("#content-wrapper").bind("wheel", function(event) {
-		NUMBER_OF_HEROS = 4;
-		if (animationBusy || $("#content-wrapper").hasClass('showing-map')) return;
-		if (event.originalEvent.deltaY >= 1) {
-			animationBusy = true;
-			var top = -$('#heros-container').position().top + contentheight;
-			if (top >= NUMBER_OF_HEROS * contentheight) {
-				animationBusy = false;
-				return;
-			}
-			$('#heros-container').animate({top: -top}, 500,"easeOutQuart", function() {
-				$('#featured-stories-container').show();
-			});
-			setTimeout(function () { animationBusy = false }, 1000);
-		} else if (event.originalEvent.deltaY <= -1) {
-			animationBusy = true;
-			var top = -$('#heros-container').position().top - contentheight;
-			if (top < 0) {
-				animationBusy = false;
-				return;
-			}
-			$('#heros-container').animate({top: -top}, 500,"easeOutQuart");
-			setTimeout(function () { animationBusy = false }, 1500);
-		}
-  });
-
-  //--- Google Analytics track event ----//
+  //--- GOOGLE ANALYTICS TRACK EVENT ---//
 	$(".ga-event-map-publish").click( function() {
 		ga('send','event','map', 'publish') //Google Analytics track event
 	});
 
-	// RESIZE
-	$(window).resize(function() {
-		updateLayoutDimensions();
-	});
-
-	// PRESS ESCAPE
+	//--- PRESS ESCAPE ---//
 	document.onkeydown = function(event) {
 		if (event.keyCode == 27) {
 
 		}
 	}
 
-  $('[data-toggle="tooltip"]').tooltip({delay: { "show": 1500, "hide": 100 }})
-
-	setTimeout(function () {
-		$('#scroll-down-indicator').animate({opacity: 0.8, bottom:20}, 800, "easeOutBounce");
-	}, 2000);
-
+  //--- HANDLE PAGE NAVIGATION ---//
 	window.onpopstate = function(e){
     poppingWindowState = true;
     if(e.state){
-			var center = new google.maps.LatLng(e.state.latitude,e.state.longitude);
-			fitPositionOnView(e.state.latitude,e.state.longitude,e.state.zoom,map);
-      if (e.state.story)
-        openStoryView(e.state.story,{loadstoriesfirst:false});
-      else {
-        if (isStoryViewOpen)
-          closeStoryView({updatePageHistory:false});
-        loadStories(null,function(stories) {
-          drawLayout(stories);
-          poppingWindowState = false;
-        });
-      }
+      //se tem estado gravado
+
     } else {
-			//closeStoryLayoutView();
+			//não tem estado gravado
 		}
 	};
 
 	$('#create-story-btn, #create-link').click(function() {
+    closeCreateStoryPane();
 		if (user)
 			openCreateStoryPromptModal();
 		else
       openNeedLoginWarningModal();
 	});
 
-	$(".story-text, .location-name").bind('paste', function(e) {
+  //--- PASTE TEXT ---//
+	$("#create-edit-story-pane .story-text").bind('paste', function(e) {
 	  var pastedText = undefined;
 	  if (e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData) { // IE
 	    pastedText = e.originalEvent.clipboardData.getData('Text');
@@ -274,427 +327,424 @@ function intializeEvents() {
 	  return false; // Prevent the default handler from running.
 	});
 
+  //--- HANDLE ALERT MESSAGE ON LOGIN/SIGNUP MODAL ---//
   $(".login-modal input, signup-modal input").on("keypress",function() {
     $(".login-modal .login-alert-message, .signup-modal .signup-alert-message").hide();
   });
 
-  $('#create-article-story-modal').on('shown.bs.modal', function() {
-    initiateMapBox();
-    initiateSearchBox('story-location-input');
-    stud_loadLabels(function(results) {
-      console.log(results);
-      $("#create-article-story-modal #story-keywords-input").autocomplete({
-        source:results
-      })
-    })
+  //--- HANDLE IMAGE UPDATE  ---//
+  $("#create-edit-story-pane #story-image-url-input").change(function() {
+    updateImageUrl();
+  });
+
+  //--- HANDLE ARTICLE UPDATE  ---//
+  $("#create-edit-story-pane #story-url-input").change(function() {
+    updateMetadataFromUrl();
+  });
+
+  //--- HANDLE BOOK SEARCH RESULTS UPDATE  ---//
+  $("#create-edit-story-pane #search-query-input").keyup(function() {
+
+  });
+
+  $("#lir-navbar").click(function() {
+    closeCreateStoryPane();
   })
 
-  $("#create-article-story-modal #story-image-url-input").change(function() {
-    updateImageUrlFromArticle();
+  // SPY SCROLL: DOMMouseScroll WheelEvent
+  $("#content-wrapper").bind("wheel", function(event) {
+    var sid = getStoryIdOnViewport();
+    if (sid != currentStoryInViewport) {
+      updateMapLocation(sid);
+      currentStoryInViewport = sid;
+    }
+    if ($("#content-wrapper").scrollTop() - $("#story-list").height() + $("#content-wrapper").height() == 0)
+      loadMoreStories();
+  })
+
+  // LOAD LABELS
+  loadLabels();
+
+  //--- HANDLE SEARCH BAR INPUT  ---//
+  autocompleteService = new google.maps.places.AutocompleteService();
+  placesService = new google.maps.places.PlacesService($("#search-bar-input")[0]);
+  $("#search-bar-input").keyup(function(event) {
+    var sel = $("#search-bar ul li.selected");
+    var query = $("#search-bar-input").val();
+    switch (event.keyCode) {
+      case 13: // return key pressed
+        if (sel.length > 0) {
+          closeCreateStoryPane();
+          if (sel.attr('place_id'))
+            loadStoriesByPlaceResult(sel.attr('place_id'));
+          else if (sel.attr('label'))
+            loadStoriesByLabelResult(sel.attr('label'));
+        }
+        break;
+      case 38: // up arrow key pressed
+        if (sel.length > 0) {
+          sel.removeClass('selected')
+          sel.prev().addClass('selected');
+        }
+        break;
+      case 40: // down arrow key pressed
+        if (sel.length == 0) {
+          $("#search-bar ul li:first-child").addClass('selected');
+        } else {
+          sel.removeClass('selected');
+          sel.next().addClass('selected');
+        }
+        break;
+      case 39: // right arrow key pressed
+      case 41: // left arrow key pressed
+      default:
+        hanbleSearchBarAutocompleteList(query);
+    }
+  });
+
+  //--- HANDLE SEARCH BOOK  ---//
+  $("#create-edit-story-pane #prompt #search-query-input").keyup(function(event) {
+    var sel = $("#search-query-results li.selected");
+    var query = $("#create-edit-story-pane #prompt #search-query-input").val();
+    switch (event.keyCode) {
+      case 13: // return key pressed
+        event.preventDefault();
+        if (sel.length > 0) {
+          updateBookDataFromResult(JSON.parse(sel.attr('itemjson').replace(/&quot;/g,'"')))
+        }
+        break;
+      case 38: // up arrow key pressed
+        event.preventDefault();
+        if (sel.length > 0) {
+          sel.removeClass('selected')
+          sel.prev().addClass('selected');
+        }
+        break;
+      case 40: // down arrow key pressed
+        event.preventDefault();
+        if (sel.length == 0) {
+          $("#search-query-results li:first-child").addClass('selected');
+        } else {
+          sel.removeClass('selected');
+          sel.next().addClass('selected');
+        }
+        break;
+      case 39: // right arrow key pressed
+      case 37: // left arrow key pressed
+        break;
+      default:
+        updateBookSearchResults(query);
+    }
   });
 }
-
 /******************************************************************
 	DRAW AND CONTROL LAYOUTS
 ******************************************************************/
 
-function openStoryLayoutView() {
-	$("#content-wrapper").addClass('showing-map');
-	$('#index-heros').animate({top: '100%'}, 300,"easeOutQuart")
-	$('#search-and-controls-bar, #create-story-btn').show().animate({opacity: 1}, 300, "easeOutQuart");
-}
-
-function closeStoryLayoutView() {
-	$("#content-wrapper").removeClass('showing-map');
-	$('#story-grid-layout, #story-large-layout')
-		.removeClass('active')
-		.animate({top: '100%'}, 300, "easeOutQuart");
-	$('#index-heros').animate({top: '0%'}, 300,"easeOutQuart");
-	$('#search-and-controls-bar, #create-story-btn').animate({opacity: 0}, 300, "easeOutQuart");
-}
-
-function drawLayout(stories,options) {
-	if (!options) var options = {keephidden:false}
-	if (!$("#content-wrapper").hasClass('showing-map'))
-		openStoryLayoutView();
-	$('#story-grid-layout').scrollTop(0);
-	drawStoryGridLayout(stories);
-	if (!$('#story-grid-layout').hasClass('active'))
-		if (!options.keephidden)
-			$('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
-				$('#story-large-layout').removeClass('active')
-				$('#story-grid-layout').addClass('active')
-			});
-}
-
-function drawStoryGridLayout(stories) {
-  $('#story-grid-layout .story-container').remove();
-	var storiesGridLayoutContainer = $("#story-grid-layout");
-
-	if(!stories || stories.length == 0) {
-		$('#story-grid-layout').hide()
-		$('#no-stories-message').show();
-		return;
-	}
-	$('#no-stories-message').hide();
-	$('#story-grid-layout').show()
-	// var stories = sortStoriesByDate(stories);
-	$('.layout-column').remove();
-  for ( var i = 1; i <= noColumns; i++) {
-    $('<div id="column-' + i + '" class="layout-column"/>').appendTo(storiesGridLayoutContainer)
-  }
-
-
-  var columnCommuter;
-  counter = 0;
-
-  // Add remaining Story Containers
-  // var storiesinbounds = getStoriesWithinMapBounds(stories);
-  // var storiesSortedByDate = sortStoriesByDate(storiesinbounds);
-
-  stories.forEach(function(story) {
-    var container = buildStorySmallContainer(story);
-    columnCommuter = (counter++ % noColumns) + 1;
-    container.appendTo($('#column-' + columnCommuter));
-  });
-	updateLayoutDimensions();
-}
-
-function openStoryView(story,options) {
-  story_ = story;
-	if (!options) var options = {loadstoriesfirst:false}
-	if (options.loadstoriesfirst) {
-		loadStories(null,function(stories) {
-			drawLayout(stories,{keephidden:true})
-			options.loadstoriesfirst = false;
-			openStoryView(story,options);
-		});
-		return;
-	}
-
-	var largeStoryContainer
-	if (story.format == SINGLE_STORY)
-		largeStoryContainer = buildSingleStoryLargeContainer(story,options);
-	else {
-		$('#search-and-controls-bar, #create-story-btn').animate({opacity: 0}, 300, "easeOutQuart");
-		largeStoryContainer = buildStoryLargeContainer(story,options);
-	}
-
-  if (options.editable)
-		editingMode = true;
-
-  updatePageHistory(story);
-	isStoryViewOpen = true;
-
-	//clear map markers
-	hideAllStoriesMarkersFromMap();
-
-	// update layout
-	$('#story-large-layout-container').html(largeStoryContainer);
-	$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
-	$('#story-large-layout-controllers').show();
-
-	//fit story on map
-	previousCenter = getMapCenterOnLayout(map);
-	previousZoom = map.getZoom();
-	if (story.format == OPEN_STORY) {
-		fitMarkersOnView(storySectionsMarkerList.values(),map);
-	} else if (story.format == SINGLE_STORY && !options.new) {
-		var marker = indexStoriesMarkerList.get(story.id);
-		if (marker) {
-			marker.setMap(map);
-			fitMarkersOnView([marker],map);
-		}
-	}
-
-	// Show
-	$('#story-grid-layout').animate({top: '100%'}, 300, "easeOutQuart");
-	$('#story-large-layout').animate({top: 0}, 300, "easeOutQuart", function() {
-		$('#story-large-layout').addClass('active')
-		$('#story-grid-layout').removeClass('active')
-	});
-
-	if (options.editable || options.new)
-		$('#map-region, #map-sight').show();
-
-	updateLayoutDimensions();
-}
-
-function closeStoryView(options) {
-  story_ = null;
-	if (!options) var options = {keephidden:false,featured:false,keepMapPosition:true,updatePageHistory:true}
-	$('#map-viewport').innerWidth(contentwidth - $('#story-grid-layout').outerWidth());
-	$('#story-grid-layout').animate({top: 0}, 300, "easeOutQuart", function() {
-		$('#story-large-layout').removeClass('active')
-		$('#story-grid-layout').addClass('active')
-		$('#search-and-controls-bar, #create-story-btn').animate({opacity: 1}, 300, "easeOutQuart");
-	});
-	$('#story-large-layout').animate({top: '100%'}, 300, "easeOutQuart",function() {
-		$('#story-large-layout-container').html('');
-	});
-	$('#map-region, #map-sight').hide();
-	$('#map-viewport').innerWidth(contentwidth - $('#story-grid-layout').outerWidth());
-	$('#map-region').removeClass('selected');
-	$('#story-large-layout-controllers').hide();
-	$('.marker-div').removeClass('highlighted');
-	if (!options.keepMapPosition) {
-		map.panTo(previousCenter);
-		map.setZoom(Math.round(previousZoom));
-	}
-	isStoryViewOpen = false;
-	uploadimagedata = null;
-	editingMode = false;
-	clearStorySectionsMarkersFromMap();
-	showAllStoriesMarkersFromMap();
-  if (options.updatePageHistory)
-	 updatePageHistory();
-}
-
-function openCreateStoryView() {
-	window.location.href = LIR_SERVER_URL + '/story/create';
-}
-
-function openCreateArticleStoryView() {
-	$('#create-story-modal').modal('hide');
-  $('#create-article-story-modal').modal('show');
-}
-
-function openCreateSingleStoryView() {
-	$('#create-story-modal').modal('hide');
-	if (!$("#content-wrapper").hasClass('showing-map')) {
-		openStoryLayoutView();
-		fitPositionOnView(DEFAULT_LATITUDE,DEFAULT_LONGITUDE,DEFAULT_ZOOM,map)
-	}
-	story = new Object()
-	story.format = SINGLE_STORY;
-  stud_createStory(story,function(st) {
-		story = st;
-		openStoryView(story,{editable:true})
-	})
-}
-
-function openEditStoryView(story) {
-	if (story.format == OPEN_STORY)
-		window.location.href = LIR_SERVER_URL + '/story/edit/' + story.id;
-	else if (story.format == SINGLE_STORY)
-		openStoryView(story,{editable:true})
-}
-
-/******************************************************************
-	ARTICLE STORY CREATION CONTAINER
-******************************************************************/
-
-function fetchMetadataFromUrl() {
-  var url = $("#create-article-story-modal #story-url-prompt").val();
-  stud_fetchHtml(url,function(data) {
-    $("#create-article-story-modal #story-image-container").css('background-image','url(' + data.imageUrl + ')')
-    $("#create-article-story-modal #story-image-url-input").val(data.imageUrl)
-    $("#create-article-story-modal #story-title-input").val(data.title)
-    $("#create-article-story-modal #story-description-input").val(data.description)
-    $("#create-article-story-modal #story-author-input").val(data.author)
-    $("#create-article-story-modal #story-date-input").val(data.date)
-    $("#create-article-story-modal #story-source-icon").attr('src',data.icon)
-    $("#create-article-story-modal #story-source-input").val(data.source)
-    $("#create-article-story-modal #story-url-input").val(data.url)
-  })
-}
-
-function addKeywordToArticle() {
-  var kw = $("#create-article-story-modal #story-keywords").text(),
-  newkw = $("#create-article-story-modal #story-keywords-input").val();
-  if (newkw.length > 0) {
-    if (kw.length > 0)
-      $("#create-article-story-modal #story-keywords").text(kw + ", " + newkw);
-    else
-      $("#create-article-story-modal #story-keywords").text(newkw);
-  }
-  $("#create-article-story-modal #story-keywords-input").val("");
-}
-
-function updateMetadataFromUrl() {
-  fetchMetadataFromUrl();
-}
-
-function updateImageUrlFromArticle() {
-  var imageurl = $("#create-article-story-modal #story-image-url-input").val();
-  $("#create-article-story-modal #story-image-container").css('background-image','url(' + imageurl + ')')
-}
-
-function saveArticleStory(storyid) {
-  var storyData = new Object();
-  var articleItem = new Object();
-
-  articleItem.author = $("#create-article-story-modal #story-author-input").val()
-  articleItem.date = $("#create-article-story-modal #story-date-input").val()
-  articleItem.source = $("#create-article-story-modal #story-source-input").val()
-  articleItem.url = $("#create-article-story-modal #story-url-input").val()
-  articleItem.title = $("#create-article-story-modal #story-title-input").val();
-  articleItem.description = $("#create-article-story-modal #story-description-input").val();
-  articleItem.imageUrl = $("#create-article-story-modal #story-image-url-input").val();
-  articleItem.icon = $("#create-article-story-modal #story-source-icon").attr('src');
-  if (storyid) storyData.id = storyid;
-	storyData.summary = articleItem.description;
-  storyData.location = {
-		name: $("#create-article-story-modal #story-location-input").val(),
-    latitude:mapbox.getCenter().lat,
-    longitude:mapbox.getCenter().lng,
-		zoom: mapbox.getZoom(),
-		ismain:true,
-    showpin:true,
-    radius:0
-  }
-  storyData.lables = $("#create-article-story-modal #story-description-input").val().split(", ");
-	storyData.format = ARTICLE_STORY;
-  storyData.published = 1;
-	storyData.thumbnail = articleItem.imageUrl;
-  storyData.content = JSON.stringify([{
-    type:HEADER_SECTION,
-    location:storyData.location,
-    content:[{type:STORY_ARTICLE,text:JSON.stringify(articleItem)}]
-  }]);
-  saveStoryData(storyData,function() {
-    $("#create-article-story-modal").modal('hide');
-  });
-}
-
-/******************************************************************
-	SINGLE LOCATION STORY CREATION CONTAINER
-******************************************************************/
-
 function openCreateStoryPromptModal() {
-	$('#create-story-modal').modal('show');
+	$('#create-story-prompt-modal').modal('show');
 }
 
-function buildLocationBannerForSingleStory(story,l,editable) {
-  var location;
-  if (l == null) {
-    location = new Object();
-    location.id = null;
-    location.latitude = null;
-    location.longitude = null;
-    location.radius = 0;
-    location.zoom = null;
-    location.showpin = false;
-    location.ismain = false;
-    location.name = "(choose location)";
-  } else
-    location = l;
-
-  var locationBanner = $('<div class="location-banner" contenteditable="false" />');
-  if (editable) locationBanner.addClass('edit')
-  addLocationDataAttrOnElement(locationBanner,location)
-  $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner)
-  var locationNameelem = $('<p class="location-name" contenteditable="'+editable+'">' + location.name + '</p>').appendTo(locationBanner);
-	if (editable)
-		setPasteBehaviour(locationNameelem,true);
-	//add marker to map
-	if (story.location != null) {
-		//indexStoriesMarkerList.put(story.id,drawStoryMarkerOnMap(story.location))
-		//storySectionsMarkerList.put(0,drawSectionMarkerOnMap(story.location));
-	}
-
-  return locationBanner;
-}
-
-function addLocationDataAttrOnElement(element,location) {
-  element.attr('id',location.id);
-  element.attr('lat',location.latitude);
-  element.attr('lng',location.longitude);
-  element.attr('radius',location.radius);
-  element.attr('zoom',location.zoom);
-  element.attr('locationName',location.name);
-  element.attr('showpin',location.showpin);
-  element.attr('ismain',location.ismain);
-}
-
-function buildSingleStoryPictureFrame(link,editable) {
-  var picContainer = $("<div class='picture-container' readonly/>");
-  var picFrame = $("<div class='picture-frame' contenteditable='false'/>").appendTo(picContainer);
-
-  $('<img src=' + link + '>').appendTo(picFrame);
-	if (editable) {
-		picContainer.removeAttr('readonly')
-	  var picControlers = $("<div class='picture-controls btn-group' />").appendTo(picFrame);
-	  $("<a class='btn btn-no-background btn-white'><span class='glyph icon-no-margins icon-20px flaticon-cross'/></a>").click(function() {
-	                                                              //TODO: delete image on server
-																																$(".single-story #image-upload-input").replaceWith($(".single-story #image-upload-input").val('').clone(true));
-	                                                              picContainer.remove();
-																																uploadimagedata = null;
-	                                                            })
-	                                                            .appendTo(picControlers);
-	}
-  return picContainer;
-}
-
-function setPublishingType(opt,updatestatus) {
-  switch (parseInt(opt)) {
-    case PUBLISH_WITH_EVERYONE:
-      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
-      $("#publish-options-dropdown .publish-option-text").text("Share with everyone")
-      if (updatestatus) $("#story-status").text("Shared with everyone")
-      break;
-    case PUBLISH_WITH_FOLLOWERS:
-      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
-      $("#publish-options-dropdown .publish-option-text").text("Share with followers")
-      if (updatestatus) $("#story-status").text("Shared with followers")
-      break;
-    case PUBLISH_PRIVATELY:
-      $("#publish-options-dropdown").attr("publish-type",PUBLISH_WITH_EVERYONE);
-      $("#publish-options-dropdown .publish-option-text").text("Share privately")
-      if (updatestatus) $("#story-status").text("Shared privately")
-      break;
-    default:
+function openCreateStoryPane(format,storyid) {
+  $('#create-story-prompt-modal').modal('hide');
+  if (storyid) {
+    var story = getStoryById(storyid,indexStories)
+    format = story.format;
   }
+
+  if (format != OPEN_STORY) {
+    fillStoryDataOnLayout(format,story);
+    initializeCreateStoryPane(format,story);
+  }
+
+  $("#create-edit-story-pane").addClass('open');
+}
+
+function closeCreateStoryPane() {
+  $("#create-edit-story-pane #story-details > div").removeClass('open');
+  $("#create-edit-story-pane").removeClass('open');
+  destroyCreateStoryPane();
+}
+
+function initializeCreateStoryPane(format,story) {
+  var map_container = $("#create-edit-story-pane #mapbox-canvas"),
+  sb_input = $("#create-edit-story-pane #story-location-input");
+  initiateCreateStoryMapBox(map_container);
+  initiateSearchBox(mapbox_b,sb_input);
+  $("#create-edit-story-pane #story-keywords-input").autocomplete({
+    source:storyLabels
+  });
+
+  if (story && story.location) {
+    mapbox_b.setCenter([story.location.longitude,story.location.latitude]);
+    mapbox_b.setZoom(story.location.zoom);
+    if (story.location.showpin) {
+      var markerdiv = $('<span class="marker-mpb"></span>')[0];
+      var marker = new mapboxgl.Marker(markerdiv,{offset:[-5,-5]})
+        .setLngLat([story.location.longitude, story.location.latitude])
+        .addTo(mapbox_b);
+    }
+  }
+}
+
+function destroyCreateStoryPane() {
+  try {
+    mapbox_b.remove();
+    $("#create-edit-story-pane #story-keywords-input").autocomplete( "destroy" );
+  } catch(error) {
+    console.log(error);
+  };
+  $("#create-edit-story-pane #story-image-container iframe").remove();
+  $("#create-edit-story-pane #story-image-container").removeAttr('instahtml');
+  $("#create-edit-story-pane #story-keywords").text("");
+  $("#create-edit-story-pane #story-source-icon").attr('src',"");
+  $("#create-edit-story-pane input, #create-edit-story-pane textarea").val("");
+  $("#create-edit-story-pane #single-story-details, #create-edit-story-pane #single-story-details , #create-edit-story-pane #bookref-story-details").addClass("collapsed");
+  $("#create-edit-story-pane #prompt #search-query-input, #create-edit-story-pane #prompt #story-url-input").val("").hide();
+  $("#create-edit-story-pane #prompt .loader").hide();
+  $("#create-edit-story-pane #prompt #search-query-results").empty().hide();
+}
+
+function drawLayout() {
+  $('#story-list').empty();
+  for (i in indexStories) {
+    var story = indexStories[i];
+    if (buildStoryContainer(story))
+      buildStoryContainer(story).appendTo($('#story-list'))
+  }
+  // $('.story-container').css('height',contentheight + 'px');
+  // $('.story-thumbnail-container img').load(function() {
+  //   setStoryCoverLayout($(this));
+  // })
+  instgrm.Embeds.process();
+  setInstagramStoryCoverLayout();
+}
+
+function addStoriesToLayout(stories) {
+  for (i in stories) {
+    var story = stories[i];
+    if (buildStoryContainer(story))
+      buildStoryContainer(story).appendTo($('#story-list'))
+  }
+  instgrm.Embeds.process();
+  setInstagramStoryCoverLayout();
 }
 
 /******************************************************************
-	BUILD SMALL CONTAINER
+	BUILD STORY CONTAINER
 ******************************************************************/
 
-function buildStorySmallContainer(story,options) {
-	if (!options)
-		var options = {featured:false}
+function buildStoryContainer(story,options) {
+	if (!options) {
+		var options = {};
+  }
+  var storyContainer = $('<div class="story-container"/>').attr('id', 'story-' + story.id).attr('storyId', story.id);
 
-  var storyContainer = $('<div/>').attr('id', 'story-' + story.id).attr('storyId', story.id)
-            .addClass('story-container sm-container');
-  if (story.format == SINGLE_STORY) {
-    storyContainer.addClass('single-story');
+  storyContainer.height(contentheight);
+
+  switch (story.format) {
+    case OPEN_STORY:
+      storyContainer.addClass('open-story');
+      return buildSingleAndOpenStoryContainer(story,storyContainer);
+    case SINGLE_STORY:
+      storyContainer.addClass('single-story');
+      return buildSingleAndOpenStoryContainer(story,storyContainer);
+    case ARTICLE_STORY:
+      storyContainer.addClass('article-story');
+      return buildArticleStoryContainer(story,storyContainer);
+    case BOOKREF_STORY:
+      storyContainer.addClass('bookref-story');
+      if (!story.article) return null;
+      return buildBookrefStoryContainer(story,storyContainer);
+    case INSTAGRAM_STORY:
+      storyContainer.addClass('instagram-story');
+      return buildArticleStoryContainer(story,storyContainer);
+    default:
+      return storyContainer;
   }
 
-	storyContainer.hover(function() {
-		$('#story-' + story.id + '.story-container.sm-container').addClass('highlighted');
-		if (story.location && !options.featured)
-			indexStoriesMarkerList.get(story.id).addClass('highlighted')
-	} , function() {
-		$('#story-' + story.id + '.story-container.sm-container').removeClass('highlighted');
-		if (story.location && !options.featured)
-			indexStoriesMarkerList.get(story.id).removeClass('highlighted')
-	});
+}
 
+/******************************************************************
+	BUILD SINGLE STORY CONTAINER
+******************************************************************/
 
-  //Story container header
-  var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
+function buildSingleAndOpenStoryContainer(story,storyContainer) {
+
+  //Story container cover
+  var storyContainerCover = $('<div class="story-container-cover"/>').appendTo(storyContainer)
+                                                                     .click(function() {})
+                                                                     .hover(function() {
+                                                                     		//in
+                                                                     	} , function() {
+                                                                     		//out
+                                                                     	});
   //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(storyContainer)
-                                                                  .click(function() {
-																																		if (options.featured) {
-																																			openStoryLayoutView();
-																																			$('#map-viewport').innerWidth(contentwidth - $('#story-large-layout').outerWidth());
-																																			fitLocationOnView(story.location,map);
-																																			openStoryView(story,{loadstoriesfirst:true});
-																																		} else
-                                                                    	openStoryView(story);
-                                                                      stud_triggerstoryread(story);
-                                                                  });
-  //Story container footer
-  var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(storyContainer);
+  var storyContainerBody = $('<div class="story-container-body  animate-transition"/>').appendTo(storyContainer)
+                                                                  .click(function() {});
 
-  //--- HEADER ---//
+  //-------------------//
+  //--- STORY COVER ---//
+  //-------------------//
 
-  //Story author container
-  var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
+  var storyThumbnailContainer = $('<div class="story-thumbnail-container  animate-transition"/>').appendTo(storyContainerCover);
+  var storyThumbnailImg = $('<img/>').attr('id', 'image-story-' + story.id).appendTo(storyThumbnailContainer);
+  if (story.thumbnail && story.thumbnail.length > 0) {
+    if (story.thumbnail.indexOf("http") == -1)
+      story.thumbnail = PICTURES_SERVER_PATH + story.thumbnail;
+    storyThumbnailImg.attr('src', story.thumbnail )
+    //storyThumbnailContainer.css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')')
+  }
 
-  //Story author thumbnail
+  storyThumbnailImg.load(function() {
+    setStoryCoverLayout($(this));
+  });
+
+  // STORY DETAILS
+  buildStoryDetails(story).appendTo(storyContainerCover);
+
+  //------------------//
+  //--- STORY BODY ---//
+  //------------------//
+
+  buildStoryContent(story).appendTo(storyContainerBody);
+  $("<a>close</a>").click(function() {$(this).parents(".story-container").removeClass('show-content')}).appendTo(storyContainerBody);
+
+  //--------------------//
+  //--- STORY FOOTER ---//
+  //--------------------//
+
+  buildStoryFooter(story).appendTo(storyContainer);
+
+
+  return storyContainer;
+}
+
+/******************************************************************
+	BUILD ARTICLE STORY CONTAINER
+******************************************************************/
+
+function buildArticleStoryContainer(story,storyContainer) {
+
+  //Story container cover
+  var storyContainerCover = $('<div class="story-container-cover"/>').appendTo(storyContainer)
+                                                                     .click(function() {})
+                                                                     .hover(function() {
+                                                                     		//in
+                                                                     	} , function() {
+                                                                     		//out
+                                                                     	});
+  //Story container body
+  var storyContainerBody = $('<div class="story-container-body  animate-transition"/>').appendTo(storyContainer)
+                                                                  .click(function() {});
+
+  //-------------------//
+  //--- STORY COVER ---//
+  //-------------------//
+
+  var storyThumbnailContainer = $('<div class="story-thumbnail-container  animate-transition"/>').appendTo(storyContainerCover);
+
+  switch (story.format) {
+    case ARTICLE_STORY:
+      var storyThumbnailImg = $('<img/>').attr('id', 'image-story-' + story.id)
+                                         .appendTo(storyThumbnailContainer);
+      if (story.article.imageUrl && story.article.imageUrl.length > 0) {
+        storyThumbnailImg.attr('src', story.article.imageUrl )
+      }
+      storyThumbnailImg.load(function() {
+        setStoryCoverLayout($(this));
+      });
+      break;
+    case INSTAGRAM_STORY:
+      storyThumbnailContainer.append(story.article.html);
+      break;
+  }
+
+
+  // STORY DETAILS
+  buildArticleDetails(story).appendTo(storyContainerCover);
+
+  //------------------//
+  //--- STORY BODY ---//
+  //------------------//
+
+  buildStoryContent(story).appendTo(storyContainerBody);
+  $("<a>close</a>").click(function() {$(this).parents(".story-container").removeClass('show-content')}).appendTo(storyContainerBody);
+
+  //--------------------//
+  //--- STORY FOOTER ---//
+  //--------------------//
+
+  buildStoryFooter(story).appendTo(storyContainer);
+
+
+  return storyContainer;
+}
+
+function buildBookrefStoryContainer(story,storyContainer) {
+
+  //Story container cover
+  var storyContainerCover = $('<div class="story-container-cover"/>').appendTo(storyContainer)
+                                                                     .click(function() {})
+                                                                     .hover(function() {
+                                                                     		//in
+                                                                     	} , function() {
+                                                                     		//out
+                                                                     	});
+  //Story container body
+  var storyContainerBody = $('<div class="story-container-body  animate-transition"/>').appendTo(storyContainer)
+                                                                  .click(function() {});
+
+  //-------------------//
+  //--- STORY COVER ---//
+  //-------------------//
+
+  var storyThumbnailContainer = $('<div class="story-thumbnail-container  animate-transition"/>').appendTo(storyContainerCover);
+  var storyThumbnailImg = $('<img/>').attr('id', 'image-story-' + story.id)
+                                     .appendTo(storyThumbnailContainer);
+  if (story.article.imageUrl && story.article.imageUrl.length > 0) {
+    storyThumbnailImg.attr('src', story.article.imageUrl )
+  }
+  storyThumbnailImg.load(function() {
+    setStoryCoverLayout($(this));
+  });
+
+  // STORY DETAILS
+  buildBookrefDetails(story).appendTo(storyContainerCover);
+
+  //------------------//
+  //--- STORY BODY ---//
+  //------------------//
+
+  buildStoryContent(story).appendTo(storyContainerBody);
+  $("<a>close</a>").click(function() {$(this).parents(".story-container").removeClass('show-content')}).appendTo(storyContainerBody);
+
+  //--------------------//
+  //--- STORY FOOTER ---//
+  //--------------------//
+
+  buildStoryFooter(story).appendTo(storyContainer);
+
+
+  return storyContainer;
+}
+
+/******************************************************************
+	BUILD STORY DETAILS
+******************************************************************/
+
+function buildStoryDetails(story) {
+  var storyDetails = $('<div class="story-details animate-transition"/>');
+  var storyDetailsInner = $('<div class="story-details-inner"/>').appendTo(storyDetails);
+  // Story title
+  if (story.title || story.title && story.title.length > 0) {
+    var title = $('<p class="story-title"/>').appendTo(storyDetailsInner).text(story.title);
+  }
+
+  // Story author container
+  var authorContainer = $('<div class="author-container"/>').appendTo(storyDetailsInner);
+
+  // Story author thumbnail
   if (story.author.avatarUrl)
     avatarUrl = story.author.avatarUrl;
   else
@@ -703,276 +753,302 @@ function buildStorySmallContainer(story,options) {
               .css('background-image','url(' + avatarUrl + ')')
               .appendTo(authorContainer)
 
-  //Story author name
+  // Story author name
   var authorName = story.author.fullName;
   authorContainer.append('<a class="story-author-name" href="/profile/' + story.author.numberId + '">' + authorName +  '</a>');
 
-  //Story Options Button container
-  var optionsBtnContainer = $('<div class="story-options-btn-container pull-right dropdown"/>').appendTo(storyContainerHeader);
-  var optionsBtn = $('<div class="story-options-btn dropdown-toggle" id="dropdownMenu1" data-toggle="dropdown"/>').appendTo(optionsBtnContainer);
-  $('<div/>').appendTo(optionsBtn);
-  $('<div/>').appendTo(optionsBtn);
-  $('<div/>').appendTo(optionsBtn);
+  // Story description
+  if (story.summary || story.summary && story.summary.length > 0) {
+    var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
+    var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+    if (story.summary.length > 400) {
+      summary.text(story.summary.substring(0,399) + "... ").addClass("overflow")
+      summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
+    } else {
+      summary.text(story.summary)
+    }
+    //setStoryText(story.summary,summary);
+  }
 
-  //Story Options Dropdown container
-  var optionsList = $('<ul class="options-list dropdown-menu" aria-labelledby="dropdownMenu1"/>').appendTo(optionsBtnContainer);
+  // Story added date
+  if (story.createdDate && story.createdDate.length > 0) {
+    $('<br><p class="story-added-date">' + story.createdDate + '</p>').appendTo(storyDetailsInner);
+  }
 
-  $('<li class="option-open"><a>Open</a></li>').appendTo(optionsList)
-                                    .click(function() {
-                                      openStoryView(story);
-                                      stud_triggerstoryread(story);
-                                    });
+  if (story.labels && story.labels.length > 0) {
+    var storyLabelsContainer = $('<div class="story-labels-container"/>').appendTo(storyDetailsInner);
+    for (i in story.labels) {
+      $("<span class='label'>" + story.labels[i] + "</span>").appendTo(storyLabelsContainer);
+    }
+  }
 
-
-	var editStoryBtn = $('<li class="option-edit"><a>Edit Story</a></li>').appendTo(optionsList)
-                                            .click(function() {
-																							openEditStoryView(story);
-                                            });
-	if (storyBelongsToCurrentUser(story)) editStoryBtn.css('display','block');
-
-	// Highlight story (only for admin)
-	if (user && (user.admin || user.domainUser.email == 'jose@lostinreality.net')) {
-		$('<li><a href="#">Highlight</a></li>').appendTo(optionsList)
-	                                        .click(function() {
-																						if (user)
-	                                          	stud_highlightItem(story.id,story.type);
-	                                        });
-	}
-
-	if (options.featured) {
-		optionsBtnContainer.hide();
-	}
-
-  //--- BODY ---//
-
-	//Story location container
-  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody);
-
-  if (!story.locationName || story.locationName && story.locationName.length == 0)
-    story.locationName = "(a location)"
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-10px flaticon-location"></div>').appendTo(locationContainer);
-  $('<p class="location">' + story.locationName + '</p>').appendTo(locationContainer);
-
-	if (story.format == OPEN_STORY) {
-	  //Thumbnail: article image or story image
-	  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
-		if (story.thumbnail && story.thumbnail.length > 0) {
-	    $('<img>').appendTo(imageContainer).attr('src',PICTURES_SERVER_PATH + story.thumbnail);
-	  }
-
-	  if (!story.title || story.title && story.summary.title == 0)
-	    story.title = "(A Story Title)"
-	  var titleContainer = $('<div class="title-container"/>').appendTo(storyContainerBody);
-	  var title = $('<p class="story-title"/>').appendTo(titleContainer).text(story.title);
-
-	  if (!story.summary || story.summary && story.summary.length == 0)
-	    story.summary = "(a story summary...)"
-	  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
-	  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-	  setStoryText(story.summary,summary);
-	} else if (story.format == SINGLE_STORY) {
-		if (!story.summary || story.summary && story.summary.length == 0)
-	    story.summary = "(a story summary...)"
-	  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyContainerBody);
-	  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-	  setStoryText(story.summary,summary);
-    var summaryContainerOverlay = $('<div class="summary-container-overlay"/>').appendTo(summaryContainer);
-		//Thumbnail: article image or story image
-	  var imageContainer = $('<div class="image-container"/>').attr('id', 'image-story-' + story.id).appendTo(storyContainerBody);
-		if (story.thumbnail && story.thumbnail.length > 0) {
-	    $('<img>').appendTo(imageContainer).attr('src',PICTURES_SERVER_PATH + story.thumbnail);
-	  }
-	}
-
-  //--- FOOTER ---//
-
-  // Stats: Likes and Saves
-  var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyContainerFooter);
+  // Stats: Views, Likes and Saves
+  var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
   $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-saves">' + story.noOfSaves + ' bookmarks</div>').appendTo(storyStatsContainer);
 
-  return storyContainer;
+  return storyDetails;
 }
 
 /******************************************************************
-	BUILD LARGE CONTAINER
+	BUILD ARTICLE DETAILS
 ******************************************************************/
 
-function buildStoryLargeContainer(story,options) {
-	if (!options) var options = {featured:false,editable:false,new:true}
-  var storyContainer = $('<div class="story-container lg-container"></div>');
+function buildArticleDetails(story) {
+  var article = story.article;
+  var storyDetails = $('<div class="story-details animate-transition"/>').click(function() {
+                                                                //window.open(article.url)
+                                                              });
+  var storyDetailsInner = $('<div class="story-details-inner"/>').appendTo(storyDetails);
+  // Story shared by container
+  var sharedbyContainer = $('<div class="shared-by-container"/>').appendTo(storyDetailsInner);
 
-  //Story container header
-  var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
-	//Scrollable content
-	var scrollableContent = $('<div class="scrollable-content"/>').appendTo(storyContainer)
-  //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent)
-	if (options.editable)
-		storyContainerBody.addClass('edit');
-  //Story container footer
-  var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(scrollableContent);
-
-  //Story author container
-  var authorContainer = $('<div class="author-container pull-left"/>').appendTo(storyContainerHeader);
-  //Story author thumbnail
+  // Story publisher thumbnail
   if (story.author.avatarUrl)
     avatarUrl = story.author.avatarUrl;
   else
     avatarUrl = defaultAvatarPic
-  var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
+  var sharedbyThumbnail = $("<div class='story-shared-by-thumbnail'></div>")
               .css('background-image','url(' + avatarUrl + ')')
-              .appendTo(authorContainer)
+              .appendTo(sharedbyContainer)
 
-  //Story author name
-  var authorName = story.author.fullName;
-  authorContainer.append('<a class="story-author-name" href="/profile/' + story.author.numberId + '">' + authorName +  '</a>');
+  // Story shared-by name
+  var sharedbyName = story.author.fullName;
+  sharedbyContainer.append('<a class="story-shared-by-name" href="/profile/' + story.author.numberId + '">' + sharedbyName +  '</a>');
 
-	//Story Options Container
-	var optionsBtnContainer = $('<div class="story-options-container pull-right dropdown"/>').appendTo(storyContainerHeader);
-	if (!options.editable) {
-		// LIKE BUTTON
-	  optionsBtnContainer.append(buildLikeButton(story));
-	  // SAVE BUTTON
-	  optionsBtnContainer.append(buildSaveStoryButton(story));
-		// Close/Gridview
-		$('<button type="button" class="close-button btn btn-icon"><span class="glyph-icon icon-no-margins icon-25px flaticon-arrows"></button>').appendTo(optionsBtnContainer)
-																																				.click(function() {
-																																					closeStoryView();
-																																				});
-	}
 
-  //Story location container
-  var locationContainer = $('<div class="location-container"/>').appendTo(storyContainerBody)
-  var location = "";
-	if (story.locationName && story.locationName.length > 0)
-    location = story.locationName;
-  $('<div class="pull-left"><span class="glyph-icon icon-no-margins icon-15px flaticon-placeholder"></div>').appendTo(locationContainer);
-  var locationInput = $('<input readonly class="location" placeholder="Story location..." />').appendTo(locationContainer).val(location);
+  // Article title
+  if (article.title || article.title && article.title.length > 0) {
+    var title = $('<p class="story-title"/>').appendTo(storyDetailsInner).text(article.title);
+  }
 
-	if (!options.new)
-  	buildStoryContent(story).appendTo(storyContainerBody);
+  // Article description
+  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
+  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+  if (article.description.length > 250) {
+    summary.text(article.description.substring(0,249) + "... ").addClass("overflow")
+    summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
+  } else {
+    summary.text(article.description)
+  }
+  //setStoryText(article.description,summary);
 
-  return storyContainer;
-}
+  // Article author
+  $('<p class="article-author"/>').appendTo(storyDetailsInner).text(article.author);
 
-function buildSingleStoryLargeContainer(story,options) {
-	if (!options) var options = {featured:false,editable:false,new:true}
-  var storyContainer = $('<div class="story-container lg-container single-story"></div>');
+  // Article source icon
+  if (article.icon || article.icon && article.icon.length > 0) {
+    $('<img class="article-icon"/>').appendTo(storyDetailsInner).attr('src',article.icon);
+  } else if (story.format == INSTAGRAM_STORY) {
+    $('<img class="article-icon"/>').appendTo(storyDetailsInner).attr('src','https://www.instagram.com/static/images/ico/favicon-192.png/b407fa101800.png');
+  }
 
-  //Story container header
-  var storyContainerHeader = $('<div class="story-container-header"/>').appendTo(storyContainer);
-	//Scrollable content
-	var scrollableContent = $('<div class="scrollable-content"/>').appendTo(storyContainer)
-  //Story container body
-  var storyContainerBody = $('<div class="story-container-body"/>').appendTo(scrollableContent)
-	if (options.editable)
-		storyContainerBody.addClass('edit');
-  //Story container footer
-  var storyContainerFooter = $('<div class="story-container-footer"/>').appendTo(scrollableContent);
+  // Article source
+  $('<a class="article-source" href="' + article.url + '" />').appendTo(storyDetailsInner).text(article.source);
 
-  //Story author container
-  var authorContainer = $('<div class="author-container"/>').appendTo(storyContainerHeader);
-  //Story author thumbnail
-	var authorName, numberId, avatarUrl;
-	if (!options.new) {
-		authorName = story.author.fullName;
-		avatarUrl = (story.author.avatarUrl != null) ? story.author.avatarUrl : defaultAvatarPic;
-		numberId = story.author.numberId;
-	} else {
-		authorName = user.domainUser.fullName;
-		avatarUrl = (user.domainUser.avatarUrl != null) ? user.domainUser.avatarUrl : defaultAvatarPic;
-		numberId = user.domainUser.numberId;
-	}
-  var authorThumbnail = $("<div class='story-author-thumbnail'></div>")
-              .css('background-image','url(' + avatarUrl + ')')
-              .appendTo(authorContainer)
+  // Article date
+  if (article.date || article.date && article.date.length > 0) {
+    $('<p class="article-date"/>').appendTo(storyDetailsInner).text(article.date);
+  }
 
-  //Story author name
-  authorContainer.append('<a class="story-author-name" href="/profile/' + numberId + '">' + authorName +  '</a>');
+  if (story.labels && story.labels.length > 0) {
+    var storyLabelsContainer = $('<div class="story-labels-container"/>').appendTo(storyDetailsInner);
+    for (i in story.labels) {
+      $("<span class='label'>" + story.labels[i] + "</span>").appendTo(storyLabelsContainer);
+    }
+  }
 
-	//Story Options Container
-	var optionsBtnContainer = $('<div class="story-options-container"/>').appendTo(storyContainerHeader);
-	if (!options.editable) {
-		// LIKE BUTTON
-	  optionsBtnContainer.append(buildLikeButton(story));
-	  // SAVE BUTTON
-	  optionsBtnContainer.append(buildSaveStoryButton(story));
-		// Close/Gridview
-		$('<button type="button" class="close-button btn btn-icon"><span class="glyph-icon icon-no-margins icon-25px flaticon-arrows"></button>').appendTo(optionsBtnContainer)
-																																				.click(function() {
-																																					closeStoryView();
-																																				});
-	} else {
-		var cancelBtn = $('<button id="cancel-btn" type="button" class="btn btn-default" onclick="closeStoryView({keepMapPosition:true,updatePageHistory:true})"><span class="glyph icon-no-margins icon-15px flaticon-cross"/></button>').appendTo(optionsBtnContainer)
-		var addPictureBtn = $('<a class="btn btn-default" id="add-picture-btn"><span class="glyph icon-no-margins icon-20px flaticon-art"/></a>').appendTo(optionsBtnContainer)
-		$('<form enctype="multipart/form-data" id="image-upload-form" class="image-upload-form"/>')
-			.append('<input id="image-upload-input" name="profileImg[]" type="file" />').appendTo(addPictureBtn);
-		var saveBtn = $('<button id="save-btn" type="button" class="btn btn-default" onclick="saveStory('+ story.id +')"><span class="glyph icon-no-margins icon-15px flaticon-save"/></button>').appendTo(optionsBtnContainer)
-		var dropdownmenu = $('<div class="dropdown"/>').appendTo(optionsBtnContainer)
-		var publishoptionsBtn = $('<button class="btn btn-default dropdown-toggle" type="button" publish-type="2" id="publish-options-dropdown" data-toggle="dropdown" aria-haspopup="true" aria-expanded="true"></button>').appendTo(dropdownmenu)
-		publishoptionsBtn.append('<span class="publish-option-text">Share with followers</span>')
-		publishoptionsBtn.append('<span class="caret"></span>')
-		var dropdownlist = $('<ul class="dropdown-menu" aria-labelledby="publish-options-dropdown"></ul>').appendTo(dropdownmenu)
-		dropdownlist.append('<li><a publish-type="1" onclick="setPublishingType(1,false)">Share with everyone</a></li>')
-		dropdownlist.append('<li><a publish-type="2" onclick="setPublishingType(2,false)">Share with followers</a></li>')
-		dropdownlist.append('<li><a publish-type="3" onclick="setPublishingType(3,false)">Share privately</a></li>')
-		if (story.published > 0) {
-			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default highlighted" onclick="publishStory('+ story.id +')">Unpost</button>').appendTo(optionsBtnContainer)
-		} else {
-			var postBtn = $('<button id="post-btn" type="button" class="btn btn-default" onclick="publishStory('+ story.id +')">Post</button>').appendTo(optionsBtnContainer)
-		}
-		postBtn.attr('published-status',story.published);
+  // Stats: Views, Likes and Saves
+  var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
+  $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
+  $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
+  $('<div class="story-stats-saves">' + story.noOfSaves + ' bookmarks</div>').appendTo(storyStatsContainer);
 
-		addPictureBtn.find("#image-upload-input").change(function(ev) {
-	    var saveimagefile = ev.target.files[0];
-	    var fileReader = new FileReader();
-	    fileReader.onload = function(ev2) {
-				uploadimagedata = ev2.target.result;
-				$(".single-story #story-picture").append(buildSingleStoryPictureFrame(uploadimagedata,true))
-	    };
-	    fileReader.readAsDataURL(saveimagefile);
-	  });
-	}
-
-  //Story location container
-  $('<div id="story-location"/>')
-			.append(buildLocationBannerForSingleStory(story,story.location,options.editable))
-			.appendTo(storyContainerBody)
-	var storytext = $('<p id="story-text" class="story-text" contenteditable="'+options.editable+'"></p>').appendTo(storyContainerBody)
-	if (options.editable)
-		setPasteBehaviour(storytext,false);
-
-	if (!options.new) {
-		setStoryText(story.summary,storytext);
-	}
-	var storypicture = $('<div id="story-picture"/>').appendTo(storyContainerBody)
-	if (story.thumbnail != null)
-		storypicture.append(buildSingleStoryPictureFrame(PICTURES_SERVER_PATH + story.thumbnail,options.editable));
-
-  return storyContainer;
+  return storyDetails;
 }
 
 /******************************************************************
-	STORY CONTENT
+	BUILD BOOKREF DETAILS
 ******************************************************************/
 
-function buildStoryContent(story,options) {
-	var contentElement = $("<div id='story-content'/>")
-	var storytitle = $('<h2 class="story-title"></h2>').text(story.title);
-	var storysummary = $('<p class="story-summary"></p>').text(story.summary);
-	var placeholderoverlay = $('<div class="placeholder-overlay"></div>');
-	var detailsoverlay = $('<div class="details-overlay"></div>');
-	var storythumbnailandcontainer = $('<div class="story-thumbnail-and-container"></div>').css('background-image','url(' + PICTURES_SERVER_PATH + story.thumbnail + ')')
-	detailsoverlay.append(storytitle);
-	detailsoverlay.append(storysummary);
-	storythumbnailandcontainer.append(placeholderoverlay);
-	storythumbnailandcontainer.append(detailsoverlay);
-	storythumbnailandcontainer.appendTo(contentElement);
+function buildBookrefDetails(story) {
+  var article = story.article;
+  var storyDetails = $('<div class="story-details  animate-transition"/>').click(function() {
+                                                                window.open(article.url)
+                                                              });
+  var storyDetailsInner = $('<div class="story-details-inner"/>').appendTo(storyDetails);
+  // Story shared by container
+  var sharedbyContainer = $('<div class="shared-by-container"/>').appendTo(storyDetailsInner);
+  // Story publisher thumbnail
+  if (story.author.avatarUrl)
+    avatarUrl = story.author.avatarUrl;
+  else
+    avatarUrl = defaultAvatarPic
+  var sharedbyThumbnail = $("<div class='story-shared-by-thumbnail'></div>")
+              .css('background-image','url(' + avatarUrl + ')')
+              .appendTo(sharedbyContainer)
 
-	if (!options) var options = {editable:false}
-	var storycontent = JSON.parse(story.content.replace(/&quot;/g,'"'));
+  // Story shared-by name
+  var sharedbyName = story.author.fullName;
+  sharedbyContainer.append('<a class="story-shared-by-name" href="/profile/' + story.author.numberId + '">' + sharedbyName +  '</a>');
+
+
+  // Article title
+  var title = $('<p class="story-title"/>').appendTo(storyDetailsInner).text(article.title);
+
+  // Article description
+  var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
+  var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
+  if (article.description.length > 300) {
+    summary.text(article.description.substring(0,299) + "... ").addClass("overflow")
+    summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
+  } else {
+    summary.text(article.description)
+  }
+  //setStoryText(article.description,summary);
+
+  // Article author
+  $('<p class="article-author"/>').appendTo(storyDetailsInner).text(article.author);
+
+  // Article publisher
+  $('<a class="article-source" href="' + article.url + '" />').appendTo(storyDetailsInner).text(article.publisher);
+
+  // Article date
+  if (article.date || article.date && story.date.length > 0) {
+    $('<br><p class="article-date"/>').appendTo(storyDetailsInner).text(article.date);
+  }
+
+  if (story.labels && story.labels.length > 0) {
+    var storyLabelsContainer = $('<div class="story-labels-container"/>').appendTo(storyDetailsInner);
+    for (i in story.labels) {
+      $("<span class='label'>" + story.labels[i] + "</span>").appendTo(storyLabelsContainer);
+    }
+  }
+
+  // Stats: Views, Likes and Saves
+  var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
+  $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
+  $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
+  $('<div class="story-stats-saves">' + story.noOfSaves + ' bookmarks</div>').appendTo(storyStatsContainer);
+
+  return storyDetails;
+}
+
+/******************************************************************
+	SET STORY COVER LAYOUT
+******************************************************************/
+
+function setStoryCoverLayout(imageElem) {
+  var storyContainerElem = imageElem.parents(".story-container");
+  imageContainer = storyContainerElem.find(".story-thumbnail-container"),
+  detailsContainer = storyContainerElem.find(".story-details"),
+  c_w = imageContainer.width(),
+  c_h = imageContainer.height(),
+  h = imageElem.height(),
+  w = imageElem.width();
+
+  if (storyContainerElem.width() - contentheight < 400)
+    storyContainerElem.addClass('extended')
+
+  if (h < c_h || w < c_w || w/h < 1) {
+    imageContainer.width(contentheight);
+    detailsContainer.outerWidth(storyContainerElem.width() - contentheight);
+    storyContainerElem.find(".story-container-cover").addClass('squared-layout');
+    if (Math.round(Math.random()))
+      storyContainerElem.find(".story-container-cover").addClass('left');
+    else
+      storyContainerElem.find(".story-container-cover").addClass('right');
+  } else {
+    storyContainerElem.find(".story-container-cover").addClass('cover-layout');
+  }
+  resizeCoverImage(imageElem);
+}
+
+function resizeCoverImage(imgElem) {
+  var c_w = imgElem.parent().width(),
+  c_h = imgElem.parent().height(),
+  h = imgElem.height(),
+  w = imgElem.width();
+  if (w/h < 1 && h >= c_h) {
+    imgElem.width(c_w);
+    imgElem.css('top','50%')
+    imgElem.css('margin-top',-c_w*h/w/2 + 'px')
+  } else if (w >= c_w && w/h <= c_w/c_h) {
+    imgElem.width(c_w);
+    imgElem.css('top','50%')
+    imgElem.css('margin-top',-c_w*h/w/2 + 'px')
+  } else if (w >= c_w && w/h >= c_w/c_h) {
+    imgElem.height(c_h);
+    imgElem.css('left','50%')
+    imgElem.css('margin-left',-c_h*w/h/2 + 'px')
+  } else if (h < c_h || w < c_w) {
+    imgElem.height(c_h);
+    imgElem.css('left','50%')
+    imgElem.css('margin-left',-c_h*w/h/2 + 'px')
+  }
+}
+
+function setInstagramStoryCoverLayout() {
+  $('.story-container.instagram-story .story-details').outerWidth($('.story-container').width() - contentheight);
+  $('.story-container.instagram-story .story-thumbnail-container').outerWidth(contentheight);
+  $('.story-container.instagram-story .story-container-cover').each(function() {
+    if (Math.round(Math.random()))
+      $(this).addClass('squared-layout left');
+    else
+      $(this).addClass('squared-layout right');
+    if ($(this).width() - contentheight < 400)
+      $(this).parents(".story-container").addClass('extended')
+  })
+}
+
+
+/******************************************************************
+	BUILD FOOTER
+******************************************************************/
+
+function buildStoryFooter(story) {
+  var storyContainerFooter = $('<div class="story-container-footer"/>');
+  // LIKE BUTTON
+  buildLikeButton(story).appendTo(storyContainerFooter);
+  // SAVE BUTTON
+  buildSaveStoryButton(story).appendTo(storyContainerFooter);
+  // EDIT BUTTON
+  if (user && story.author.numberId == user.domainUser.numberId) {
+    $('<button storyId= ' + story.id + ' class="story-edit-button btn btn-icon" ><span class="glyph-icon icon-no-margins icon-25px flaticon-draw"></button>')
+      .appendTo(storyContainerFooter)
+      .click(function() {
+        openCreateStoryPane(null,$(this).attr('storyId'));
+      });
+  }
+
+  return storyContainerFooter;
+}
+
+/******************************************************************
+	BUILD STORY CONTENT
+******************************************************************/
+
+function buildStoryContent(story) {
+  var contentElement = $("<div class='story-content'/>")
+  switch (story.format) {
+    case SINGLE_STORY:
+    case INSTAGRAM_STORY:
+    case BOOKREF_STORY:
+    case ARTICLE_STORY:
+      //contentElement.text(story.summary)
+      setStoryText(story.summary,contentElement)
+      break;
+    case OPEN_STORY:
+      contentElement.append(generateOpenStoryContent(story));
+      break;
+  }
+  return contentElement;
+}
+
+function generateOpenStoryContent(story,options) {
+  var contentElement = $("<div class='story-content'/>")
+	var storycontent = story.content;
 	if (!storycontent) { return contentElement; }
 	var sectioncounter = 0;
   storycontent.forEach(function(sectionObj) {
@@ -994,14 +1070,6 @@ function buildStoryContent(story,options) {
           }
         });
       }
-			sectionElem.hover(function() {
-				fitLocationOnView(sectionObj.location,map);
-				var counter = parseInt($(this).attr('section-counter'));
-				storySectionsMarkerList.get(counter).addClass('highlighted')
-			} , function() {
-				var counter = parseInt($(this).attr('section-counter'));
-				storySectionsMarkerList.get(counter).removeClass('highlighted')
-			});
     } else {
       var sectionElem = $("<div class='section'/>").appendTo(contentElement);
       if (sectionObj.content) {
@@ -1033,9 +1101,6 @@ function buildLocationBanner(location,options,counter) {
   var locationBanner = $('<div class="location-banner" contenteditable="false" />').appendTo(locationBannerContainer);
   $('<span class="location-icon glyph-icon icon-no-margins icon-15px flaticon-placeholder">').appendTo(locationBanner)
   var locationNameelem = $('<p class="location-name">' + location.name + '</p>').appendTo(locationBanner);
-	var sectionmarker = drawSectionMarkerOnMap(location);
-	storySectionsMarkerList.put(counter,sectionmarker);
-
   return locationBannerContainer;
 }
 
@@ -1147,105 +1212,70 @@ function buildSaveStoryButton(story) {
 }
 
 /******************************************************************
-	MAP
+	BUILD MAP
 ******************************************************************/
-
-//--- initiateMap method ---//
-function initiateMap() {
-
-  markerIcon = {
-    url: "/assets/images/marker_icon.png",
-    origin: new google.maps.Point(0, 0),
-    anchor: new google.maps.Point(13, 13)
-  };
-
-	var mapOptions = {
-		zoom : 2,
-    scrollwheel: true,
-		streetViewControl: false,
-		streetViewControlOptions: {position: google.maps.ControlPosition.RIGHT_CENTER},
-    scaleControl : false,
-		zoomControl : false,
-		zoomControlOptions : {style: google.maps.ZoomControlStyle.SMALL, position: google.maps.ControlPosition.RIGHT_CENTER},
-		mapTypeId : google.maps.MapTypeId.ROADMAP,
-		mapTypeControl : false,
-		mapTypeControlOptions : {style: google.maps.MapTypeControlStyle.DEFAULT, position: google.maps.ControlPosition.RIGHT_BOTTOM},
-		center : defaultLocation
-	}
-
-	map = new google.maps.Map(document.getElementById('map-canvas'),mapOptions);
-
-	//--- Map Event Handlers ---//
-	var listener = google.maps.event.addListener(map, 'tilesloaded', function() {
-		google.maps.event.addListener(map, 'dragstart', function() {$('#map-region').removeClass('selected') });
-		google.maps.event.addListener(map, 'zoom_changed', function() {updateMapState()});
-    google.maps.event.addListener(map, 'dragend', function() {updateMapState()});
-		if (openingtarget)
-			setUpOpeningTarget();
-		google.maps.event.removeListener(listener);
-	});
-
-
-  //-- SearchBox --//
-
-  var input = document.getElementById('hero1-search-input');
-  herosearchBox = new google.maps.places.SearchBox(input);
-  // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
-  //Bias the SearchBox results towards current map's viewport.
-  herosearchBox.setBounds(map.getBounds());
-  map.addListener('bounds_changed', function() {
-    herosearchBox.setBounds(map.getBounds());
-  });
-  herosearchBox.addListener('places_changed', function() {
-		$('#search-input').val($('#hero-search-input').val());
-    searchBoxGetPlaces(this);
-		setTimeout(function() { updatePageHistory() },200);
-		openStoryLayoutView();
-  });
-
-	//-- SearchBox hero 5 --//
-
-  var input = document.getElementById('hero5-search-input');
-  hero5searchBox = new google.maps.places.SearchBox(input);
-  // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
-  //Bias the SearchBox results towards current map's viewport.
-  hero5searchBox.setBounds(map.getBounds());
-  map.addListener('bounds_changed', function() {
-    hero5searchBox.setBounds(map.getBounds());
-  });
-  hero5searchBox.addListener('places_changed', function() {
-		$('#search-input').val($('#hero-search-input').val());
-    searchBoxGetPlaces(this);
-		setTimeout(function() { updatePageHistory() },200);
-		openStoryLayoutView();
-  });
-
-	//-- Map SearchBox --//
-
-  var input = document.getElementById('search-input');
-  mapsearchBox = new google.maps.places.SearchBox(input);
-  // map.controls[google.maps.ControlPosition.TOP_RIGHT].push(input);
-  //Bias the SearchBox results towards current map's viewport.
-  mapsearchBox.setBounds(map.getBounds());
-  map.addListener('bounds_changed', function() {
-    mapsearchBox.setBounds(map.getBounds());
-  });
-  mapsearchBox.addListener('places_changed', function() {
-    searchBoxGetPlaces(this);
-		updatePageHistory();
-  });
-}
 
 function initiateMapBox() {
   mapbox = new mapboxgl.Map({
-    container: 'mapbox-canvas',
-    style: 'mapbox://styles/jozie-blueyes/cizcm816700am2smcjyqd2pvb'
+    container: $('#index-map-and-location-wrapper .mapbox-canvas')[0],
+    style: 'mapbox://styles/jozie-blueyes/cj0f061hc00542spdx2513wo4',
+    interactive: false
+  });
+
+  mapbox.on('load', function () {
+    var sid = getStoryIdOnViewport();
+    updateMapLocation(sid);
+    updateStoryMarkers();
+  })
+}
+
+function updateMapLocation(storyid) {
+  var story = getStoryById(storyid,indexStories);
+  if (!story.location) {
+    $("#location-name").hide();
+    return;
+  }
+  mapbox.flyTo({
+    center: [story.location.longitude,story.location.latitude],
+    zoom: story.location.zoom
+  })
+  // mapbox.setCenter([story.location.longitude,story.location.latitude]);
+  // mapbox.setZoom(story.location.zoom);
+  if (story.location.name && story.location.name.length > 0)
+    $("#location-name").show().text(story.location.name);
+  else
+    $("#location-name").hide();
+}
+
+function updateStoryMarkers() {
+  for (i in indexStories) {
+    var location = indexStories[i].location;
+    if (location && location.showpin) {
+      var markerdiv = $('<span class="marker-mpb"></span>')[0];
+      var marker = new mapboxgl.Marker(markerdiv,{offset:[-5,-5]})
+        .setLngLat([location.longitude, location.latitude])
+        .addTo(mapbox);
+    }
+  }
+}
+
+function addMarkerToMap(location,map) {
+
+}
+
+/******************************************************************
+	BUILD CREATE SINGLE/ARTICLE STORY MODAL MAP
+******************************************************************/
+
+function initiateCreateStoryMapBox(map_canvas) {
+  mapbox_b = new mapboxgl.Map({
+    container: map_canvas[0],
+    style: 'mapbox://styles/jozie-blueyes/cj0f061hc00542spdx2513wo4'
   });
 }
 
-function initiateSearchBox(map) {
-  var input = document.getElementById('story-location-input');
-  var searchBox = new google.maps.places.SearchBox(input);
+function initiateSearchBox(map,inputElement) {
+  var searchBox = new google.maps.places.SearchBox(inputElement[0]);
   //Bias the SearchBox results towards current map's viewport.
 
   // searchBox.setBounds(mapbox.getBounds());
@@ -1253,52 +1283,8 @@ function initiateSearchBox(map) {
   //   searchBox.setBounds(mapbox.getBounds());
   // });
   searchBox.addListener('places_changed', function() {
-    searchBoxCenterMap(this,mapbox);
+    searchBoxCenterMap(this,map);
   });
-}
-
-function updateMapState() {
-  //getAddressNameOnEditingMode();
-  if (!isStoryViewOpen && !openingtarget && !poppingWindowState) {
-    loadStories(null,function(stories) {
-      drawLayout(stories);
-    });
-    updatePageHistory();
-  }
-}
-
-function searchBoxGetPlaces(sb) {
-	var places = sb.getPlaces();
-	var bounds;
-	if (!places || places.length == 0) {
-		displayAlertMessage('No places found!')
-		return;
-	}
-	if (places[0].geometry.viewport) {
-		bounds = {
-			north:places[0].geometry.viewport.getNorthEast().lat(),
-			east:places[0].geometry.viewport.getNorthEast().lng(),
-			south:places[0].geometry.viewport.getSouthWest().lat(),
-			west:places[0].geometry.viewport.getSouthWest().lng()
-		}
-		// fitMapBoundsOnLayout(bounds);
-	} else {
-		bounds = {
-			north:places[0].geometry.location.lat() + DEFAULT_VIEWPORT_SIZE,
-			east:places[0].geometry.location.lng() + DEFAULT_VIEWPORT_SIZE,
-			south:places[0].geometry.location.lat() - DEFAULT_VIEWPORT_SIZE,
-			west:places[0].geometry.location.lng() - DEFAULT_VIEWPORT_SIZE
-		}
-	}
-
-  if (editingMode) {
-    $(".single-story #story-location .location-name").text($('#search-and-controls-bar #search-input').val());
-  }
-
-	fitMapBoundsOnLayout(bounds);
-	loadStories(bounds,function(stories) {
-		drawLayout(stories);
-	});
 }
 
 function searchBoxCenterMap(sb,map) {
@@ -1330,327 +1316,306 @@ function searchBoxCenterMap(sb,map) {
     [bounds.east,bounds.north]])
 }
 
-function getStoryLocationFromMap(map) {
-	var loc = getMapCenterOnLayout(map);
-	var storylocation = {
-		name: $('.single-story #story-location .location-name').text(),
-    latitude:loc.lat(),
-    longitude:loc.lng(),
-		zoom: map.getZoom(),
+/******************************************************************
+	STORY CREATION HANDLERS
+******************************************************************/
+
+function fetchMetadataFromUrl(onFinished) {
+  var url = $("#create-edit-story-pane #story-url-input").val();
+  if (url.indexOf("www.instagram.com") > 0) {
+    updateInstagramDataFromLink(url, function(data) {
+      fillMetadataOnLayout(data);
+      $("#create-edit-story-pane #story-image-container").attr('instahtml',data.html).append(data.html)
+      instgrm.Embeds.process();
+      if (onFinished) onFinished();
+    });
+  } else {
+    stud_fetchHtml(url,function(data) {
+      fillMetadataOnLayout(data);
+      if (onFinished) onFinished();
+    })
+  }
+}
+
+function fillMetadataOnLayout(data) {
+  $("#create-edit-story-pane #story-image-container").css('background-image','url(' + data.imageUrl + ')')
+  $("#create-edit-story-pane #story-image-url-input").val(data.imageUrl)
+  $("#article-story-details #story-title-input").val(data.title)
+  $("#article-story-details #story-description-input").val(data.description)
+  $("#article-story-details #story-author-input").val(data.author)
+  $("#article-story-details #story-date-input").val(data.date)
+  $("#article-story-details #story-source-icon").attr('src',data.icon)
+  $("#article-story-details #story-source-input").val(data.source)
+}
+
+function updateMetadataFromUrl() {
+  $("#create-edit-story-pane #prompt .loader").show();
+  fetchMetadataFromUrl(function() {
+    $("#create-edit-story-pane #prompt").addClass("collapsed");
+    $("#create-edit-story-pane #prompt .loader").hide();
+    $("#create-edit-story-pane #edit-story-container").removeClass("collapsed");
+  });
+}
+
+function updateBookDataFromResult(bookinfo) {
+  fillBookInfoOnLayout(bookinfo);
+  $("#create-edit-story-pane #prompt").addClass("collapsed");
+  $("#create-edit-story-pane #edit-story-container").removeClass("collapsed");
+}
+
+function updateBookSearchResults(query) {
+  $("#create-edit-story-pane #prompt #search-query-results").hide();
+  if (query == "") return;
+  $("#create-edit-story-pane #prompt .loader").show();
+  stud_fetchSearchBookResults(query, function(results) {
+    $("#create-edit-story-pane #prompt .loader").hide();
+    if (!results.items) return;
+    var resultList = $("#create-edit-story-pane #prompt #search-query-results").empty().show();
+    results.items.forEach(function(r) {
+      var bookinfo = {
+        url: r.volumeInfo.infoLink,
+        imageUrl: (r.volumeInfo.imageLinks) ? r.volumeInfo.imageLinks.thumbnail : "",
+        title: r.volumeInfo.title,
+        description: r.volumeInfo.description,
+        author: (r.volumeInfo.authors) ? r.volumeInfo.authors[0] : "",
+        date: r.volumeInfo.publishedDate,
+        publisher: r.volumeInfo.publisher
+      }
+      var label = bookinfo.title;
+      if (bookinfo.author) label = label + ", " + bookinfo.author;
+      $('<li itemjson="' + JSON.stringify(bookinfo).replace(/"/g,'&quot;') + '">' + label + '</li>')
+                .click(function() { updateBookDataFromResult(JSON.parse($(this).attr('itemjson').replace(/&quot;/g,'"'))) })
+                .hover(function() {
+                  $("#create-edit-story-pane #prompt #search-query-results li").removeClass("selected");
+                  $(this).addClass("selected");
+                })
+                .appendTo(resultList);
+    })
+  })
+}
+
+function updateInstagramDataFromLink(url,onFinished) {
+  stud_fetchInstagramEmbedIframe(url, function(data) {
+    var instainfo = {
+      url: data,
+      imageUrl: "",
+      title: "",
+      description: data.title,
+      author: data.author_name,
+      date: "",
+      source: data.provider_name,
+      html:data.html
+    }
+    if (onFinished) onFinished(instainfo);
+  })
+}
+
+function updateImageUrl() {
+  var imageurl = $("#create-edit-story-pane #story-image-url-input").val();
+  $("#create-edit-story-pane #story-image-container").css('background-image','url(' + imageurl + ')')
+}
+
+function saveStory() {
+  var storyid = $("#create-edit-story-pane #edit-story-container").attr('storyId'),
+  format = parseInt($("#create-edit-story-pane #edit-story-container").attr('format')),
+  storyData = new Object();
+
+  storyData.summary = $("#create-edit-story-pane #story-description-input").val();
+  storyData.thumbnail = $("#create-edit-story-pane #story-image-url-input").val();
+  if (storyid) storyData.id = storyid;
+
+  storyData.location = {
+		name: $("#create-edit-story-pane #story-location-input").val(),
+    latitude:mapbox_b.getCenter().lat,
+    longitude:mapbox_b.getCenter().lng,
+		zoom: mapbox_b.getZoom(),
 		ismain:true,
-    showpin:true,
+    showpin: ($("#location-showpin:checked").length == 1) ? true : false,
     radius:0
   }
-	var mapregiondiameter = $('#map-region').innerWidth();
-	if (mapregiondiameter < 10) {
-		storylocation.showpin = true;
-		storylocation.radius = 0;
-	} else {
-		storylocation.showpin = false;
-		storylocation.radius = $('#map-region').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*map.getZoom());
-	}
-	return storylocation;
+
+  storyData.labels = [];
+  $("#create-edit-story-pane #story-keywords span").each(function() {
+    storyData.labels.push($(this).text());
+  });
+
+	storyData.format = format;
+
+  switch (format) {
+    case SINGLE_STORY:
+      storyData.content = JSON.stringify([{
+        type:HEADER_SECTION,
+        location:storyData.location
+      }]);
+      break;
+    case ARTICLE_STORY:
+      var articleItem = new Object();
+      articleItem.author = $("#article-story-details #story-author-input").val()
+      articleItem.date = $("#article-story-details #story-date-input").val()
+      articleItem.source = $("#article-story-details #story-source-input").val()
+      articleItem.url = $("#article-story-details #story-url-input").val()
+      articleItem.title = $("#article-story-details #story-title-input").val();
+      articleItem.description = $("#article-story-details #story-description-input").val();
+      articleItem.imageUrl = $("#create-edit-story-pane #story-image-url-input").val();
+      articleItem.icon = $("#create-edit-story-pane #story-source-icon").attr('src');
+      storyData.content = JSON.stringify([{
+        type:HEADER_SECTION,
+        location:storyData.location,
+        content:[{type:STORY_ARTICLE,text:JSON.stringify(articleItem)}]
+      }]);
+      break;
+      case INSTAGRAM_STORY:
+        var item = new Object();
+        item.author = $("#article-story-details #story-author-input").val()
+        item.source = $("#article-story-details #story-source-input").val()
+        item.url = $("#article-story-details #story-url-input").val()
+        item.description = $("#article-story-details #story-description-input").val();
+        item.html = $("#create-edit-story-pane #story-image-container").attr('instahtml');
+        storyData.content = JSON.stringify([{
+          type:HEADER_SECTION,
+          location:storyData.location,
+          content:[{type:STORY_INSTAGRAM,text:JSON.stringify(item)}]
+        }]);
+        break;
+    case BOOKREF_STORY:
+      var bookItem = new Object();
+      bookItem.author = $("#bookref-story-details #story-author-input").val()
+      bookItem.date = $("#bookref-story-details #story-date-input").val()
+      bookItem.publisher = $("#bookref-story-details #story-publisher-input").val()
+      bookItem.url = $("#bookref-story-details #story-url-input").val()
+      bookItem.title = $("#bookref-story-details #story-title-input").val();
+      bookItem.description = $("#bookref-story-details #story-description-input").val();
+      bookItem.imageUrl = $("#create-edit-story-pane #story-image-url-input").val();
+      storyData.content = JSON.stringify([{
+        type:HEADER_SECTION,
+        location:storyData.location,
+        content:[{type:STORY_BOOKDATA,text:JSON.stringify(bookItem)}]
+      }]);
+      break;
+  }
+  storyData.published = 1;
+
+  saveStoryData(storyData,function() {
+    reloadStories(function() {
+      closeCreateStoryPane();
+      loadStoriesOnLayout();
+    })
+  });
 }
 
-function centerMapOnLayout(position,map) {
-	var bounds = map.getBounds(),
-	north = bounds.getNorthEast().lat(),
-	east = bounds.getNorthEast().lng(),
-	south = bounds.getSouthWest().lat(),
-	west = bounds.getSouthWest().lng(),
-	zoom = map.getZoom();
-	longitude = position.lng() - ( (east - west)/2 - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom) ),
-	latitude = position.lat(),
-	center = new google.maps.LatLng(latitude,longitude);
-  map.setCenter(center);
-	return center;
+function deleteStory() {
+  var storyid = $("#create-edit-story-pane #edit-story-container").attr('storyId')
+  stud_deleteStory(storyid,function() {
+    reloadStories(function() {
+      closeCreateStoryPane();
+      loadStoriesOnLayout();
+    })
+  })
 }
 
-function fitMapBoundsOnLayout(bounds) {
-	var north = bounds.north,
-	east = bounds.east,
-	south = bounds.south,
-	west = bounds.west;
-	var width_coord = 1.3*(east - west),
-	height_coord = 1.3*(north - south),
-	width_pix = $('#map-viewport').innerWidth(),
-	height_pix = $('#map-viewport').innerHeight();
-	if (height_pix/width_pix < height_coord/width_coord)
-		var zoom = Math.floor(-1/0.693*Math.log(height_coord/(1.404595*height_pix)));
-	else
-		var zoom = Math.floor(-1/0.693*Math.log(width_coord/(1.404595*width_pix)));
-	zoom = (zoom >= 2) ? zoom : 2;
-	var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
-	center = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - (width_pix)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-	// var marker = new google.maps.Marker({
-	// 	position : new google.maps.LatLng(0.5*(north+south), 0.5*(west+east)),
-	// 	map : map,
-	// 	draggable : false
-	// });
-	map.setZoom(Math.round(zoom));
-	map.panTo(center);
+function addNewKeyword() {
+  newkw = $("#create-edit-story-pane #story-keywords-input").val();
+  if (newkw.length > 0) {
+    var tagspan = $("<span class='tag'>" + newkw + "</span>").click(function() { $(this).remove() })
+    $("#create-edit-story-pane #story-keywords").append(tagspan);
+  }
+  $("#create-edit-story-pane #story-keywords-input").val("");
 }
 
-
-function getMapCenterOnLayout(map) {
-	var bounds = map.getBounds(),
-	east = bounds.getNorthEast().lng(),
-	west = bounds.getSouthWest().lng(),
-	zoom = map.getZoom();
-	longitude = east - $('#map-viewport').innerWidth() / 2 * 1.404595 * Math.exp(-0.693*zoom),
-	latitude = map.getCenter().lat(),
-	center = new google.maps.LatLng(latitude,longitude);
-  // map.setCenter(center);
-	return center;
+function addKeyword(kw) {
+  var tagspan = $("<span class='tag'>" + kw + "</span>").click(function() { $(this).remove() })
+  $("#create-edit-story-pane #story-keywords").append(tagspan);
 }
 
-function zoomInMap() {
-	var center = getMapCenterOnLayout(map),
-	zoom = map.getZoom()
-	if (zoom <= 20)
-		map.setZoom(Math.round(zoom)+1);
-	centerMapOnLayout(center,map);
-	loadStories(null,function(stories) { drawLayout(stories);});
-}
+function fillStoryDataOnLayout(format,story) {
+  switch (format) {
+    case SINGLE_STORY:
+      $("#create-edit-story-pane #single-story-details").removeClass("collapsed");
+      break;
+    case INSTAGRAM_STORY:
+      $("#create-edit-story-pane #edit-story-container").addClass("instagram-story");
+    case ARTICLE_STORY:
+      if (!story) {
+        $("#create-edit-story-pane #prompt").removeClass("collapsed");
+        $("#create-edit-story-pane #edit-story-container").addClass("collapsed");
+        $("#create-edit-story-pane #prompt #story-url-input").show();
+      }
+      $("#create-edit-story-pane #article-story-details").removeClass("collapsed");
+      break;
+    case BOOKREF_STORY:
+      if (!story) {
+        $("#create-edit-story-pane #prompt").removeClass("collapsed");
+        $("#create-edit-story-pane #edit-story-container").addClass("collapsed");
+        $("#create-edit-story-pane #prompt #search-query-input").show();
+      }
+      $("#create-edit-story-pane #bookref-story-details").removeClass("collapsed");
+      break;
+  }
 
-function zoomMapWheel(wheelvalue) {
-  var center = getMapCenterOnLayout(map),
-  zoom = map.getZoom();
-  if (wheelzoom == null) wheelzoom = zoom;
-  wheelzoom = wheelzoom + wheelvalue / 1000
-  if (Math.round(wheelzoom) != zoom) {
-    if (wheelzoom <= MAX_ZOOM && wheelzoom >= MIN_ZOOM) {
-      map.setZoom(Math.round(wheelzoom));
-    	centerMapOnLayout(center,map);
-    	//loadStories(null,function(stories) { drawLayout(stories);});
+
+  $("#create-edit-story-pane #edit-story-container").attr('format',format)
+  if (!story) return;
+  $("#create-edit-story-pane #prompt").addClass("collapsed");
+  $("#create-edit-story-pane #edit-story-container").removeClass("collapsed");
+
+  $("#create-edit-story-pane #edit-story-container").attr('storyId',story.id);
+
+  if (story.thumbnail && story.thumbnail.indexOf("http") == -1)
+    story.thumbnail = PICTURES_SERVER_PATH + story.thumbnail;
+  $("#create-edit-story-pane #story-image-url-input").val(story.thumbnail)
+  $("#create-edit-story-pane #story-image-container").css('background-image','url(' + story.thumbnail + ')')
+
+
+  if (story.labels.length > 0) {
+    for (i = 0; i < story.labels.length; i++) {
+      addKeyword(story.labels[i]);
     }
-    console.log("Wheelzoom is: " + Math.round(wheelzoom) + " and current zoom is: " + zoom);
-    wheelzoom = null;
+  }
+
+  if (story.location) {
+    $("#create-edit-story-pane #story-location-input").val(story.location.name)
+    $("#create-edit-story-pane #location-showpin").prop('checked', story.location.showpin);
+  }
+
+
+  switch (format) {
+    case ARTICLE_STORY:
+      $("#article-story-details #story-url-input").val(story.article.url);
+      $("#create-edit-story-pane #story-image-container").css('background-image','url(' + story.article.imageUrl + ')')
+      $("#create-edit-story-pane #story-image-url-input").val(story.article.imageUrl)
+      $("#article-story-details #story-title-input").val(story.article.title)
+      $("#article-story-details #story-description-input").val(story.article.description)
+      $("#article-story-details #story-author-input").val(story.article.author)
+      $("#article-story-details #story-date-input").val(story.article.date)
+      $("#article-story-details #story-source-icon").attr('src',story.article.icon)
+      $("#article-story-details #story-source-input").val(story.article.source)
+      break;
+    case INSTAGRAM_STORY:
+      $("#article-story-details #story-url-input").val(story.article.url);
+      $("#article-story-details #story-description-input").val(story.article.description)
+      $("#article-story-details #story-author-input").val(story.article.author)
+      $("#article-story-details #story-source-icon").attr('src','https://www.instagram.com/static/images/ico/favicon-192.png/b407fa101800.png')
+      $("#article-story-details #story-source-input").val(story.article.source)
+      $("#create-edit-story-pane #story-image-container").attr('instahtml',story.article.html).append(story.article.html)
+      instgrm.Embeds.process();
+    case SINGLE_STORY:
+      $("#single-story-details #story-description-input").val(story.summary)
+      break;
+    case BOOKREF_STORY:
+      fillBookInfoOnLayout(story.article)
+      break;
   }
 }
 
-function zoomOutMap() {
-	var center = getMapCenterOnLayout(map),
-	zoom = map.getZoom()
-	if (zoom > 3)
-		map.setZoom(Math.round(zoom)-1)
-	centerMapOnLayout(center,map);
-	loadStories(null,function(stories) { drawLayout(stories);});
-}
-
-//--- fitMarkersOnView ---//
-function fitMarkersOnView(markers,map) {
-	//if (!story) return;
-	var bounds = new google.maps.LatLngBounds();
-	if (markers.length == 0) {
-		return;
-	}
-	else if (markers.length == 1) {
-		if (map) {
-			var sets = fitLocationOnView(markers[0].location,map)
-		}
-		indexZoom = sets.zoom;
-		indexCenter = sets.center;
-	} else {
-		for (var i = 0; i < markers.length; i++) {
-			if (markers[i].location != null)
-				bounds.extend( markers[i].getPosition() );
-		}
-		var north = bounds.getNorthEast().lat(),
-		east = bounds.getNorthEast().lng(),
-		south = bounds.getSouthWest().lat(),
-		west = bounds.getSouthWest().lng();
-		var width_coord = 1.3*(east - west),
-		height_coord = 1.3*(north - south),
-		width_pix = $('#map-viewport').innerWidth(),
-		height_pix = $('#map-canvas').innerHeight();
-		if (height_pix/width_pix < height_coord/width_coord)
-			zoom = Math.floor(-1/0.693*Math.log(height_coord/(1.404595*height_pix)));
-		else
-			zoom = Math.floor(-1/0.693*Math.log(width_coord/(1.404595*width_pix)));
-		indexZoom = (zoom >= 2) ? zoom : 2;
-		var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
-		indexCenter = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - ($('#map-canvas').innerWidth()-storiesGridListContainerWidth)/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-		map.setZoom(Math.round(indexZoom));
-		map.panTo(indexCenter);
-	}
-}
-
-//--- fitStoriesOnView ---//
-function fitStoriesOnView(stories,map) {
-	//if (!story) return;
-	var bounds = new google.maps.LatLngBounds();
-	if (stories.length == 0) {
-		return;
-	}
-	else if (stories.length == 1) {
-		if (map)
-			var sets = fitLocationOnView(stories[0].location,map)
-		indexZoom = sets.zoom;
-		indexCenter = sets.center;
-	} else {
-		for (var i = 0; i < stories.length; i++) {
-			if (stories[i].location != null) {
-				var lat = stories[i].location.latitude,
-				lng = stories[i].location.longitude;
-				bounds.extend( new google.maps.LatLng(lat,lng) );
-			}
-		}
-		var north = bounds.getNorthEast().lat(),
-		east = bounds.getNorthEast().lng(),
-		south = bounds.getSouthWest().lat(),
-		west = bounds.getSouthWest().lng();
-		var width_coord = 1.3*(east - west),
-		height_coord = 1.3*(north - south),
-		width_pix = $('#map-viewport').innerWidth(),
-		height_pix = $('#map-canvas').innerHeight();
-		if (height_pix/width_pix < height_coord/width_coord)
-			zoom = Math.floor(-1/0.693*Math.log(height_coord/(1.404595*height_pix)));
-		else
-			zoom = Math.floor(-1/0.693*Math.log(width_coord/(1.404595*width_pix)));
-		indexZoom = (zoom >= 2) ? zoom : 2;
-		var delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
-		indexCenter = new google.maps.LatLng(0.5*(north+south), 0.5*(west+east) - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-		// var marker = new google.maps.Marker({
-		// 	position : new google.maps.LatLng(0.5*(north+south), 0.5*(west+east)),
-		// 	map : map,
-		// 	draggable : false
-		// });
-		map.setZoom(Math.round(indexZoom));
-		map.panTo(indexCenter);
-	}
-}
-
-//--- fitLocationOnView ---//
-function fitLocationOnView(location,map) {
-	if (location != null) {
-		var zoom = location.zoom,
-		width_pix = $('#map-viewport').innerWidth(),
-		delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
-		center = new google.maps.LatLng(location.latitude, location.longitude - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-		map.setZoom(Math.round(zoom));
-		map.panTo(center);
-		return {zoom:zoom, center:center}
-	}
-}
-
-function fitPositionOnView(lat,lng,zoom,map) {
-	width_pix = $('#map-viewport').innerWidth(),
-	delta_coord = $('#map-canvas').innerWidth() * 1.404595 * Math.exp(-0.693*zoom),
-	center = new google.maps.LatLng(lat, lng - (1 - width_pix/$('#map-canvas').innerWidth())*0.5*delta_coord, true);
-	map.setZoom(Math.round(zoom));
-	map.panTo(center);
-	return {zoom:zoom, center:center}
-}
-
-//--- drawPublishedStoryMarkersOnMap method ---//
-function drawStoriesMarkersOnMap(stories,icon) {
-	clearAllMarkersFromMap();
-	markerList  = new Hashtable();
-	if (stories.length == 0) return markerList;
-
-  var st_;
-	for ( var i = 0; i < stories.length; i++) {
-		st_ = stories[i];
-		if (st_.location) {
-			//custom marker
-			var markerDiv = $('<div class="marker-div animated-marker"></div>'),
-			position = new google.maps.LatLng(st_.location.latitude, st_.location.longitude, true),
-			offset = new Object({x:0, y:0 }),
-			marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-			marker.setColor(STORY_MARKER_COLOR);
-			marker.story = st_;
-			marker.location = st_.location;
-			marker.addListener('click', function() {
-				openStoryView(this.story);
-      });
-			marker.addListener('mouseenter',function() {
-				$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
-			});
-			marker.addListener('mouseleave',function() {
-				$('#story-' + this.story.id + '.story-container.sm-container').removeClass('highlighted');
-			});
-			markerList.put(st_.id,marker);
-		}
-	//fitLocationOnView(storyMarkerList);
-	}
-  return markerList;
-}
-
-function drawStoryMarkerOnMap(story) {
-	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
-	var markerDiv = $('<div class="marker-div animated-marker"></div>'),
-	offset = new Object({x:0, y:0 }),
-	marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-	marker.setColor(STORY_MARKER_COLOR);
-	marker.story = story;
-	marker.location = story.location;
-	marker.addListener('click', function() {
-    openStoryView(this.story);
-  });
-	marker.addListener('mouseenter',function() {
-		$('#story-' + this.story.id + '.story-container.sm-container').addClass('highlighted');
-	});
-	marker.addListener('mouseleave',function() {
-		$('#story-' + this.story.id + '.story-container.sm-container').removeClass('highlighted');
-	});
-  return marker;
-}
-
-function drawSectionMarkerOnMap(location) {
-	var position = new google.maps.LatLng(location.latitude, location.longitude, true);
-	var markerDiv = $('<div class="marker-div animated-marker"></div>'),
-	offset = new Object({x:0, y:0 }),
-	marker = new SimpleMapOverlay(position,position,offset,markerDiv[0],map,false);
-	marker.location = location;
-	marker.setColor(SECTION_MARKER_COLOR);
-  return marker;
-}
-
-function getBounds() {
-	var bounds = {
-		north: map.getBounds().getNorthEast().lat(),
-		east: map.getBounds().getNorthEast().lng(),
-		south: map.getBounds().getSouthWest().lat(),
-	}
-	var zoom = map.getZoom();
-	bounds.west = bounds.east - $('#map-viewport').innerWidth() * 1.404595 * Math.exp(-0.693*zoom);
-
-	return bounds;
-}
-
-function clearAllMarkersFromMap() {
-	if (!indexStoriesMarkerList) return;
-	var markerList = indexStoriesMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(null);
-	}
-	indexStoriesMarkerList.clear()
-}
-
-function clearStorySectionsMarkersFromMap() {
-	if (!storySectionsMarkerList) return;
-	var markerList = storySectionsMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(null);
-	}
-	storySectionsMarkerList.clear()
-}
-
-function hideAllStoriesMarkersFromMap() {
-	if (!indexStoriesMarkerList) return;
-	var markerList = indexStoriesMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(null);
-	}
-}
-
-function showAllStoriesMarkersFromMap() {
-	if (!indexStoriesMarkerList) return;
-	var markerList = indexStoriesMarkerList.values();
-	for (var i in markerList) {
-		markerList[i].setMap(map);
-	}
+function fillBookInfoOnLayout(bookinfo) {
+  $("#bookref-story-details #story-url-input").val(bookinfo.url);
+  $("#create-edit-story-pane #story-image-container").css('background-image','url(' + bookinfo.imageUrl + ')')
+  $("#create-edit-story-pane #story-image-url-input").val(bookinfo.imageUrl)
+  $("#bookref-story-details #story-title-input").val(bookinfo.title)
+  $("#bookref-story-details #story-description-input").val(bookinfo.description)
+  $("#bookref-story-details #story-author-input").val(bookinfo.author)
+  $("#bookref-story-details #story-date-input").val(bookinfo.date)
+  $("#bookref-story-details #story-publisher-input").val(bookinfo.publisher)
 }
 
 /******************************************************************
@@ -1673,57 +1638,116 @@ function saveStoryData(storydata,onFinished) {
   }
 }
 
-function saveFinished(story) {
-	$('#post-btn').attr('published-status',story.published)
-	if (story.published > 0) {
-		$('#post-btn').addClass('highlighted').text('Unpost');
-	} else {
-		$('#post-btn').removeClass('highlighted').text('Post');
-	}
-	if (indexStories == null) indexStories = [];
-  updateStoryFromIndexList(story);
-  //if position changes the marker must be updated
-	if (story.location) {
-		updateMarkerPosition(story)
-	} else {
-		if (indexStoriesMarkerList.get(story.id)) {
-			indexStoriesMarkerList.get(story.id).setMap(null);
-			indexStoriesMarkerList.remove(story.id);
-		}
-	}
-  //drawLayout(indexStories);
-	//closeStoryView({keepMapPosition:true});
-}
-
 function saveError() {
   displayAlertMessage('Posting Failed. Error while posting the story.')
 }
 
-function publishStory(storyid) {
-	publishedstatus = parseInt($('#post-btn').attr('published-status'));
-	if (publishedstatus > 0)
-		publish = 0;
-	else
-		publish = parseInt($('#publish-options-dropdown').attr('publish-type'));
-	saveStory(storyid,publish);
+/******************************************************************
+	READ STORY CONTENT
+******************************************************************/
+
+function readStoryContent(stories) {
+  var readstories = stories;
+  readstories.forEach(function(story) {
+    if (story.content) {
+      story.content = JSON.parse(story.content.replace(/&quot;/g,'"'));
+      if (story.format == ARTICLE_STORY || story.format == BOOKREF_STORY || story.format == INSTAGRAM_STORY && story.content[0].content)
+        story.article = JSON.parse(story.content[0].content[0].text.replace(/&quot;/g,'"'));
+    }
+  })
+  return readstories;
 }
 
 /******************************************************************
- 	DISPLAY HIGHLIGHTED STORIES
+	SEARCH BAR HANDLERS
 ******************************************************************/
 
-function loadHighlightedStories() {
-	$('#featured-stories-container .story-container').remove();
-	stud_getHighlightedItems(function(items) {
-		items.forEach(function(item) {
-			if (item.type == 0)
-				var container = buildStorySmallContainer(item,{featured:true});
-			else if (item.type == 1)
-				var container = buildCollectionSmallContainer(item,{featured:true});
-			$('#featured-stories-container').append(container)
-																			.innerWidth(4* (200 + 14));
-		});
-	});
+function loadLabels(onFinished) {
+  stud_loadLabels(function(results) {
+    console.log(results);
+    storyLabels = results;
+    if (onFinished) onFinished();
+  })
+}
+
+function hanbleSearchBarAutocompleteList(query) {
+  if (query == "") {
+    $("#search-results").hide();
+    return;
+  }
+  autocompleteService.getPlacePredictions({ input: query }, function(results, status){
+    if (status != google.maps.places.PlacesServiceStatus.OK) {
+      console.log(status);
+      return;
+    }
+    results = results.concat(filterStoryLabelsByExpression(query))
+    if (results.length == 0) {
+      $("#search-results").hide();
+      return;
+    }
+    var ul = $("#search-results ul");
+    ul.empty();
+    results.forEach(function(result) {
+      if (result.place_id)
+        ul.append(buildPlaceSearchBarResult(result))
+      else
+        ul.append(buildLabelSearchBarResult(result))
+      $("#search-results").show();
+    });
+  });
+}
+
+function buildPlaceSearchBarResult(place) {
+  var li = $("<li place_id='" + place.place_id + "'><span class='glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-location'></span><a>" + place.description + "</a></li>").click(function() {
+    var placeId = $(this).attr('place_id');
+    loadStoriesByPlaceResult(placeId);
+  })
+  return li;
+}
+
+function buildLabelSearchBarResult(label) {
+  var li = $("<li label='" + label + "'><span class='glyph-icon icon-no-margins icon-no-padding icon-10px flaticon-favorite-1'></span><a>" + label + "</li>").click(function() {
+    var label = $(this).attr('label');
+    loadStoriesByLabelResult(label);
+  })
+  return li;
+}
+
+function filterStoryLabelsByExpression(expr) {
+  var result = [];
+  storyLabels.forEach(function(label) {
+    if (label.indexOf(expr) > -1)
+      result.push(label)
+  })
+  return result;
+}
+
+function loadStoriesByLabelResult(label) {
+  $("#search-bar-input").val(label);
+  loadStoriesByLabel(label,0,20, function() {
+    $("#search-bar ul").empty();
+    $("#search-results").hide();
+    closeCreateStoryPane();
+    loadStoriesOnLayout()
+  })
+}
+
+function loadStoriesByPlaceResult(placeId) {
+  placesService.getDetails({placeId:placeId},function(result, status){
+    if (status != google.maps.places.PlacesServiceStatus.OK) {
+      alert(status);
+      return;
+    }
+    var lat = result.geometry.location.lat(),
+    lng = result.geometry.location.lng();
+    $("#search-bar-input").val(result.formatted_address);
+    loadStoriesByLocation(lat,lng,0,20,function() {
+      $("#search-bar ul").empty();
+      $("#search-results").hide();
+      closeCreateStoryPane();
+      loadStoriesOnLayout();
+    })
+  })
 }
 
 /******************************************************************
@@ -1777,7 +1801,7 @@ function loginWithUserCredentials() {
 }
 
 function loginWithFacebook() {
-  document.cookie = COOKIE_HISTORY_TAG + JSON.stringify(getStateObj()) + COOKIE_HISTORY_TAG;
+  //document.cookie = COOKIE_HISTORY_TAG + JSON.stringify(getStateObj()) + COOKIE_HISTORY_TAG;
   window.location.href = "/authenticate/facebook"
   // $.ajax( {
 	// 	url: "/authenticate/facebook",
@@ -1829,6 +1853,7 @@ function sendSignupEmail() {
 		success: function() {  $("#signup-modal .modal-body").empty().append('<p>Thank you! Please, now check your email inbox.</p>');}
 	});
 }
+
 /******************************************************************
 	SETTERS, GETTERS AND UPDATES
 ******************************************************************/
@@ -1840,114 +1865,6 @@ function updateStatsFromSmallContainer(story,noviews) {
   $('#story-' + story.id + '.story-container.sm-container .story-stats-saves').html(story.noOfSaves + ' bookmarks');
 }
 
-
-function updateStoryFromIndexList(story) {
-  for (var i in indexStories) {
-    if (indexStories[i].id == story.id) {
-      indexStories[i] = story;
-			return;
-    }
-  }
-	indexStories.push(story);
-}
-
-function updateMarkerPosition(story) {
-	if (story.location == null) return;
-	var position = new google.maps.LatLng(story.location.latitude, story.location.longitude, true)
-	var marker = indexStoriesMarkerList.get(story.id)
-	if (marker) {
-	 marker.setPosition(position,position,true)
-	 indexStoriesMarkerList.get(story.id).story = story;
- 	} else {
-		var marker = drawStoryMarkerOnMap(story)
-		marker.story = story;
-		indexStoriesMarkerList.put(story.id,marker)
-	}
-}
-
-function setLayoutDimensions(stories) {
-	var storiesListContainer = $("#story-grid-layout");
-
-  // Set layout
-	if (!stories || stories.length==0)
-		noColumns = 0;
-	else if (stories.length < 5)
-		noColumns = 1
-	else if (stories.length < 10)
-		noColumns = 2
-	else if (stories.length >= 10)
-		noColumns = 3
-
-	if (noColumns > MAX_NO_COLUMNS) noColumns = MAX_NO_COLUMNS;
-
-	storiesGridListContainerWidth = noColumns*(COLUMN_WIDTH + COLUMN_MARGIN) + COLUMN_PADDING_LEFT + COLUMN_PADDING_LEFT;
-	storiesListContainer.outerWidth(storiesGridListContainerWidth);
-	if (isStoryViewOpen)
-		$('#map-viewport').innerWidth(contentwidth-$("#story-large-layout").outerWidth());
-	else
-		$('#map-viewport').innerWidth(contentwidth-storiesGridListContainerWidth-GRID_LAYOUT_MARGIN_LEFT);
-}
-
-function updateLayoutDimensions() {
-	contentheight = $(window).innerHeight() - $('nav.navbar').height();
-	contentwidth = $('#content-wrapper').innerWidth();
-	$('#content-wrapper').css({ height: contentheight });
-
-	//----------------
-	storyContainersWrapperHeight = contentheight - $('#story-containers-wrapper').css('margin-top').replace("px", "");
-	storyContainersWrapperWidth = contentwidth - $('#story-containers-wrapper').css('margin-left').replace("px", "");
-
-	$('#story-containers-wrapper').css({
-		height: storyContainersWrapperHeight,
-		width: storyContainersWrapperWidth
-	});
-
-	// story large container body height
-	var height = storyContainersWrapperHeight - $('#story-large-layout').css('padding-top').replace("px", "") - $('.lg-container .story-container-header').innerHeight();
-	$('.lg-container .story-container-body').css('min-height',height + 'px');
-	$('.lg-container .scrollable-content').css('height',height + 'px');
-
-	//Map Sight
-	$('#map-viewport').css({height: contentheight});
-
-	setLayoutDimensions(indexStories);
-}
-
-function sortStoriesByDate(stories) {
-  if (!stories || stories.length==0)
-		return;
-	var storyIdList = [],
-	sortedList = [],
-	storypathsList = [];
-	for (var i in stories) {
-		storyIdList.push(stories[i].id);
-	}
-
-	// Descending order
-	storyIdList.sort(function(id1,id2){return id2-id1});
-
-	for (var i in storyIdList) {
-		sortedList.push(getStoryById(storyIdList[i],stories));
-	}
-
-	indexStories = sortedList;
-	return sortedList;
-}
-
-function getStoriesWithinMapBounds(stories) {
-  var storyList = [];
-  if (!map.getBounds()) return;
-  var bounds = new google.maps.LatLngBounds(map.getBounds().getSouthWest(),map.getBounds().getNorthEast());
-  var st_location;
-  stories.forEach(function(st) {
-    st_location = new google.maps.LatLng(st.location.latitude, st.location.longitude);
-    if (bounds.contains(st_location)) {
-      storyList.push(st);
-    }
-  })
-  return storyList;
-}
-
 function getStoryById(storyId,list) {
 	for (var i in list) {
     if (list[i].id == storyId)
@@ -1955,41 +1872,27 @@ function getStoryById(storyId,list) {
   }
 }
 
-function getNextStoryFromIndexStoriesList(id) {
-	var story = getStoryById(id,indexStories),
-  index = indexStories.indexOf(story);
-  if (index > -1 && index < indexStories.length)
-		return indexStories[index+1]
-	else
-		return false;
-}
-
-function getPreviousStoryFromIndexStoriesList(id) {
-	var story = getStoryById(id,indexStories),
-  index = indexStories.indexOf(story);
-  if (index > 0)
-		return indexStories[index-1]
-	else
-		return false;
-}
-
-function storyBelongsToCurrentUser(story) {
-  if (user && user.domainUser.numberId == story.author.numberId)
-    return true;
-  else
-    return false;
-}
-
-function removeMarkerFromStoryInList(story,list) {
-  var marker = list.get(story.id);
-  marker.setMap(null);
-	delete marker;
-  list.remove(story.id);
-}
-
 /******************************************************************
 	HELPERS
 ******************************************************************/
+
+function resetScrollSpy() {
+  scrollSpyStoryMap.clear();
+  $('#story-list .story-container').each(function() {
+    var storyContainer = $(this);
+    scrollSpyStoryMap.put(storyContainer.position().top,storyContainer.attr('storyId'));
+  })
+}
+
+function getStoryIdOnViewport() {
+  var scrollpos = $("#content-wrapper").scrollTop();
+  var ssarray = scrollSpyStoryMap.keys();
+  for (var i in ssarray) {
+    if (ssarray[i] - scrollpos <= 200) {
+      return scrollSpyStoryMap.get(ssarray[i]);
+    }
+  }
+}
 
 function getHostFromUrl(url) {
 	return url.split("//")[1].split("/")[0];
@@ -2448,7 +2351,7 @@ function bookmarkStory(storyId, onFinished){
 	});
 }
 
-function deleteStory(storyId, success, error){
+function stud_deleteStory(storyId, success, error){
 	$.ajax({
 		url: "/story/delete/" + storyId,
 		type: "DELETE",
@@ -2511,7 +2414,25 @@ function stud_findUserByEmail(email,success, error){
 	});
 }
 
-function fetchInstagramEmbedIframe(link,onFinished) {
+function stud_fetchInstagramEmbedIframe(link,onFinished) {
+	$.ajax( {
+	  url: '/fetchinstagram=' + encodeURIComponent(link),
+	  type: 'GET',
+	  dataType: "json",
+	  success: onFinished
+	} );
+}
+
+function stud_fetchSearchBookResults(query,onFinished) {
+	$.ajax( {
+	  url: 'https://www.googleapis.com/books/v1/volumes?q=' + query + '&projection=lite&maxResults=10',
+	  type: 'GET',
+	  dataType: "json",
+	  success: onFinished
+	} );
+}
+
+function stud_fetchBookInfo(id,onFinished) {
 	$.ajax( {
 	  url: '/fetchinstagram/' + encodeURIComponent(link),
 	  type: 'GET',
@@ -2532,6 +2453,36 @@ function stud_followUser(numberId,unfollow,success) {
 function stud_readPublicStoriesWithinBounds(w, n, e, s, limit, success, error){
 	$.ajax({
 		url: "/storiesin/" + w + ", " + n + ", " + e + ", " + s,
+		type: "GET",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_loadStories(index, limit, success, error){
+	$.ajax({
+		url: "/listpublicfollowingandprivatestories/" + index + "/" + limit, //listpublicstories, listpublicfollowingandprivatestories
+		type: "GET",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_loadStoriesByLocation(lat, lng, index, limit, success, error){
+	$.ajax({
+		url: "/listpublicfollowingandprivatestoriesbylocation/" + lat + "/" + lng + "/" + index + "/" + limit,
+		type: "GET",
+    dataType: "json",
+		success: success,
+		error: error
+	});
+}
+
+function stud_loadStoriesByLabel(label, index, limit, success, error){
+	$.ajax({
+		url: "/listpublicfollowingandprivatestoriesbylabel/" + label + "/" + index + "/" + limit,
 		type: "GET",
     dataType: "json",
 		success: success,

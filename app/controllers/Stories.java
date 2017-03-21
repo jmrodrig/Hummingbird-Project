@@ -59,15 +59,17 @@ public class Stories extends Controller {
 			jsonstories.add(jsonStory);
 		}
 
-		// sort by descending id (most recent story)
+		// sort by descending id (most recent first)
 		Collections.sort(jsonstories);
-		// sort by descending likes (most popular stories first)
+		// sort by descending likes (most popular first)
 		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
 
 		if (jsonstories.size() > index+size) {
 			jsonstories = jsonstories.subList(index,index+size);
 		} else if (jsonstories.size() > index) {
 			jsonstories = jsonstories.subList(index,jsonstories.size());
+		} else {
+			jsonstories.clear();
 		}
 
 		String json = new Gson().toJson(jsonstories);
@@ -94,16 +96,19 @@ public class Stories extends Controller {
 			jsonstories = jsonstories.subList(index,index+size);
 		} else if (jsonstories.size() > index) {
 			jsonstories = jsonstories.subList(index,jsonstories.size());
+		} else {
+			jsonstories.clear();
 		}
 
 		String json = new Gson().toJson(jsonstories);
 		return ok(json);
 	}
 
-	@SecureSocial.SecuredAction
-	public static Result listPublicFollowingAndPrivateStoriesWithLocation(Double latitude, Double longitude, int index, int size){
+	@SecureSocial.UserAwareAction
+	public static Result listPublicFollowingAndPrivateStoriesByLocation(Double latitude, Double longitude, int index, int size){
 		User currentUser = getCurrentUser();
-		List<models.Story> stories = models.Story.findAllByPublishedWithLocation(latitude,longitude,currentUser);
+		List<models.Story> stories = models.Story.findAllByPublishedAndLocation(latitude,longitude,currentUser);
+
 		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
 
 		for (models.Story story : stories) {
@@ -113,24 +118,67 @@ public class Stories extends Controller {
 
 		System.out.println("jsonstories size : " + jsonstories.size());
 
+		//sort by distance (closest first)
+		Collections.sort(jsonstories, controllers.json.Story.StoryDistanceComparator);
+		//remove repeated instances
+		// jsonstories = removeRepeatedItems(jsonstories);
+		// System.out.println("After remove repeated size : " + jsonstories.size());
+		// sort by descending likes (most popular stories first)
+		//Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
+
+		if (jsonstories.size() > index+size) {
+			jsonstories = jsonstories.subList(index,index+size);
+		} else if (jsonstories.size() > index) {
+			jsonstories = jsonstories.subList(index,jsonstories.size());
+		} else {
+			jsonstories.clear();
+		}
+
+		// jsonstories = distributeByDistanceBins(jsonstories);
+		// System.out.println("After distribute in bins size : " + jsonstories.size());
+
+		String json = new Gson().toJson(jsonstories);
+		return ok(json);
+	}
+
+	@SecureSocial.UserAwareAction
+	public static Result listPublicFollowingAndPrivateStoriesByLabel(String label, int index, int size){
+		User currentUser = getCurrentUser();
+		List<models.Story> stories = models.Story.findAllByPublishedAndLabel(label,currentUser);
+		List<controllers.json.Story> jsonstories = new ArrayList<controllers.json.Story>();
+
+		for (models.Story story : stories) {
+			controllers.json.Story jsonStory = controllers.json.Story.getStory(story, currentUser, false);
+			jsonstories.add(jsonStory);
+		}
+		if (jsonstories.size() == 0) return ok(new Gson().toJson(jsonstories));
+
+		// sort by descending likes (most popular first)
+		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
+
+		// set distance to most popular story
+		controllers.json.Location pivot = jsonstories.get(0).location;
+		jsonstories.get(0).distance = 0.0;
+		for (controllers.json.Story st : jsonstories) {
+			controllers.json.Location loc = st.location;
+			st.distance = controllers.utils.Utils.distanceBetweenCoordinates(pivot.latitude,pivot.longitude,loc.latitude,loc.longitude,0.0,0.0);
+		}
+
 		//sort by distance
 		Collections.sort(jsonstories, controllers.json.Story.StoryDistanceComparator);
 		//remove repeated instances
 		jsonstories = removeRepeatedItems(jsonstories);
 		System.out.println("After remove repeated size : " + jsonstories.size());
-		// sort by descending likes (most popular stories first)
-		Collections.sort(jsonstories, controllers.json.Story.StoryLikesComparator);
 
 
 		if (jsonstories.size() > index+size) {
 			jsonstories = jsonstories.subList(index,index+size);
 		} else if (jsonstories.size() > index) {
 			jsonstories = jsonstories.subList(index,jsonstories.size());
+		} else {
+			jsonstories.clear();
 		}
 
-		jsonstories = distributeByDistanceBins(jsonstories);
-
-		System.out.println("After distribute in bins size : " + jsonstories.size());
 		String json = new Gson().toJson(jsonstories);
 		return ok(json);
 	}

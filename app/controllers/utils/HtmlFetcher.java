@@ -15,7 +15,15 @@ import org.apache.commons.lang3.StringEscapeUtils;
 import org.apache.http.HttpResponse;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.methods.HttpGet;
+import org.apache.http.impl.client.HttpClientBuilder;
 import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.conn.ssl.SSLConnectionSocketFactory;
+import javax.net.ssl.SSLContext;
+import javax.net.ssl.TrustManager;
+import javax.net.ssl.X509TrustManager;
+import java.security.SecureRandom;
+import java.security.cert.CertificateException;
+import java.security.cert.X509Certificate;
 
 import org.jsoup.select.Elements;
 import org.jsoup.nodes.Document;
@@ -33,7 +41,8 @@ public class HtmlFetcher extends Controller {
 
 		//String url = "http://www.google.com/search?q=developer";
 
-		HttpClient client = new DefaultHttpClient();
+		//HttpClient client = new DefaultHttpClient();
+		HttpClient client = getHttpClient();
 		HttpGet request = new HttpGet(url);
 
 		// add request header
@@ -63,6 +72,7 @@ public class HtmlFetcher extends Controller {
 
 	//Metadata Grabber
 	public controllers.json.Article grabMetadataFromHtml(String html, String url) {
+		String httpscheme = url.split("//",2)[0] + "//";
     String host = url.split("//",2)[1].split("/",2)[0];
 		String rulesPath = Play.current().path().getAbsolutePath() + "/private/scrapingrules/";
 		controllers.json.Article article = new controllers.json.Article();
@@ -109,8 +119,15 @@ public class HtmlFetcher extends Controller {
 		//Parse source icon
 		Rules iconrules = new Rules();
 		iconrules.addRule("general","regex&&attr","link[rel=\"shortcut icon\"]&&href");
+		iconrules.addRule("general","regex&&attr","link[rel=\"icon\"]&&href");
+		String icon = parseByRules(doc, iconrules);
+		if (icon != null && !icon.isEmpty()) {
+			if (!icon.contains("http")) {
+				icon = httpscheme + host + icon;
+			}
+			article.icon = icon;
+		}
 
-		article.icon = parseByRules(doc, iconrules);
 
 		//Parse article cover image
 		Rules imgrules = new Rules();
@@ -180,7 +197,7 @@ public class HtmlFetcher extends Controller {
 	}
 
 	public static Result fetchInstagramEmbedHTML(String link) throws Exception {
-		String url = "https://api.instagram.com/oembed?omitscript=true&url=" + URLEncoder.encode(link, "UTF-8");
+		String url = "https://api.instagram.com/oembed?omitscript=true&hidecaption=true&url=" + URLEncoder.encode(link, "UTF-8");
 
 		HttpClient client = new DefaultHttpClient();
 		HttpGet request = new HttpGet(url);
@@ -204,4 +221,40 @@ public class HtmlFetcher extends Controller {
 		return ok(responseString);
 	}
 
+	private static HttpClient getHttpClient() {
+
+	    try {
+	        SSLContext sslContext = SSLContext.getInstance("SSL");
+
+	        sslContext.init(null,
+	                new TrustManager[]{new X509TrustManager() {
+	                    public X509Certificate[] getAcceptedIssuers() {
+
+	                        return null;
+	                    }
+
+	                    public void checkClientTrusted(
+	                            X509Certificate[] certs, String authType) {
+
+	                    }
+
+	                    public void checkServerTrusted(
+	                            X509Certificate[] certs, String authType) {
+
+	                    }
+	                }}, new SecureRandom());
+
+	        SSLConnectionSocketFactory socketFactory = new SSLConnectionSocketFactory(sslContext,SSLConnectionSocketFactory.ALLOW_ALL_HOSTNAME_VERIFIER);
+
+
+
+	        HttpClient httpClient = HttpClientBuilder.create().setSSLSocketFactory(socketFactory).build();
+
+	        return httpClient;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        return HttpClientBuilder.create().build();
+	    }
+		}
 }

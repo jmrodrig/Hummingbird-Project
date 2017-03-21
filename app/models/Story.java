@@ -364,15 +364,26 @@ public class Story extends Model {
 		this.distance = d;
 	}
 
-	public List<StoryLabel> getLabels() {
-		return this.storylabels;
+	public List<String> getLabels() {
+		List<String> labels = new ArrayList<>();
+		for (StoryLabel sl : this.storylabels) {
+			String lname = sl.getLabel().getName();
+			labels.add(lname);
+		}
+		return labels;
 	}
 
 	public void setLabels(List<String> labels) {
 		if (labels == null) return;
-		System.out.println("StoryId -story: " + this.getId());
+		unsetLabels();
 		for (String labelname : labels) {
 			StoryLabel.create(this,Label.create(labelname));
+		}
+	}
+
+	private void unsetLabels() {
+		for (StoryLabel sl : this.storylabels) {
+			StoryLabel.delete(sl.getStory(),sl.getLabel());
 		}
 	}
 
@@ -543,10 +554,9 @@ public class Story extends Model {
 		return stories;
 	}
 
-	public static List<models.Story> findAllByPublishedWithLocation(Double lat, Double lng, User currentuser) {
+	public static List<models.Story> findAllByPublishedAndLocation(Double lat, Double lng, User currentuser) {
 		List<Story> stories = new ArrayList<Story>();
-		System.out.println("Location.finAll().size() : " + Location.findAll().size());
-		for (Location location : Location.findAll()) {
+		for (Location location : Location.findAllMain()) {
 			Story story = location.getStory();
 			System.out.println("story : " + story);
 			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
@@ -559,6 +569,24 @@ public class Story extends Model {
 			}
 		}
 		System.out.println("findAllByPublishedWithLocation result size : " + stories.size());
+		return stories;
+	}
+
+	public static List<models.Story> findAllByPublishedAndLabel(String labelname, User currentuser) {
+		List<Story> stories = new ArrayList<Story>();
+		Label label = Label.findByName(labelname);
+		if (label == null) return stories;
+		for (StoryLabel sl : StoryLabel.findByStoriesByLabelId(label.getId())) {
+			Story story = sl.getStory();
+			System.out.println("story : " + story);
+			if (story != null && !stories.contains(story) && story.isModelVersion(Constants.CURRENT_MODEL_VERSION)) {
+				if (story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_ALL || story.isPublished() == Constants.PUBLISHED_STATE_PUBLISHED_FOLLOWERS && (story.getAuthor().isFollowedBy(currentuser) || story.isOwnedByUser(currentuser)) || story.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && story.isOwnedByUser(currentuser)) {
+					stories.add(story);
+					System.out.println("storyId : " + story.getId());
+				}
+			}
+		}
+		System.out.println("findAllByPublishedByLabel result size : " + stories.size());
 		return stories;
 	}
 
