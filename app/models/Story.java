@@ -547,7 +547,8 @@ public class Story extends Model {
 																				.ne("published", Constants.PUBLISHED_STATE_DRAFT)
 																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
-		for (Story st : stories) {
+		List<Story> storiesaux = stories;
+		for (Story st : storiesaux) {
 			if (st.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && !st.isOwnedByUser(currentuser))
 				stories.remove(st);
 		}
