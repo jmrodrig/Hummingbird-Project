@@ -128,7 +128,7 @@ $(function() {
 						.css('display' , 'block' );
 
 		$('#user-link div').css('background-image','url(' + avatarUrl + ')');
-    loadStories(0,function() {
+    loadStoriesByRelevance(0,20,function() {
       loadStoriesOnLayout();
     })
 	},
@@ -136,7 +136,6 @@ $(function() {
 		user = null
 		$('#login-link, #stories-link').css('display' , 'block' );
     loadStoriesByRelevance(0,20,function() {
-      //intializeEvents();
       loadStoriesOnLayout();
     })
 	});
