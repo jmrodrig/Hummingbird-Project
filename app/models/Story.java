@@ -543,14 +543,14 @@ public class Story extends Model {
 	}
 
 	public static List<models.Story> findAllByPublicFollowingAndPrivate(User currentuser) {
-		List<Story> stories = finder.where().isNotNull("published")
+		List<Story> storiesaux = finder.where().isNotNull("published")
 																				.ne("published", Constants.PUBLISHED_STATE_DRAFT)
 																				.eq("model_version", Constants.CURRENT_MODEL_VERSION)
 																				.findList();
-		List<Story> storiesaux = stories;
+		List<Story> stories = new ArrayList<Story>();
 		for (Story st : storiesaux) {
-			if (st.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && !st.isOwnedByUser(currentuser))
-				stories.remove(st);
+			if (st.isPublished() != Constants.PUBLISHED_STATE_PRIVATE || st.isPublished() == Constants.PUBLISHED_STATE_PRIVATE && st.isOwnedByUser(currentuser))
+				stories.add(st);
 		}
 		return stories;
 	}
