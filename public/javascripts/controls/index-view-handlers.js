@@ -269,6 +269,9 @@ function addStoriesByLocation(lat,lng,index,noStories,onFinished) {
 function loadStoriesOnLayout() {
   drawLayout();
   resetScrollSpy();
+  var sid = getStoryIdOnViewport();
+  updateMapLocation(sid);
+  updateStoryMarkers();
   //intializeEvents();
 }
 
@@ -528,6 +531,10 @@ function addStoriesToLayout(stories) {
   }
   instgrm.Embeds.process();
   setInstagramStoryCoverLayout();
+
+  var sid = getStoryIdOnViewport();
+  updateMapLocation(sid);
+  updateStoryMarkers();
 }
 
 /******************************************************************
@@ -1223,9 +1230,7 @@ function initiateMapBox() {
   });
 
   mapbox.on('load', function () {
-    var sid = getStoryIdOnViewport();
-    updateMapLocation(sid);
-    updateStoryMarkers();
+
   })
 }
 
