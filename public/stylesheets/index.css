@@ -93,12 +93,14 @@ h1, h2, h3, h4, p, a {
   right: 0;
   /*margin: 30px;*/
   pointer-events: none;
+  padding-top: 50px;
 }
 
 #location-name-container {
   display: block;
   float: left;
-  padding: 120px 20px;
+  padding: 70px 20px;
+  width: calc(100% - 300px);
 }
 
 #location-name {
@@ -108,6 +110,9 @@ h1, h2, h3, h4, p, a {
   background-color: rgba(0, 0, 0, 0.24);
   padding: 10px;
   border-radius: 26px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 #index-map-and-location-wrapper .map-container {
@@ -116,7 +121,8 @@ h1, h2, h3, h4, p, a {
   height: 100%;
   overflow: hidden;
   /*border-radius: 100%;*/
-  opacity: .9;
+  opacity: 1;
+  border-left: 2px solid #f58787;
   float: right;
 }
 
@@ -163,7 +169,12 @@ h1, h2, h3, h4, p, a {
   position: relative;
 }
 
-.story-container.show-content .story-thumbnail-container {
+.story-container.show-content .story-container-cover.cover-layout .story-thumbnail-container {
+  left: inherit !important;
+  right: -95% !important;
+}
+
+.story-container.show-content .story-container-cover.squared-layout .story-thumbnail-container {
   left: inherit !important;
   right: calc(500px - 100%) !important;
 }
@@ -219,7 +230,7 @@ h1, h2, h3, h4, p, a {
   font-size: 20px;
   margin-bottom: 20px;
   padding: 0px 15px;
-  overflow: scroll;
+  overflow-y: scroll;
 }
 
 .story-container-footer {
@@ -283,6 +294,7 @@ h1, h2, h3, h4, p, a {
 
 .story-container-cover.squared-layout.left .story-details {
   right: 0%;
+  text-align: right;
 }
 
 .story-container-cover.squared-layout.right .story-details {
@@ -295,6 +307,10 @@ h1, h2, h3, h4, p, a {
   flex-grow: 1;
 	-webkit-flex-grow: 1;
   content: "";
+}
+
+.story-details {
+  max-width: 600px !important;
 }
 
 .story-container.extended .story-container-cover.squared-layout .story-details {
@@ -380,10 +396,10 @@ h1, h2, h3, h4, p, a {
 }
 
 .story-stats-container {
-	padding: 5px;
+  display: inline-block;
   margin-top: 15px;
+	padding: 5px;
 	font-size: 12px;
-  text-align: center;
 }
 
 .story-stats-views {
@@ -409,19 +425,21 @@ h1, h2, h3, h4, p, a {
   border:none;
 	box-shadow: none;
 	outline:none;
-	font-size:17px;
+	font-size:25px;
 	font-family: Georgia, "Times New Roman", Times, serif;
+  font-weight: bold;
 	resize:none;
 	background-color: transparent;
 	text-align: initial;
-	overflow:hidden;
-	max-height: 100px;
+	/*overflow:hidden;
+	max-height: 100px;*/
 }
 
 .summary-container {
 }
 
 .story-summary, .story-summary:focus {
+  line-height: 30px;
 	font-size:18px;
   margin: 0px;
 	font-family: Georgia, "Times New Roman", Times, serif;
@@ -655,8 +673,8 @@ h1, h2, h3, h4, p, a {
   height: 100%;
   width: 100%;
   overflow-y: hidden;;
-  background-color: rgba(255, 255, 255, 0.52);
-  padding-top: 55px;
+  background-color: rgba(255, 255, 255, 1);
+  padding-top: 50px;
 }
 
 #create-edit-story-pane.open {

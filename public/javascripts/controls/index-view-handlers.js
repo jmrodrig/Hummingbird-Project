@@ -148,20 +148,20 @@ function reloadStories(onFinished) {
   switch (sortedBy) {
     case SORTED_BY_RELEVANCE:
       loadStoriesByRelevance(0,noStories,function() {
-        if (onFinished) onFinished(stories);
+        if (onFinished) onFinished();
       })
       return;
     case SORTED_BY_LABEL:
       var label = $("#story-list").attr('label')
       loadStoriesByLabel(label,0,noStories,function() {
-        if (onFinished) onFinished(stories);
+        if (onFinished) onFinished();
       })
       return;
     case SORTED_BY_LOCATION:
       var lat = $("#story-list").attr('lat'),
       lng = $("#story-list").attr('lng')
       loadStoriesByLocation(lat,lng,0,noStories,function() {
-        if (onFinished) onFinished(stories);
+        if (onFinished) onFinished();
       })
       return;
   }
@@ -319,13 +319,14 @@ function intializeEvents() {
 
   //--- PASTE TEXT ---//
 	$("#create-edit-story-pane .story-text").bind('paste', function(e) {
-	  var pastedText = undefined;
+    var pastedText = undefined;
 	  if (e.originalEvent.clipboardData && e.originalEvent.clipboardData.getData) { // IE
 	    pastedText = e.originalEvent.clipboardData.getData('Text');
 	  } else if (e.clipboardData && e.clipboardData.getData) {
 	    pastedText = e.clipboardData.getData('text/plain');
 	  }
-		$(this).html(pastedText);
+		document.execCommand("insertText", false, pastedText);
+    //console.log(pastedText);
 	  return false; // Prevent the default handler from running.
 	});
 
@@ -501,7 +502,7 @@ function destroyCreateStoryPane() {
   $("#create-edit-story-pane #story-keywords").text("");
   $("#create-edit-story-pane #story-source-icon").attr('src',"");
   $("#create-edit-story-pane input, #create-edit-story-pane textarea").val("");
-  $("#create-edit-story-pane #single-story-details, #create-edit-story-pane #single-story-details , #create-edit-story-pane #bookref-story-details").addClass("collapsed");
+  $("#create-edit-story-pane #single-story-details, #create-edit-story-pane #article-story-details , #create-edit-story-pane #bookref-story-details").addClass("collapsed");
   $("#create-edit-story-pane #prompt #search-query-input, #create-edit-story-pane #prompt #story-url-input").val("").hide();
   $("#create-edit-story-pane #prompt .loader").hide();
   $("#create-edit-story-pane #prompt #search-query-results").empty().hide();
@@ -767,8 +768,8 @@ function buildStoryDetails(story) {
   if (story.summary || story.summary && story.summary.length > 0) {
     var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
     var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-    if (story.summary.length > 400) {
-      summary.text(story.summary.substring(0,399) + "... ").addClass("overflow")
+    if (story.summary.length > 200) {
+      summary.text(story.summary.substring(0,200) + "... ").addClass("overflow")
       summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
     } else {
       summary.text(story.summary)
@@ -789,6 +790,7 @@ function buildStoryDetails(story) {
   }
 
   // Stats: Views, Likes and Saves
+  storyDetailsInner.append('<br>');
   var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
   $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
@@ -832,8 +834,8 @@ function buildArticleDetails(story) {
   // Article description
   var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
   var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-  if (article.description.length > 250) {
-    summary.text(article.description.substring(0,249) + "... ").addClass("overflow")
+  if (article.description.length > 200) {
+    summary.text(article.description.substring(0,200) + "... ").addClass("overflow")
     summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
   } else {
     summary.text(article.description)
@@ -866,6 +868,7 @@ function buildArticleDetails(story) {
   }
 
   // Stats: Views, Likes and Saves
+  storyDetailsInner.append('<br>');
   var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
   $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
@@ -906,8 +909,8 @@ function buildBookrefDetails(story) {
   // Article description
   var summaryContainer = $('<div class="summary-container"/>').appendTo(storyDetailsInner);
   var summary = $('<p class="story-summary"/>').appendTo(summaryContainer);
-  if (article.description.length > 300) {
-    summary.text(article.description.substring(0,299) + "... ").addClass("overflow")
+  if (article.description.length > 200) {
+    summary.text(article.description.substring(0,200) + "... ").addClass("overflow")
     summary.append($("<a>(More)</a>").click(function() {$(this).parents(".story-container").addClass("show-content")}));
   } else {
     summary.text(article.description)
@@ -933,6 +936,7 @@ function buildBookrefDetails(story) {
   }
 
   // Stats: Views, Likes and Saves
+  storyDetailsInner.append('<br>');
   var storyStatsContainer = $('<div class="story-stats-container"/>').appendTo(storyDetailsInner);
   $('<div class="story-stats-views">' + story.noViews + ' views</div>').appendTo(storyStatsContainer);
   $('<div class="story-stats-likes">' + story.noOfLikes + ' likes</div>').appendTo(storyStatsContainer);
@@ -1224,7 +1228,10 @@ function buildSaveStoryButton(story) {
 function initiateMapBox() {
   mapbox = new mapboxgl.Map({
     container: $('#index-map-and-location-wrapper .mapbox-canvas')[0],
-    style: 'mapbox://styles/jozie-blueyes/cj0f061hc00542spdx2513wo4',
+    // style: 'mapbox://styles/jozie-blueyes/cj0f061hc00542spdx2513wo4',
+    style: 'mapbox://styles/mapbox/dark-v9',
+    // style: 'mapbox://styles/mapbox/light-v9',
+    // style: 'mapbox://styles/mapbox/satellite-v9',
     interactive: false
   });
 
@@ -1274,7 +1281,7 @@ function addMarkerToMap(location,map) {
 function initiateCreateStoryMapBox(map_canvas) {
   mapbox_b = new mapboxgl.Map({
     container: map_canvas[0],
-    style: 'mapbox://styles/jozie-blueyes/cj0f061hc00542spdx2513wo4'
+    style: 'mapbox://styles/mapbox/satellite-v9'
   });
 }
 
@@ -1447,6 +1454,7 @@ function saveStory() {
 
   switch (format) {
     case SINGLE_STORY:
+      storyData.summary = $("#single-story-details #story-description-input").val();
       storyData.content = JSON.stringify([{
         type:HEADER_SECTION,
         location:storyData.location
@@ -1535,6 +1543,7 @@ function fillStoryDataOnLayout(format,story) {
   switch (format) {
     case SINGLE_STORY:
       $("#create-edit-story-pane #single-story-details").removeClass("collapsed");
+      $("#create-edit-story-pane #edit-story-container").removeClass("collapsed");
       break;
     case INSTAGRAM_STORY:
       $("#create-edit-story-pane #edit-story-container").addClass("instagram-story");
@@ -1558,6 +1567,7 @@ function fillStoryDataOnLayout(format,story) {
 
 
   $("#create-edit-story-pane #edit-story-container").attr('format',format)
+
   if (!story) return;
   $("#create-edit-story-pane #prompt").addClass("collapsed");
   $("#create-edit-story-pane #edit-story-container").removeClass("collapsed");
