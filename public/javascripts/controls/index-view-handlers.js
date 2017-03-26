@@ -128,19 +128,36 @@ $(function() {
 						.css('display' , 'block' );
 
 		$('#user-link div').css('background-image','url(' + avatarUrl + ')');
-    loadStoriesByRelevance(0,20,function() {
-      loadStoriesOnLayout();
-    })
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(loadStoriesWithLocation,loadStoriesWithoutLocation)
+    } else {
+      loadStoriesWithoutLocation();
+    }
 	},
 	function (){
 		user = null
 		$('#login-link, #stories-link').css('display' , 'block' );
-    loadStoriesByRelevance(0,20,function() {
-      loadStoriesOnLayout();
-    })
+    if (navigator.geolocation) {
+      navigator.geolocation.getCurrentPosition(loadStoriesWithLocation,loadStoriesWithoutLocation)
+    } else {
+      loadStoriesWithoutLocation();
+    }
 	});
 	intializeEvents();
 });
+
+function loadStoriesWithLocation(position) {
+  loadStoriesByLocation(position.coords.latitude,position.coords.longitude,0,20,function() {
+    loadStoriesOnLayout();
+  })
+}
+
+function loadStoriesWithoutLocation() {
+  console.log("Geolocation is not supported by this browser.");
+  loadStoriesByRelevance(0,20,function() {
+    loadStoriesOnLayout();
+  })
+}
 
 function reloadStories(onFinished) {
   var noStories = parseInt($("#story-list").attr('noStories')),
